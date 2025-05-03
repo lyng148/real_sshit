@@ -1,0 +1,90 @@
+package com.itss.projectmanagement.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "projects")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class Project {
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    
+    @NotBlank(message = "Project name is required")
+    @Size(max = 100, message = "Project name cannot exceed 100 characters")
+    @Column(nullable = false)
+    private String name;
+    
+    @Size(max = 500, message = "Description cannot exceed 500 characters")
+    @Column(length = 500)
+    private String description;
+    
+    @NotNull(message = "Maximum number of members is required")
+    @Column(nullable = false)
+    private Integer maxMembers;
+    
+    @Column(length = 1000)
+    private String evaluationCriteria;
+    
+    @NotBlank(message = "GitHub repository URL is required")
+    @Pattern(regexp = "^https://github\\.com/[\\w-]+/[\\w-]+$", 
+            message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository")
+    @Column(nullable = false)
+    private String repositoryUrl;
+    
+    // Weights for contribution score calculation
+    @Column(nullable = false)
+    private Double weightW1 = 0.4; // Default weight for task completion
+    
+    @Column(nullable = false)
+    private Double weightW2 = 0.3; // Default weight for peer review
+    
+    @Column(nullable = false)
+    private Double weightW3 = 0.2; // Default weight for commits
+    
+    @Column(nullable = false)
+    private Double weightW4 = 0.1; // Default weight for late tasks
+    
+    // Threshold for detecting free-riders (percentage of average group score)
+    @Column(nullable = false)
+    private Double freeriderThreshold = 0.3; // Default 30%
+    
+    // Pressure Score configuration
+    @Column(nullable = false)
+    private Integer pressureThreshold = 15; // Default threshold
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "instructor_id", nullable = false)
+    private User instructor;
+    
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+}

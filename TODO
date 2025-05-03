@@ -17,10 +17,10 @@
 - [x] Ghi nhận thời gian login
 
 ## 4. Quản lý dự án (UC002)
-- [ ] Thiết kế entity `Project` (name, desc, maxMembers, evalCriteria, repoUrl, weights W1–W4, thresholds)
-- [ ] Repository + Service + Controller CRUD project
-- [ ] Validation GitHub URL format
-- [ ] Endpoint: chỉnh sửa cấu hình Pressure Score
+- [x] Thiết kế entity `Project` (name, desc, maxMembers, evalCriteria, repoUrl, weights W1–W4, thresholds)
+- [x] Repository + Service + Controller CRUD project
+- [x] Validation GitHub URL format
+- [x] Endpoint: chỉnh sửa cấu hình Pressure Score
 
 ## 5. Quản lý nhóm & đăng ký (UC003)
 - [ ] Entity `Group` + liên kết `Project`
