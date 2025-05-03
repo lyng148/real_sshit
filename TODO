@@ -4,13 +4,13 @@
 - [ ] Tạo Spring Boot project (Maven) với modules: web, data-jpa, security, actuator
 - [ ] Cấu hình kết nối MySQL (application.properties)
 - [ ] Thiết lập layer 3 (Controller – Service – Repository)
-- [ ] Tích hợp Spring Security (JWT hoặc session) và roles: STUDENT, LEADER, INSTRUCTOR, ADMIN
+- [ ] Tích hợp Spring Security (JWT) và roles: STUDENT, LEADER, INSTRUCTOR, ADMIN
 
 ## 2. Quản lý người dùng & phân quyền (UC012)
 - [ ] Thiết kế bảng `users`, `roles`, `user_roles`
 - [ ] Repository + Service + Controller cho CRUD user
 - [ ] Endpoint gán đổi vai trò (assign roles)
-- [ ] Unit tests cho user service/security
+
 
 ## 3. Xác thực & phân quyền (UC000)
 - [ ] Endpoint `/auth/login` + JWT authentication
@@ -69,12 +69,6 @@
 - [ ] Service tính TUF (theo ngày), TPS, TMPS
 - [ ] Scheduler cập nhật hàng ngày
 - [ ] Endpoint xem trạng thái áp lực
-
-## 14. Testing & CI/CD
-- [ ] Viết unit tests cho service + repository
-- [ ] Viết integration tests cho các use case chính
-- [ ] Thiết lập GitHub Actions: build, test, dockerize
-- [ ] Triển khai staging (Heroku/AWS/GCP)
 
 ## 15. Tài liệu & bảo trì
 - [ ] Swagger/OpenAPI doc cho tất cả endpoint
