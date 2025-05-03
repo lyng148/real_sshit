@@ -48,23 +48,29 @@ public class Project {
     
     // Weights for contribution score calculation
     @Column(nullable = false)
+    @Builder.Default
     private Double weightW1 = 0.4; // Default weight for task completion
     
     @Column(nullable = false)
+    @Builder.Default
     private Double weightW2 = 0.3; // Default weight for peer review
     
     @Column(nullable = false)
+    @Builder.Default
     private Double weightW3 = 0.2; // Default weight for commits
     
     @Column(nullable = false)
+    @Builder.Default
     private Double weightW4 = 0.1; // Default weight for late tasks
     
     // Threshold for detecting free-riders (percentage of average group score)
     @Column(nullable = false)
+    @Builder.Default
     private Double freeriderThreshold = 0.3; // Default 30%
     
     // Pressure Score configuration
     @Column(nullable = false)
+    @Builder.Default
     private Integer pressureThreshold = 15; // Default threshold
     
     @ManyToOne(fetch = FetchType.LAZY)

@@ -23,9 +23,9 @@
 - [x] Endpoint: chỉnh sửa cấu hình Pressure Score
 
 ## 5. Quản lý nhóm & đăng ký (UC003)
-- [ ] Entity `Group` + liên kết `Project`
-- [ ] Endpoint tạo nhóm, join nhóm, auto-assign
-- [ ] Service logic cân bằng số lượng thành viên
+- [x] Entity `Group` + liên kết `Project`
+- [x] Endpoint tạo nhóm, join nhóm, auto-assign
+- [x] Service logic cân bằng số lượng thành viên
 
 ## 6. Quản lý task (UC004)
 - [ ] Entity `Task` (title, desc, difficulty, deadline, assignee, group)

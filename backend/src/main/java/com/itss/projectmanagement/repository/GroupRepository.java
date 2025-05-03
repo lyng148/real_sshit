@@ -14,6 +14,8 @@ import java.util.Optional;
 @Repository
 public interface GroupRepository extends JpaRepository<Group, Long> {
     
+    List<Group> findByLeaderId(Long leaderId);
+
     /**
      * Find all groups in a project
      * @param project the project

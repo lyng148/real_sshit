@@ -20,7 +20,7 @@ buildNumber.properties
 ### STS/Eclipse ###
 .apt_generated
 .classpath
-.factorypath
+.factorypath 
 .project
 .settings
 .springBeans
