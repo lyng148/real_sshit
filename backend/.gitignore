@@ -27,7 +27,7 @@ buildNumber.properties
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+../.idea
 *.iws
 *.iml
 *.ipr
@@ -43,7 +43,7 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
+../.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json

@@ -46,6 +46,7 @@ public class User implements UserDetails {
 
     private LocalDateTime lastLoginAt;
     
+    @Builder.Default
     private boolean enabled = true;
     
     @Override
