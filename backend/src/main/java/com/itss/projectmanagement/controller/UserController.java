@@ -3,7 +3,6 @@ package com.itss.projectmanagement.controller;
 import com.itss.projectmanagement.dto.RoleAssignmentRequest;
 import com.itss.projectmanagement.dto.RoleAssignmentResponse;
 import com.itss.projectmanagement.entity.User;
-import com.itss.projectmanagement.security.Role;
 import com.itss.projectmanagement.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -18,9 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/api/users")
