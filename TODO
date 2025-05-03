@@ -1,0 +1,82 @@
+# TODO_BACKEND.md
+
+## 1. Thiết lập dự án cơ bản
+- [ ] Tạo Spring Boot project (Maven) với modules: web, data-jpa, security, actuator
+- [ ] Cấu hình kết nối MySQL (application.properties)
+- [ ] Thiết lập layer 3 (Controller – Service – Repository)
+- [ ] Tích hợp Spring Security (JWT hoặc session) và roles: STUDENT, LEADER, INSTRUCTOR, ADMIN
+
+## 2. Quản lý người dùng & phân quyền (UC012)
+- [ ] Thiết kế bảng `users`, `roles`, `user_roles`
+- [ ] Repository + Service + Controller cho CRUD user
+- [ ] Endpoint gán đổi vai trò (assign roles)
+- [ ] Unit tests cho user service/security
+
+## 3. Xác thực & phân quyền (UC000)
+- [ ] Endpoint `/auth/login` + JWT authentication
+- [ ] Filter/interceptor kiểm tra role-based access
+- [ ] Ghi nhận thời gian login
+
+## 4. Quản lý dự án (UC002)
+- [ ] Thiết kế entity `Project` (name, desc, maxMembers, evalCriteria, repoUrl, weights W1–W4, thresholds)
+- [ ] Repository + Service + Controller CRUD project
+- [ ] Validation GitHub URL format
+- [ ] Endpoint: chỉnh sửa cấu hình Pressure Score
+
+## 5. Quản lý nhóm & đăng ký (UC003)
+- [ ] Entity `Group` + liên kết `Project`
+- [ ] Endpoint tạo nhóm, join nhóm, auto-assign
+- [ ] Service logic cân bằng số lượng thành viên
+
+## 6. Quản lý task (UC004)
+- [ ] Entity `Task` (title, desc, difficulty, deadline, assignee, group)
+- [ ] Service tính Pressure Score khi gán task
+- [ ] Controller CRUD task + gán member
+- [ ] Notification (event) khi task được phân chia
+
+## 7. Cập nhật tiến độ task (UC005)
+- [ ] Entity `TaskProgress` (status, percent, timestamp, updater)
+- [ ] Endpoint update progress + history lưu vào DB
+- [ ] Service tính lại điểm đóng góp tạm thời
+
+## 8. Kết nối GitHub & ghi nhận commit (UC006)
+- [ ] Cấu hình GitHub API client (credentials)
+- [ ] Scheduler hoặc webhook listener
+- [ ] Service: lấy commit, parse TASK-ID, lưu `CommitRecord`
+- [ ] Bỏ qua commit không hợp lệ + notify leader
+
+## 9. Tính điểm đóng góp (UC007)
+- [ ] Service tính `WeightedTaskCompletionScore` & tổng hợp theo công thức
+- [ ] Endpoint lấy/điều chỉnh điểm (instructor)
+- [ ] Lưu điểm cuối cùng
+
+## 10. Đánh giá chéo (UC008)
+- [ ] Entity `PeerReview` + Controller cho đánh giá chéo
+- [ ] Scheduler khởi động weekly review
+- [ ] Validation: buộc hoàn thành review trước khi sử dụng tính năng khác
+- [ ] Service cập nhật điểm đánh giá trung bình + ảnh hưởng UC007
+
+## 11. Biểu đồ & báo cáo (UC009, UC011)
+- [ ] Endpoint trả dữ liệu chart (commit counts, progress timeline, contribution %)
+- [ ] DTO/Service tổng hợp dữ liệu cho UI
+- [ ] Endpoint báo cáo chi tiết cho instructor
+
+## 12. Phát hiện free‑rider (UC010)
+- [ ] Service tính điểm trung bình nhóm + so sánh threshold
+- [ ] Endpoint/cơ chế cảnh báo leader & instructor
+
+## 13. Pressure Score chi tiết (UC013)
+- [ ] Service tính TUF (theo ngày), TPS, TMPS
+- [ ] Scheduler cập nhật hàng ngày
+- [ ] Endpoint xem trạng thái áp lực
+
+## 14. Testing & CI/CD
+- [ ] Viết unit tests cho service + repository
+- [ ] Viết integration tests cho các use case chính
+- [ ] Thiết lập GitHub Actions: build, test, dockerize
+- [ ] Triển khai staging (Heroku/AWS/GCP)
+
+## 15. Tài liệu & bảo trì
+- [ ] Swagger/OpenAPI doc cho tất cả endpoint
+- [ ] README hướng dẫn cài đặt, chạy project
+- [ ] SRS → mapping UC → API list
