@@ -33,14 +33,23 @@ public class ProjectCreateRequest {
     private String repositoryUrl;
     
     // Optional weights with default values
+    @Builder.Default
     private Double weightW1 = 0.4;
+
+    @Builder.Default
     private Double weightW2 = 0.3;
+
+    @Builder.Default
     private Double weightW3 = 0.2;
+
+    @Builder.Default
     private Double weightW4 = 0.1;
     
+    @Builder.Default
     // Optional threshold with default value
     private Double freeriderThreshold = 0.3;
     
+    @Builder.Default
     // Optional pressure threshold with default value
     private Integer pressureThreshold = 15;
 }
