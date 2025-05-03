@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -289,6 +290,37 @@ public class GroupController {
             );
             
             return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Operation(summary = "Get all groups for the current user", description = "Retrieves all groups that the current authenticated user is a member of")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Groups retrieved successfully",
+                    content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = GroupDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/my-groups")
+    public ResponseEntity<ApiResponse<List<GroupDTO>>> getMyGroups() {
+        try {
+            List<Group> groups = groupService.getCurrentUserGroups();
+            List<GroupDTO> groupDTOs = groups.stream()
+                    .map(groupConverter::toDTO)
+                    .collect(Collectors.toList());
+            
+            ApiResponse<List<GroupDTO>> response = ApiResponse.success(
+                    groupDTOs,
+                    "User groups retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<GroupDTO>> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

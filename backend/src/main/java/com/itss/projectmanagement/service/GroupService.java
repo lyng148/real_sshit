@@ -189,6 +189,15 @@ public class GroupService {
     }
 
     /**
+     * Get all groups that the current user is a member of
+     * @return list of groups
+     */
+    public List<Group> getCurrentUserGroups() {
+        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        return groupRepository.findByMember(currentUser);
+    }
+
+    /**
      * Check if a user is the leader of a group
      * @param groupId the group ID
      * @param userId the user ID
