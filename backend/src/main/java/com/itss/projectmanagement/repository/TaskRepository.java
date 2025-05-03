@@ -1,5 +1,6 @@
 package com.itss.projectmanagement.repository;
 
+import com.itss.projectmanagement.enums.TaskStatus;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;
@@ -15,7 +16,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     
     List<Task> findByGroup(Group group);
     
-    List<Task> findByAssigneeAndStatus(User assignee, Task.TaskStatus status);
+    List<Task> findByAssigneeAndStatus(User assignee, TaskStatus status);
     
-    List<Task> findByGroupAndStatus(Group group, Task.TaskStatus status);
+    List<Task> findByGroupAndStatus(Group group, TaskStatus status);
 }

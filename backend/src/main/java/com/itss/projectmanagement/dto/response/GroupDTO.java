@@ -19,6 +19,7 @@ public class GroupDTO {
     private Long id;
     private String name;
     private String description;
+    private String repositoryUrl;
     private Long projectId;
     private String projectName;
     private UserSummaryDTO leader;

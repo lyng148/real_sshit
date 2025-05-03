@@ -5,6 +5,7 @@ import com.itss.projectmanagement.dto.TaskResponse;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.TaskStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -18,7 +19,7 @@ public class TaskConverter {
                 .deadline(request.getDeadline())
                 .group(group)
                 .assignee(assignee)
-                .status(Task.TaskStatus.NOT_STARTED)
+                .status(TaskStatus.NOT_STARTED)
                 .completionPercentage(0)
                 .build();
     }

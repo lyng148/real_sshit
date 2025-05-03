@@ -1,0 +1,57 @@
+package com.itss.projectmanagement.entity;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "commit_records")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CommitRecord {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String commitId;
+    
+    @Column(nullable = false)
+    private String message;
+    
+    @Column(name = "task_id_string")
+    private String taskId;
+    
+    @Column(nullable = false)
+    private String authorName;
+    
+    @Column(nullable = false)
+    private String authorEmail;
+    
+    @Column(nullable = false)
+    private LocalDateTime timestamp;
+    
+    @ManyToOne
+    @JoinColumn(name = "group_id", nullable = false)
+    private Group group;
+    
+    @ManyToOne
+    @JoinColumn(name = "task_id")
+    private Task task;
+    
+    private boolean isValid;
+    
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+}

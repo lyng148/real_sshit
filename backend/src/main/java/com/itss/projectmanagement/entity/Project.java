@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDateTime;
@@ -39,12 +38,6 @@ public class Project {
     
     @Column(length = 1000)
     private String evaluationCriteria;
-    
-    @NotBlank(message = "GitHub repository URL is required")
-    @Pattern(regexp = "^https://github\\.com/[\\w-]+/[\\w-]+$", 
-            message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository")
-    @Column(nullable = false)
-    private String repositoryUrl;
     
     // Weights for contribution score calculation
     @Column(nullable = false)

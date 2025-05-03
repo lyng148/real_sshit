@@ -4,6 +4,7 @@ import com.itss.projectmanagement.dto.TaskCreateRequest;
 import com.itss.projectmanagement.dto.TaskResponse;
 import com.itss.projectmanagement.dto.response.ApiResponse;
 import com.itss.projectmanagement.entity.Task;
+import com.itss.projectmanagement.enums.TaskStatus;
 import com.itss.projectmanagement.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -265,7 +266,7 @@ public class TaskController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTaskStatus(
             @Parameter(description = "ID of the task to update") @PathVariable Long taskId,
-            @Parameter(description = "New status of the task") @RequestParam Task.TaskStatus taskStatus,
+            @Parameter(description = "New status of the task") @RequestParam TaskStatus taskStatus,
             @Parameter(description = "New completion percentage (0-100)") @RequestParam Integer completionPercentage) {
         try {
             TaskResponse updatedTask = taskService.updateTaskStatus(taskId, taskStatus, completionPercentage);

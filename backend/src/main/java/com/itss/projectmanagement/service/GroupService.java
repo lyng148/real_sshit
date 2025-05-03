@@ -1,6 +1,8 @@
 package com.itss.projectmanagement.service;
 
+import com.itss.projectmanagement.converter.GroupConverter;
 import com.itss.projectmanagement.dto.GroupCreateRequest;
+import com.itss.projectmanagement.dto.GroupUpdateRequest;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
@@ -10,6 +12,7 @@ import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
+    private final GroupConverter groupConverter;
 
     /**
      * Create a new group for a project
@@ -262,6 +266,54 @@ public class GroupService {
         
         // Transfer leadership
         group.setLeader(newLeader);
+        return groupRepository.save(group);
+    }
+
+    /**
+     * Update an existing group
+     * @param groupId the group ID
+     * @param updateRequest the update request
+     * @return the updated group
+     */
+    @Transactional
+    public Group updateGroup(Long groupId, GroupUpdateRequest updateRequest) {
+        // Get current user
+        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        
+        // Get the group
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        
+        // Check permissions: only group leader or instructor can update the group
+        boolean isInstructor = SecurityUtils.hasAnyRole(Role.INSTRUCTOR);
+        boolean isGroupLeader = group.getLeader() != null && group.getLeader().getId().equals(currentUser.getId());
+        
+        if (!isInstructor && !isGroupLeader) {
+            throw new IllegalStateException("Only group leader or instructor can update the group");
+        }
+        
+        // Check if name is already taken (if name is being updated)
+        if (updateRequest.getName() != null && !updateRequest.getName().equals(group.getName())) {
+            if (groupRepository.findByNameAndProject(updateRequest.getName(), group.getProject()).isPresent()) {
+                throw new IllegalArgumentException("Group name already exists in this project");
+            }
+        }
+        
+        // Process leader change if requested
+        User newLeader = null;
+        if (updateRequest.getLeaderId() != null && (isInstructor || isGroupLeader)) {
+            newLeader = userRepository.findById(updateRequest.getLeaderId())
+                    .orElseThrow(() -> new IllegalArgumentException("New leader not found"));
+            
+            // Check if new leader is a member of the group
+            if (!group.getMembers().contains(newLeader)) {
+                throw new IllegalArgumentException("New leader must be a member of the group");
+            }
+        }
+        
+        // Apply updates
+        group = groupConverter.applyUpdateToEntity(group, updateRequest, newLeader);
+        
         return groupRepository.save(group);
     }
 }

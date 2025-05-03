@@ -3,6 +3,7 @@ package com.itss.projectmanagement.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +34,11 @@ public class Group {
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     @Column(length = 500)
     private String description;
+    
+    @Pattern(regexp = "^(https://github\\.com/[\\w-]+/[\\w-]+|git@github\\.com:[\\w-]+/[\\w-]+(\\.git)?)$", 
+            message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository or git@github.com:username/repository.git")
+    @Column(name = "repository_url")
+    private String repositoryUrl;
     
     @NotNull(message = "Project is required")
     @ManyToOne(fetch = FetchType.LAZY)

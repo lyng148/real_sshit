@@ -1,6 +1,6 @@
 package com.itss.projectmanagement.dto;
 
-import com.itss.projectmanagement.entity.Task.DifficultyLevel;
+import com.itss.projectmanagement.enums.DifficultyLevel;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

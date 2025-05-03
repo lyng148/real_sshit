@@ -7,6 +7,7 @@ import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.TaskStatus;
 import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
@@ -198,7 +199,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public TaskResponse updateTaskStatus(Long taskId, Task.TaskStatus status, Integer completionPercentage) {
+    public TaskResponse updateTaskStatus(Long taskId, TaskStatus status, Integer completionPercentage) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
         
@@ -212,7 +213,7 @@ public class TaskServiceImpl implements TaskService {
         task.setCompletionPercentage(completionPercentage);
         
         // If task is marked as completed, set completion to 100%
-        if (status == Task.TaskStatus.COMPLETED) {
+        if (status == TaskStatus.COMPLETED) {
             task.setCompletionPercentage(100);
         }
         
@@ -226,8 +227,8 @@ public class TaskServiceImpl implements TaskService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         
         // Get all incomplete tasks assigned to the user
-        List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, Task.TaskStatus.NOT_STARTED);
-        incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, Task.TaskStatus.IN_PROGRESS));
+        List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
+        incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
         
         double totalPressureScore = 0.0;
         LocalDate currentDate = LocalDate.now();

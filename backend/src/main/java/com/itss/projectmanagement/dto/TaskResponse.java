@@ -1,7 +1,7 @@
 package com.itss.projectmanagement.dto;
 
-import com.itss.projectmanagement.entity.Task.DifficultyLevel;
-import com.itss.projectmanagement.entity.Task.TaskStatus;
+import com.itss.projectmanagement.enums.DifficultyLevel;
+import com.itss.projectmanagement.enums.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

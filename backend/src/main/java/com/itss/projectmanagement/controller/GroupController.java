@@ -4,6 +4,7 @@ import com.itss.projectmanagement.converter.GroupConverter;
 import com.itss.projectmanagement.dto.GroupAutoAssignRequest;
 import com.itss.projectmanagement.dto.GroupCreateRequest;
 import com.itss.projectmanagement.dto.GroupJoinRequest;
+import com.itss.projectmanagement.dto.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.ApiResponse;
 import com.itss.projectmanagement.dto.response.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
@@ -273,6 +274,45 @@ public class GroupController {
             ApiResponse<GroupDTO> response = ApiResponse.success(
                     groupDTO, 
                     "Leadership transferred successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<GroupDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.BAD_REQUEST
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        } catch (IllegalStateException e) {
+            ApiResponse<GroupDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.FORBIDDEN
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+    }
+
+    @Operation(summary = "Update group information", description = "Updates an existing group's information. Only group leaders and instructors can perform this action.")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Group updated successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Group or new leader not found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Not authorized to update this group")
+    })
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'STUDENT')")
+    public ResponseEntity<ApiResponse<GroupDTO>> updateGroup(
+            @Parameter(description = "ID of the group to update") @PathVariable Long id,
+            @Valid @RequestBody GroupUpdateRequest request) {
+        try {
+            Group group = groupService.updateGroup(id, request);
+            GroupDTO groupDTO = groupConverter.toDTO(group);
+            
+            ApiResponse<GroupDTO> response = ApiResponse.success(
+                    groupDTO, 
+                    "Group updated successfully"
             );
             
             return ResponseEntity.ok(response);

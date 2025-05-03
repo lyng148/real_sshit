@@ -39,7 +39,6 @@ public class ProjectService {
                 .description(request.getDescription())
                 .maxMembers(request.getMaxMembers())
                 .evaluationCriteria(request.getEvaluationCriteria())
-                .repositoryUrl(request.getRepositoryUrl())
                 .weightW1(request.getWeightW1())
                 .weightW2(request.getWeightW2())
                 .weightW3(request.getWeightW3())
@@ -70,7 +69,6 @@ public class ProjectService {
         project.setDescription(request.getDescription());
         project.setMaxMembers(request.getMaxMembers());
         project.setEvaluationCriteria(request.getEvaluationCriteria());
-        project.setRepositoryUrl(request.getRepositoryUrl());
         project.setWeightW1(request.getWeightW1());
         project.setWeightW2(request.getWeightW2());
         project.setWeightW3(request.getWeightW3());

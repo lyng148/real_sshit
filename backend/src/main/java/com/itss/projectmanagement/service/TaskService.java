@@ -3,6 +3,7 @@ package com.itss.projectmanagement.service;
 import com.itss.projectmanagement.dto.TaskCreateRequest;
 import com.itss.projectmanagement.dto.TaskResponse;
 import com.itss.projectmanagement.entity.Task;
+import com.itss.projectmanagement.enums.TaskStatus;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public interface TaskService {
     
     TaskResponse assignTask(Long taskId, Long assigneeId);
     
-    TaskResponse updateTaskStatus(Long taskId, Task.TaskStatus status, Integer completionPercentage);
+    TaskResponse updateTaskStatus(Long taskId, TaskStatus status, Integer completionPercentage);
     
     // Method to calculate Pressure Score
     double calculatePressureScore(Long userId);
