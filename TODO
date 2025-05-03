@@ -28,14 +28,13 @@
 - [x] Service logic cân bằng số lượng thành viên
 
 ## 6. Quản lý task (UC004)
-- [ ] Entity `Task` (title, desc, difficulty, deadline, assignee, group)
-- [ ] Service tính Pressure Score khi gán task
-- [ ] Controller CRUD task + gán member
-- [ ] Notification (event) khi task được phân chia
+- [x] Entity `Task` (title, desc, difficulty, deadline, assignee, group)
+- [x] Service tính Pressure Score khi gán task
+- [x] Controller CRUD task + gán member
+- [x] Notification (event) khi task được phân chia
 
 ## 7. Cập nhật tiến độ task (UC005)
-- [ ] Entity `TaskProgress` (status, percent, timestamp, updater)
-- [ ] Endpoint update progress + history lưu vào DB
+- [x] Endpoint update progress
 - [ ] Service tính lại điểm đóng góp tạm thời
 
 ## 8. Kết nối GitHub & ghi nhận commit (UC006)
