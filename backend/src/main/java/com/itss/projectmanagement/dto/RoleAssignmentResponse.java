@@ -1,6 +1,6 @@
 package com.itss.projectmanagement.dto;
 
-import com.itss.projectmanagement.security.Role;
+import com.itss.projectmanagement.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

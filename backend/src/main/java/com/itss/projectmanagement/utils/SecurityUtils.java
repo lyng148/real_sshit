@@ -2,9 +2,9 @@ package com.itss.projectmanagement.utils;
 
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.security.Role;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;

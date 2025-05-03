@@ -1,7 +1,7 @@
 package com.itss.projectmanagement.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.itss.projectmanagement.security.Role;
+import com.itss.projectmanagement.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

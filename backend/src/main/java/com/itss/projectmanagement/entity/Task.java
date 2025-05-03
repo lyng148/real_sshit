@@ -1,5 +1,7 @@
 package com.itss.projectmanagement.entity;
 
+import com.itss.projectmanagement.enums.DifficultyLevel;
+import com.itss.projectmanagement.enums.TaskStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -74,28 +76,5 @@ public class Task {
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-    
-    // Enums for Task
-    public enum DifficultyLevel {
-        EASY(1),
-        MEDIUM(2),
-        HARD(3);
-        
-        private final int value;
-        
-        DifficultyLevel(int value) {
-            this.value = value;
-        }
-        
-        public int getValue() {
-            return value;
-        }
-    }
-    
-    public enum TaskStatus {
-        NOT_STARTED,
-        IN_PROGRESS,
-        COMPLETED
     }
 }

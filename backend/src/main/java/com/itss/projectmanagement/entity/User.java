@@ -1,6 +1,6 @@
 package com.itss.projectmanagement.entity;
 
-import com.itss.projectmanagement.security.Role;
+import com.itss.projectmanagement.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

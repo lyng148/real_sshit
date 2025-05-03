@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.security;
+package com.itss.projectmanagement.enums;
 
 /**
  * Enum representing system roles for users

@@ -2,7 +2,7 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.security.Role;
+import com.itss.projectmanagement.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

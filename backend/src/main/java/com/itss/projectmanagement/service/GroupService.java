@@ -7,7 +7,7 @@ import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.security.Role;
+import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
