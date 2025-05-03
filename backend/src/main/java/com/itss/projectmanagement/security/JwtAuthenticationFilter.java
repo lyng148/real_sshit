@@ -29,15 +29,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
 
-            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt, null)) {
-                String username = jwtTokenProvider.getUsernameFromToken(jwt);
+            if (StringUtils.hasText(jwt)) {
+                logger.info("Processing token for request: " + request.getRequestURI());
+                boolean isValid = jwtTokenProvider.isTokenValid(jwt);
+                logger.info("Token is valid: " + isValid);
+                
+                if (isValid) {
+                    String username = jwtTokenProvider.getUsernameFromToken(jwt);
+                    logger.info("Username from token: " + username);
 
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    logger.info("User authorities: " + userDetails.getAuthorities());
+                    
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             }
         } catch (Exception ex) {
             logger.error("Could not set user authentication in security context", ex);

@@ -37,9 +37,10 @@ public class UserController {
                     schema = @Schema(implementation = User.class)))
     })
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
     public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
     @Operation(summary = "Get user by ID", description = "Retrieves a user by their ID")
@@ -48,7 +49,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('INSTRUCTOR') or @userService.isCurrentUser(#id)")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR') or @userService.isCurrentUser(#id)")
     public ResponseEntity<User> getUserById(
             @Parameter(description = "ID of the user to retrieve") @PathVariable Long id) {
         return userService.getUserById(id)
@@ -62,7 +63,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Invalid input data")
     })
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<User> createUser(@RequestBody User user) {
         return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
     }
@@ -73,7 +74,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN') or @userService.isCurrentUser(#id)")
+    @PreAuthorize("hasAuthority('ADMIN') or @userService.isCurrentUser(#id)")
     public ResponseEntity<User> updateUser(
             @Parameter(description = "ID of the user to update") @PathVariable Long id,
             @RequestBody User user) {
@@ -91,7 +92,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteUser(
             @Parameter(description = "ID of the user to delete") @PathVariable Long id) {
         return userService.getUserById(id)
@@ -112,7 +113,7 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @PutMapping("/{id}/roles")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<RoleAssignmentResponse> assignRoles(
             @Parameter(description = "ID of the user to update roles") @PathVariable Long id,
             @Valid @RequestBody RoleAssignmentRequest request) {
