@@ -9,19 +9,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "projects")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Project {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Project extends BaseEntity {
     
     @NotBlank(message = "Project name is required")
     @Size(max = 100, message = "Project name cannot exceed 100 characters")
@@ -69,21 +63,4 @@ public class Project {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instructor_id", nullable = false)
     private User instructor;
-    
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }

@@ -14,11 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CommitRecord {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+public class CommitRecord extends BaseEntity {
     @Column(nullable = false)
     private String commitId;
     
@@ -46,12 +42,4 @@ public class CommitRecord {
     private Task task;
     
     private boolean isValid;
-    
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
 }

@@ -10,7 +10,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,11 +19,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Group {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class Group extends BaseEntity {
     
     @NotBlank(message = "Group name is required")
     @Size(max = 100, message = "Group name cannot exceed 100 characters")
@@ -57,21 +52,4 @@ public class Group {
     )
     @Builder.Default
     private Set<User> members = new HashSet<>();
-    
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-    
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-    
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-    
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
 }
