@@ -1,16 +1,15 @@
 # TODO_BACKEND.md
 
 ## 1. Thiết lập dự án cơ bản
-- [ ] Tạo Spring Boot project (Maven) với modules: web, data-jpa, security, actuator
-- [ ] Cấu hình kết nối MySQL (application.properties)
-- [ ] Thiết lập layer 3 (Controller – Service – Repository)
-- [ ] Tích hợp Spring Security (JWT) và roles: STUDENT, LEADER, INSTRUCTOR, ADMIN
+- [x] Tạo Spring Boot project (Maven) với modules: web, data-jpa, security, actuator
+- [x] Cấu hình kết nối MySQL (application.properties)
+- [x] Thiết lập layer 3 (Controller – Service – Repository)
+- [x] Tích hợp Spring Security (JWT) và roles: STUDENT, LEADER, INSTRUCTOR, ADMIN
 
 ## 2. Quản lý người dùng & phân quyền (UC012)
 - [ ] Thiết kế bảng `users`, `roles`, `user_roles`
 - [ ] Repository + Service + Controller cho CRUD user
 - [ ] Endpoint gán đổi vai trò (assign roles)
-
 
 ## 3. Xác thực & phân quyền (UC000)
 - [ ] Endpoint `/auth/login` + JWT authentication
