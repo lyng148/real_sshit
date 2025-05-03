@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.dto;
+package com.itss.projectmanagement.dto.response.task;
 
 import com.itss.projectmanagement.enums.DifficultyLevel;
 import com.itss.projectmanagement.enums.TaskStatus;

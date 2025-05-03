@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.dto;
+package com.itss.projectmanagement.dto.request.task;
 
 import com.itss.projectmanagement.enums.DifficultyLevel;
 import jakarta.validation.constraints.FutureOrPresent;

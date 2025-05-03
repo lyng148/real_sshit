@@ -1,7 +1,7 @@
 package com.itss.projectmanagement.service;
 
-import com.itss.projectmanagement.dto.ProjectCreateRequest;
-import com.itss.projectmanagement.dto.PressureScoreConfigRequest;
+import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
+import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.ProjectRepository;

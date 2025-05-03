@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.dto;
+package com.itss.projectmanagement.dto.request.project;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

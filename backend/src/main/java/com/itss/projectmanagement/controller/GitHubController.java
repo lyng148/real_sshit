@@ -1,6 +1,6 @@
 package com.itss.projectmanagement.controller;
 
-import com.itss.projectmanagement.dto.CommitRecordDTO;
+import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.service.GitHubService;

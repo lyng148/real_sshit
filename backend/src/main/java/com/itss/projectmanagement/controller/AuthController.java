@@ -1,9 +1,9 @@
 package com.itss.projectmanagement.controller;
 
-import com.itss.projectmanagement.dto.AuthRequest;
-import com.itss.projectmanagement.dto.AuthResponse;
-import com.itss.projectmanagement.dto.RegisterRequest;
-import com.itss.projectmanagement.dto.RegisterResponse;
+import com.itss.projectmanagement.dto.request.auth.AuthRequest;
+import com.itss.projectmanagement.dto.request.auth.RegisterRequest;
+import com.itss.projectmanagement.dto.response.auth.AuthResponse;
+import com.itss.projectmanagement.dto.response.auth.RegisterResponse;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.security.JwtTokenProvider;
 import com.itss.projectmanagement.service.UserService;

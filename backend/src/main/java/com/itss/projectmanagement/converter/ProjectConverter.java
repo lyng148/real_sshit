@@ -1,7 +1,7 @@
 package com.itss.projectmanagement.converter;
 
-import com.itss.projectmanagement.dto.response.ProjectDTO;
-import com.itss.projectmanagement.dto.response.UserSummaryDTO;
+import com.itss.projectmanagement.dto.response.project.ProjectDTO;
+import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
 import com.itss.projectmanagement.entity.Project;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;

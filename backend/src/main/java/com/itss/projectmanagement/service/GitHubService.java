@@ -1,6 +1,6 @@
 package com.itss.projectmanagement.service;
 
-import com.itss.projectmanagement.dto.CommitRecordDTO;
+import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
 import com.itss.projectmanagement.entity.CommitRecord;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;

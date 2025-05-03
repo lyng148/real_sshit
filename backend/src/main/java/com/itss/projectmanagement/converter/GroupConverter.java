@@ -1,8 +1,8 @@
 package com.itss.projectmanagement.converter;
 
-import com.itss.projectmanagement.dto.GroupUpdateRequest;
-import com.itss.projectmanagement.dto.response.GroupDTO;
-import com.itss.projectmanagement.dto.response.UserSummaryDTO;
+import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
+import com.itss.projectmanagement.dto.response.group.GroupDTO;
+import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.User;
 import org.modelmapper.ModelMapper;

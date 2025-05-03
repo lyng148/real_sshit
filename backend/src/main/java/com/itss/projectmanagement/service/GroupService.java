@@ -1,8 +1,8 @@
 package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.converter.GroupConverter;
-import com.itss.projectmanagement.dto.GroupCreateRequest;
-import com.itss.projectmanagement.dto.GroupUpdateRequest;
+import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
+import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;

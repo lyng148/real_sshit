@@ -1,8 +1,8 @@
 package com.itss.projectmanagement.controller;
 
-import com.itss.projectmanagement.dto.TaskCreateRequest;
-import com.itss.projectmanagement.dto.TaskResponse;
-import com.itss.projectmanagement.dto.response.ApiResponse;
+import com.itss.projectmanagement.dto.common.ApiResponse;
+import com.itss.projectmanagement.dto.request.task.TaskCreateRequest;
+import com.itss.projectmanagement.dto.response.task.TaskResponse;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.enums.TaskStatus;
 import com.itss.projectmanagement.service.TaskService;

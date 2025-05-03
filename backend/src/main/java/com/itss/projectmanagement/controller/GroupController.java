@@ -1,12 +1,12 @@
 package com.itss.projectmanagement.controller;
 
 import com.itss.projectmanagement.converter.GroupConverter;
-import com.itss.projectmanagement.dto.GroupAutoAssignRequest;
-import com.itss.projectmanagement.dto.GroupCreateRequest;
-import com.itss.projectmanagement.dto.GroupJoinRequest;
-import com.itss.projectmanagement.dto.GroupUpdateRequest;
-import com.itss.projectmanagement.dto.response.ApiResponse;
-import com.itss.projectmanagement.dto.response.GroupDTO;
+import com.itss.projectmanagement.dto.common.ApiResponse;
+import com.itss.projectmanagement.dto.request.group.GroupAutoAssignRequest;
+import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
+import com.itss.projectmanagement.dto.request.group.GroupJoinRequest;
+import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
+import com.itss.projectmanagement.dto.response.group.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.service.GroupService;
 import io.swagger.v3.oas.annotations.Operation;

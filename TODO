@@ -31,17 +31,17 @@
 - [x] Entity `Task` (title, desc, difficulty, deadline, assignee, group)
 - [x] Service tính Pressure Score khi gán task
 - [x] Controller CRUD task + gán member
-- [x] Notification (event) khi task được phân chia
+- [] Notification (event) khi task được phân chia
 
 ## 7. Cập nhật tiến độ task (UC005)
 - [x] Endpoint update progress
 - [ ] Service tính lại điểm đóng góp tạm thời
 
 ## 8. Kết nối GitHub & ghi nhận commit (UC006)
-- [ ] Cấu hình GitHub API client (credentials)
-- [ ] Scheduler hoặc webhook listener
-- [ ] Service: lấy commit, parse TASK-ID, lưu `CommitRecord`
-- [ ] Bỏ qua commit không hợp lệ + notify leader
+- [x] Cấu hình GitHub API client (credentials)
+- [x] Scheduler hoặc webhook listener
+- [x] Service: lấy commit, parse TASK-ID, lưu `CommitRecord`
+- [x] Bỏ qua commit không hợp lệ + notify leader
 
 ## 9. Tính điểm đóng góp (UC007)
 - [ ] Service tính `WeightedTaskCompletionScore` & tổng hợp theo công thức

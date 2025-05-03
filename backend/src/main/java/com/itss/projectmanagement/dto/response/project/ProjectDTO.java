@@ -1,6 +1,8 @@
-package com.itss.projectmanagement.dto.response;
+package com.itss.projectmanagement.dto.response.project;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

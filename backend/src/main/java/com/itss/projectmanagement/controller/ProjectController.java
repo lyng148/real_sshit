@@ -1,10 +1,10 @@
 package com.itss.projectmanagement.controller;
 
 import com.itss.projectmanagement.converter.ProjectConverter;
-import com.itss.projectmanagement.dto.PressureScoreConfigRequest;
-import com.itss.projectmanagement.dto.ProjectCreateRequest;
-import com.itss.projectmanagement.dto.response.ApiResponse;
-import com.itss.projectmanagement.dto.response.ProjectDTO;
+import com.itss.projectmanagement.dto.common.ApiResponse;
+import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
+import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
+import com.itss.projectmanagement.dto.response.project.ProjectDTO;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.service.ProjectService;
 import com.itss.projectmanagement.utils.SecurityUtils;

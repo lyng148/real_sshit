@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.dto.response;
+package com.itss.projectmanagement.dto.response.user;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.itss.projectmanagement.enums.Role;

@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.dto;
+package com.itss.projectmanagement.dto.request.group;
 
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;

@@ -1,7 +1,7 @@
 package com.itss.projectmanagement.converter;
 
-import com.itss.projectmanagement.dto.TaskCreateRequest;
-import com.itss.projectmanagement.dto.TaskResponse;
+import com.itss.projectmanagement.dto.request.task.TaskCreateRequest;
+import com.itss.projectmanagement.dto.response.task.TaskResponse;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;

@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.dto;
+package com.itss.projectmanagement.dto.response.github;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

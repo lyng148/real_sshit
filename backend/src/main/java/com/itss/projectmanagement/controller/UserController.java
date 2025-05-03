@@ -1,10 +1,10 @@
 package com.itss.projectmanagement.controller;
 
 import com.itss.projectmanagement.converter.UserConverter;
-import com.itss.projectmanagement.dto.RoleAssignmentRequest;
-import com.itss.projectmanagement.dto.RoleAssignmentResponse;
-import com.itss.projectmanagement.dto.response.ApiResponse;
-import com.itss.projectmanagement.dto.response.UserDTO;
+import com.itss.projectmanagement.dto.common.ApiResponse;
+import com.itss.projectmanagement.dto.request.user.RoleAssignmentRequest;
+import com.itss.projectmanagement.dto.response.user.RoleAssignmentResponse;
+import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
