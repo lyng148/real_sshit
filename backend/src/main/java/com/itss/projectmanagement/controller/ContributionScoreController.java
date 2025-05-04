@@ -129,6 +129,51 @@ public class ContributionScoreController {
         }
     }
 
+    @GetMapping("/groups/{groupId}")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN', 'STUDENT')")
+    @Operation(summary = "Get all contribution scores for a group", 
+               description = "Returns the latest calculated contribution scores for all users in a group. Sinh viên chỉ xem được điểm nhóm của mình.")
+    public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByGroup(@PathVariable Long groupId, @AuthenticationPrincipal User currentUser) {
+        try {
+            Group group = groupRepository.findById(groupId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+            // Nếu là student, chỉ cho xem điểm nhóm của mình
+            if (currentUser.getRoles().contains(Role.STUDENT)) {
+                boolean isMember = group.getMembers().contains(currentUser) || (group.getLeader() != null && group.getLeader().getId().equals(currentUser.getId()));
+                if (!isMember) {
+                    throw new ForbiddenException("Bạn không có quyền xem điểm nhóm này");
+                }
+            }
+            List<ContributionScoreResponse> scores = contributionScoreService.getScoresByGroup(groupId);
+            Map<String, Object> metadata = new HashMap<>();
+            metadata.put("count", scores.size());
+            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
+                    scores,
+                    "Contribution scores for group retrieved successfully",
+                    metadata
+            );
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        } catch (ForbiddenException e) {
+            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.FORBIDDEN
+            );
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        } catch (Exception e) {
+            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PutMapping("/{id}/adjust")
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN')")
     @Operation(summary = "Adjust a user's contribution score",

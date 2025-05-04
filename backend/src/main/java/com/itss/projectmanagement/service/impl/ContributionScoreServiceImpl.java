@@ -156,6 +156,23 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
                 .collect(Collectors.toList());
     }
     
+    @Override
+    @Transactional(readOnly = true)
+    public List<ContributionScoreResponse> getScoresByGroup(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+        Project project = group.getProject();
+        List<User> users = new ArrayList<>(group.getMembers());
+        if (group.getLeader() != null && !users.contains(group.getLeader())) {
+            users.add(group.getLeader());
+        }
+        List<ContributionScoreResponse> result = new ArrayList<>();
+        for (User user : users) {
+            result.add(getScoreByUserAndProject(user, project));
+        }
+        return result;
+    }
+    
     /**
      * Calculate weighted task completion score based on difficulty level
      */

@@ -32,12 +32,18 @@ public interface ContributionScoreService {
     ContributionScoreResponse getScoreByUserAndProject(User user, Project project);
     
     /**
-     * Get contribution scores for all users in a project
-     * Always recalculates the latest scores
+     * Get latest contribution scores for all users in a project
      * @param project The project
      * @return List of contribution score response DTOs
      */
     List<ContributionScoreResponse> getScoresByProject(Project project);
+    
+    /**
+     * Get latest contribution scores for all users in a group
+     * @param groupId The group ID
+     * @return List of contribution score response DTOs
+     */
+    List<ContributionScoreResponse> getScoresByGroup(Long groupId);
     
     /**
      * Adjust a user's contribution score (by instructor)

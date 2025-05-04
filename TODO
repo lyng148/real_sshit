@@ -44,9 +44,9 @@
 - [x] Bỏ qua commit không hợp lệ + notify leader
 
 ## 9. Tính điểm đóng góp (UC007)
-- [ ] Service tính `WeightedTaskCompletionScore` & tổng hợp theo công thức
-- [ ] Endpoint lấy/điều chỉnh điểm (instructor)
-- [ ] Lưu điểm cuối cùng
+- [x] Service tính `WeightedTaskCompletionScore` & tổng hợp theo công thức
+- [x] Endpoint lấy/điều chỉnh điểm (instructor)
+- [x] Lưu điểm cuối cùng
 
 ## 10. Đánh giá chéo (UC008)
 - [ ] Entity `PeerReview` + Controller cho đánh giá chéo

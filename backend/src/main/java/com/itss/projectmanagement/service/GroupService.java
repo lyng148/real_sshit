@@ -12,7 +12,6 @@ import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
