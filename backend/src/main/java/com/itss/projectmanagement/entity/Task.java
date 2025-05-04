@@ -51,8 +51,4 @@ public class Task extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private TaskStatus status = TaskStatus.NOT_STARTED;
-    
-    @Column(nullable = false)
-    @Builder.Default
-    private Integer completionPercentage = 0;
 }

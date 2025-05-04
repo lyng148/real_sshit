@@ -199,23 +199,11 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @Transactional
-    public TaskResponse updateTaskStatus(Long taskId, TaskStatus status, Integer completionPercentage) {
+    public TaskResponse updateTaskStatus(Long taskId, TaskStatus status) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
         
         task.setStatus(status);
-        
-        // Validate completion percentage
-        if (completionPercentage < 0 || completionPercentage > 100) {
-            throw new IllegalArgumentException("Completion percentage must be between 0 and 100");
-        }
-        
-        task.setCompletionPercentage(completionPercentage);
-        
-        // If task is marked as completed, set completion to 100%
-        if (status == TaskStatus.COMPLETED) {
-            task.setCompletionPercentage(100);
-        }
         
         Task updatedTask = taskRepository.save(task);
         return taskConverter.toResponse(updatedTask);

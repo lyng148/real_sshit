@@ -23,7 +23,7 @@ public interface TaskService {
     
     TaskResponse assignTask(Long taskId, Long assigneeId);
     
-    TaskResponse updateTaskStatus(Long taskId, TaskStatus status, Integer completionPercentage);
+    TaskResponse updateTaskStatus(Long taskId, TaskStatus status);
     
     // Method to calculate Pressure Score
     double calculatePressureScore(Long userId);

@@ -256,7 +256,7 @@ public class TaskController {
         }
     }
 
-    @Operation(summary = "Update task status", description = "Updates the status and completion percentage of a task")
+    @Operation(summary = "Update task status", description = "Updates the status of a task")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Task status updated successfully"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid status update"),
@@ -266,10 +266,9 @@ public class TaskController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTaskStatus(
             @Parameter(description = "ID of the task to update") @PathVariable Long taskId,
-            @Parameter(description = "New status of the task") @RequestParam TaskStatus taskStatus,
-            @Parameter(description = "New completion percentage (0-100)") @RequestParam Integer completionPercentage) {
+            @Parameter(description = "New status of the task") @RequestParam TaskStatus taskStatus) {
         try {
-            TaskResponse updatedTask = taskService.updateTaskStatus(taskId, taskStatus, completionPercentage);
+            TaskResponse updatedTask = taskService.updateTaskStatus(taskId, taskStatus);
             
             ApiResponse<TaskResponse> response = ApiResponse.success(
                     updatedTask,

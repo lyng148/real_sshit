@@ -20,7 +20,6 @@ public class TaskConverter {
                 .group(group)
                 .assignee(assignee)
                 .status(TaskStatus.NOT_STARTED)
-                .completionPercentage(0)
                 .build();
     }
     
@@ -36,7 +35,6 @@ public class TaskConverter {
                 .groupId(task.getGroup().getId())
                 .groupName(task.getGroup().getName())
                 .status(task.getStatus())
-                .completionPercentage(task.getCompletionPercentage())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
                 .pressureWarning(null) // Default to null, will be set by service if needed

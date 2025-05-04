@@ -25,7 +25,6 @@ public class TaskResponse {
     private Long groupId;
     private String groupName;
     private TaskStatus status;
-    private Integer completionPercentage;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String pressureWarning;
