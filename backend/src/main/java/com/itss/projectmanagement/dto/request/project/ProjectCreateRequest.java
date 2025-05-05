@@ -27,11 +27,6 @@ public class ProjectCreateRequest {
     
     private String evaluationCriteria;
     
-    @NotBlank(message = "GitHub repository URL is required")
-    @Pattern(regexp = "^https://github\\.com/[\\w-]+/[\\w-]+(\\.[\\w-]+)*$", 
-            message = "Invalid GitHub repository URL format")
-    private String repositoryUrl;
-    
     // Optional weights with default values
     @Builder.Default
     private Double weightW1 = 0.4;

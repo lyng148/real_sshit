@@ -21,8 +21,7 @@ public class ProjectDTO {
     private String description;
     private Integer maxMembers;
     private String evaluationCriteria;
-    private String repositoryUrl;
-    
+
     // Weights for contribution score calculation
     private Double weightW1;
     private Double weightW2;
