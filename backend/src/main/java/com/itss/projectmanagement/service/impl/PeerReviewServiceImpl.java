@@ -5,13 +5,11 @@ import com.itss.projectmanagement.dto.request.peer.PeerReviewRequest;
 import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.PeerReview;
-import com.itss.projectmanagement.entity.PeerReviewFailure;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.exception.NotFoundException;
 import com.itss.projectmanagement.exception.ValidationException;
 import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.repository.PeerReviewFailureRepository;
 import com.itss.projectmanagement.repository.PeerReviewRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
@@ -34,7 +32,6 @@ import java.util.Locale;
 public class PeerReviewServiceImpl implements PeerReviewService {
 
     private final PeerReviewRepository peerReviewRepository;
-    private final PeerReviewFailureRepository peerReviewFailureRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
@@ -79,22 +76,6 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         PeerReview peerReview = peerReviewConverter.toEntity(request, reviewer, reviewee, project);
         PeerReview savedReview = peerReviewRepository.save(peerReview);
         
-        // Check if there was a failure record for this reviewer and update it as completed
-        int currentWeek = LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());
-        List<PeerReviewFailure> failures = peerReviewFailureRepository.findByUserAndProject(reviewer, project);
-        
-        for (PeerReviewFailure failure : failures) {
-            // Only update failures from the current review week
-            if (failure.getReviewWeek().equals(currentWeek)) {
-                failure.setCompletedLate(true);
-                failure.setCompletionDate(LocalDateTime.now());
-                peerReviewFailureRepository.save(failure);
-                
-                log.debug("Updated failure record as completed late for user {} in project {}", 
-                        reviewer.getUsername(), project.getName());
-            }
-        }
-        
         return peerReviewConverter.toResponse(savedReview);
     }
 
@@ -130,12 +111,14 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Project not found with ID: " + projectId));
         
-        Long completedReviews = peerReviewRepository.countCompletedReviewsByReviewerAndProject(user, project);
-        Long teamMembersToReview = (long) peerReviewRepository.findMembersNotReviewedByReviewer(project, userId).size();
+        // Check for valid peer reviews that need completion
+        long validReviewsToComplete = peerReviewRepository.findMembersNotReviewedByReviewerAndValid(project, userId).size();
 
-        log.info("User {} has completed {} out of {} reviews for project {}",
-                user.getUsername(), completedReviews, teamMembersToReview, project.getName());
-        return completedReviews >= teamMembersToReview;
+        log.info("User {} has {} reviews left to complete for project {}",
+                user.getUsername(), validReviewsToComplete, project.getName());
+        
+        // Return true if the user has completed all valid reviews
+        return validReviewsToComplete == 0;
     }
 
     @Override
@@ -254,180 +237,6 @@ public class PeerReviewServiceImpl implements PeerReviewService {
     }
 
     @Override
-    public void notifyIncompleteReviews(Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new NotFoundException("Project not found with ID: " + projectId));
-        
-        log.info("Checking incomplete peer reviews for project: {} (ID: {})", 
-                project.getName(), project.getId());
-        
-        // Get all groups in the project
-        List<Group> projectGroups = groupRepository.findByProject(project);
-        
-        // Calculate current review week
-        int currentWeek = LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());
-        
-        // Lists to track members who need instructor notification
-        List<User> membersExceedingFailureLimit = new ArrayList<>();
-        
-        for (Group group : projectGroups) {
-            // Skip groups without leaders
-            if (group.getLeader() == null) {
-                continue;
-            }
-            
-            List<User> members = new ArrayList<>(group.getMembers());
-            if (!members.contains(group.getLeader())) {
-                members.add(group.getLeader());
-            }
-            
-            // Find users who haven't completed all their reviews
-            List<User> incompleteReviewers = new ArrayList<>();
-            
-            for (User member : members) {
-                if (!hasCompletedAllReviews(member.getId(), projectId)) {
-                    incompleteReviewers.add(member);
-                    
-                    log.info("Member {} has not completed all peer reviews for project {}",
-                            member.getUsername(), project.getName());
-                    
-                    // Create a failure record for tracking
-                    PeerReviewFailure failure = PeerReviewFailure.builder()
-                            .user(member)
-                            .project(project)
-                            .failureDate(LocalDateTime.now())
-                            .reviewWeek(currentWeek)
-                            .notificationSent(true)
-                            .completedLate(false)
-                            .build();
-                    
-                    peerReviewFailureRepository.save(failure);
-                    log.debug("Created failure record for user {} in project {}", 
-                            member.getUsername(), project.getName());
-                    
-                    // Check if this member has exceeded the failure limit (>2 times)
-                    Long failureCount = peerReviewFailureRepository.countByUserAndProject(member, project);
-                    if (failureCount > 2) {
-                        membersExceedingFailureLimit.add(member);
-                    }
-                    
-                    // Notify the member with a reminder
-                    String reminderTitle = "Nhắc nhở: Hoàn thành đánh giá chéo";
-                    String reminderMessage = String.format(
-                            "Bạn chưa hoàn thành đánh giá chéo cho dự án %s. Vui lòng hoàn thành ngay để tiếp tục sử dụng hệ thống.",
-                            project.getName());
-                    
-                    notificationService.notifyUser(member, reminderTitle, reminderMessage);
-                }
-            }
-            
-            if (!incompleteReviewers.isEmpty()) {
-                // Send notification to group leader
-                User leader = group.getLeader();
-                
-                String title = "Thành viên chưa hoàn thành đánh giá chéo";
-                
-                // Format notification message with list of members
-                StringBuilder messageBuilder = new StringBuilder();
-                messageBuilder.append("Các thành viên sau chưa hoàn thành đánh giá chéo trong dự án ")
-                            .append(project.getName())
-                            .append(":\n\n");
-                
-                for (User member : incompleteReviewers) {
-                    // Count total failures for this user in the project
-                    Long failureCount = peerReviewFailureRepository.countByUserAndProject(member, project);
-                    
-                    messageBuilder.append("- ").append(member.getUsername())
-                                .append(" (").append(member.getEmail()).append(")")
-                                .append(" - Số lần không hoàn thành: ").append(failureCount)
-                                .append("\n");
-                }
-                
-                messageBuilder.append("\nVui lòng nhắc nhở các thành viên hoàn thành đánh giá.");
-                
-                // Send the notification
-                notificationService.notifyUser(leader, title, messageBuilder.toString());
-                
-                log.debug("Sent notification to leader {} about {} incomplete reviewers",
-                        leader.getUsername(), incompleteReviewers.size());
-            }
-        }
-        
-        // Notify instructor about members who exceed failure limit (>2 times)
-        if (!membersExceedingFailureLimit.isEmpty() && project.getInstructor() != null) {
-            String title = "Cảnh báo: Thành viên liên tục không hoàn thành đánh giá chéo";
-            
-            StringBuilder messageBuilder = new StringBuilder();
-            messageBuilder.append("Các thành viên sau đã không hoàn thành đánh giá chéo quá 2 lần trong dự án ")
-                        .append(project.getName())
-                        .append(":\n\n");
-            
-            for (User member : membersExceedingFailureLimit) {
-                Long failureCount = peerReviewFailureRepository.countByUserAndProject(member, project);
-                
-                // Find the user's group
-                String groupName = "Không xác định";
-                for (Group group : projectGroups) {
-                    if (group.getMembers().contains(member) || 
-                        (group.getLeader() != null && group.getLeader().getId().equals(member.getId()))) {
-                        groupName = group.getName();
-                        break;
-                    }
-                }
-                
-                messageBuilder.append("- ").append(member.getUsername())
-                            .append(" (").append(member.getEmail()).append(")")
-                            .append(" - Nhóm: ").append(groupName)
-                            .append(" - Số lần không hoàn thành: ").append(failureCount)
-                            .append("\n");
-            }
-            
-            messageBuilder.append("\nHệ thống đã nhắc nhở các thành viên và thông báo cho nhóm trưởng. ")
-                        .append("Vui lòng xem xét biện pháp phù hợp hoặc liên hệ với các thành viên này.");
-            
-            // Send notification to instructor
-            notificationService.notifyUser(project.getInstructor(), title, messageBuilder.toString());
-            
-            log.info("Sent notification to instructor about {} members exceeding peer review failure limit",
-                    membersExceedingFailureLimit.size());
-        }
-        
-        // Notify instructor about overall completion status
-        if (project.getInstructor() != null) {
-            // Calculate completion statistics
-            int totalMembers = 0;
-            int completedMembers = 0;
-            
-            for (Group group : projectGroups) {
-                List<User> members = new ArrayList<>(group.getMembers());
-                if (group.getLeader() != null && !members.contains(group.getLeader())) {
-                    members.add(group.getLeader());
-                }
-                
-                totalMembers += members.size();
-                
-                for (User member : members) {
-                    if (hasCompletedAllReviews(member.getId(), projectId)) {
-                        completedMembers++;
-                    }
-                }
-            }
-            
-            // Only notify if there are incomplete reviews
-            if (completedMembers < totalMembers) {
-                double completionRate = totalMembers > 0 ? (double) completedMembers / totalMembers * 100 : 0;
-                
-                String title = "Trạng thái hoàn thành đánh giá chéo";
-                String message = String.format(
-                        "Tỷ lệ hoàn thành đánh giá chéo trong dự án %s: %.1f%% (%d/%d thành viên).",
-                        project.getName(), completionRate, completedMembers, totalMembers);
-                
-                notificationService.notifyUser(project.getInstructor(), title, message);
-            }
-        }
-    }
-
-    @Override
     public boolean hasPendingPeerReviews(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with ID: " + userId));
@@ -438,24 +247,13 @@ public class PeerReviewServiceImpl implements PeerReviewService {
             return false; // Người dùng không tham gia nhóm nào
         }
         
-        // Kiểm tra từng dự án xem có đánh giá chéo đang chờ hoàn thành không
-        for (Group group : userGroups) {
-            Project project = group.getProject();
-            
-            // Nếu dự án không có giai đoạn đánh giá chéo đang diễn ra, bỏ qua
-            boolean hasPendingReviewPhase = peerReviewRepository.existsByReviewerAndIsCompletedFalse(user);
-            if (!hasPendingReviewPhase) {
-                continue;
-            }
-            
-            // Kiểm tra xem người dùng đã hoàn thành tất cả đánh giá chéo trong dự án này chưa
-            boolean hasCompleted = hasCompletedAllReviews(userId, project.getId());
-            if (!hasCompleted) {
-                return true; // Có ít nhất một đánh giá chéo chưa hoàn thành
-            }
+        // Check if there are any valid incomplete reviews
+        List<PeerReview> pendingReviews = peerReviewRepository.findByReviewerAndIsCompletedFalseAndIsValidTrue(user);
+        if (!pendingReviews.isEmpty()) {
+            return true; // Có ít nhất một đánh giá chéo hợp lệ và chưa hoàn thành
         }
         
-        return false; // Đã hoàn thành tất cả đánh giá chéo
+        return false; // Đã hoàn thành tất cả đánh giá chéo hợp lệ
     }
 
     @Override
@@ -531,5 +329,179 @@ public class PeerReviewServiceImpl implements PeerReviewService {
         
         log.info("Manually triggered peer review process completed for group: {} (ID: {})", 
                 group.getName(), group.getId());
+    }
+
+    @Override
+    public void notifyIncompleteReviews(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NotFoundException("Project not found with ID: " + projectId));
+        
+        log.info("Checking incomplete peer reviews for project: {} (ID: {})", 
+                project.getName(), project.getId());
+        
+        // Get all groups in the project
+        List<Group> projectGroups = groupRepository.findByProject(project);
+        
+        // Calculate current review week
+        int currentWeek = LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());
+        
+        // Lists to track members who need instructor notification
+        List<User> membersExceedingFailureLimit = new ArrayList<>();
+        
+        for (Group group : projectGroups) {
+            // Skip groups without leaders
+            if (group.getLeader() == null) {
+                continue;
+            }
+            
+            List<User> members = new ArrayList<>(group.getMembers());
+            if (!members.contains(group.getLeader())) {
+                members.add(group.getLeader());
+            }
+            
+            // Find users who haven't completed all their reviews
+            List<User> incompleteReviewers = new ArrayList<>();
+            
+            for (User member : members) {
+                if (!hasCompletedAllReviews(member.getId(), projectId)) {
+                    incompleteReviewers.add(member);
+                    
+                    log.info("Member {} has not completed all peer reviews for project {}",
+                            member.getUsername(), project.getName());
+                    
+                    // Đánh dấu những đánh giá quá hạn là không hợp lệ
+                    LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
+                    List<PeerReview> overdueReviews = peerReviewRepository
+                        .findByReviewerAndIsCompletedFalseAndAssignedAtBefore(member, oneDayAgo);
+                    
+                    for (PeerReview review : overdueReviews) {
+                        if (review.getIsValid()) {
+                            review.setIsValid(false);
+                            peerReviewRepository.save(review);
+                            log.debug("Marked overdue review as invalid for user {} in project {}", 
+                                member.getUsername(), project.getName());
+                        }
+                    }
+                    
+                    // Check if this member has exceeded the failure limit (>2 times)
+                    Long failureCount = peerReviewRepository.countInvalidReviewsByUserAndProject(member, project);
+                    if (failureCount > 2) {
+                        membersExceedingFailureLimit.add(member);
+                    }
+                    
+                    // Notify the member with a reminder
+                    String reminderTitle = "Nhắc nhở: Hoàn thành đánh giá chéo";
+                    String reminderMessage = String.format(
+                            "Bạn chưa hoàn thành đánh giá chéo cho dự án %s. Vui lòng hoàn thành ngay để tiếp tục sử dụng hệ thống.",
+                            project.getName());
+                    
+                    notificationService.notifyUser(member, reminderTitle, reminderMessage);
+                }
+            }
+            
+            if (!incompleteReviewers.isEmpty()) {
+                // Send notification to group leader
+                User leader = group.getLeader();
+                
+                String title = "Thành viên chưa hoàn thành đánh giá chéo";
+                
+                // Format notification message with list of members
+                StringBuilder messageBuilder = new StringBuilder();
+                messageBuilder.append("Các thành viên sau chưa hoàn thành đánh giá chéo trong dự án ")
+                            .append(project.getName())
+                            .append(":\n\n");
+                
+                for (User member : incompleteReviewers) {
+                    // Count total invalid reviews for this user in the project
+                    Long failureCount = peerReviewRepository.countInvalidReviewsByUserAndProject(member, project);
+                    
+                    messageBuilder.append("- ").append(member.getUsername())
+                                .append(" (").append(member.getEmail()).append(")")
+                                .append(" - Số lần không hoàn thành: ").append(failureCount)
+                                .append("\n");
+                }
+                
+                messageBuilder.append("\nVui lòng nhắc nhở các thành viên hoàn thành đánh giá.");
+                
+                // Send the notification
+                notificationService.notifyUser(leader, title, messageBuilder.toString());
+                
+                log.debug("Sent notification to leader {} about {} incomplete reviewers",
+                        leader.getUsername(), incompleteReviewers.size());
+            }
+        }
+        
+        // Notify instructor about members who exceed failure limit (>2 times)
+        if (!membersExceedingFailureLimit.isEmpty() && project.getInstructor() != null) {
+            String title = "Cảnh báo: Thành viên liên tục không hoàn thành đánh giá chéo";
+            
+            StringBuilder messageBuilder = new StringBuilder();
+            messageBuilder.append("Các thành viên sau đã không hoàn thành đánh giá chéo quá 2 lần trong dự án ")
+                        .append(project.getName())
+                        .append(":\n\n");
+            
+            for (User member : membersExceedingFailureLimit) {
+                Long failureCount = peerReviewRepository.countInvalidReviewsByUserAndProject(member, project);
+                
+                // Find the user's group
+                String groupName = "Không xác định";
+                for (Group group : projectGroups) {
+                    if (group.getMembers().contains(member) || 
+                        (group.getLeader() != null && group.getLeader().getId().equals(member.getId()))) {
+                        groupName = group.getName();
+                        break;
+                    }
+                }
+                
+                messageBuilder.append("- ").append(member.getUsername())
+                            .append(" (").append(member.getEmail()).append(")")
+                            .append(" - Nhóm: ").append(groupName)
+                            .append(" - Số lần không hoàn thành: ").append(failureCount)
+                            .append("\n");
+            }
+            
+            messageBuilder.append("\nHệ thống đã nhắc nhở các thành viên và thông báo cho nhóm trưởng. ")
+                        .append("Vui lòng xem xét biện pháp phù hợp hoặc liên hệ với các thành viên này.");
+            
+            // Send notification to instructor
+            notificationService.notifyUser(project.getInstructor(), title, messageBuilder.toString());
+            
+            log.info("Sent notification to instructor about {} members exceeding peer review failure limit",
+                    membersExceedingFailureLimit.size());
+        }
+        
+        // Notify instructor about overall completion status
+        if (project.getInstructor() != null) {
+            // Calculate completion statistics
+            int totalMembers = 0;
+            int completedMembers = 0;
+            
+            for (Group group : projectGroups) {
+                List<User> members = new ArrayList<>(group.getMembers());
+                if (group.getLeader() != null && !members.contains(group.getLeader())) {
+                    members.add(group.getLeader());
+                }
+                
+                totalMembers += members.size();
+                
+                for (User member : members) {
+                    if (hasCompletedAllReviews(member.getId(), projectId)) {
+                        completedMembers++;
+                    }
+                }
+            }
+            
+            // Only notify if there are incomplete reviews
+            if (completedMembers < totalMembers) {
+                double completionRate = totalMembers > 0 ? (double) completedMembers / totalMembers * 100 : 0;
+                
+                String title = "Trạng thái hoàn thành đánh giá chéo";
+                String message = String.format(
+                        "Tỷ lệ hoàn thành đánh giá chéo trong dự án %s: %.1f%% (%d/%d thành viên).",
+                        project.getName(), completionRate, completedMembers, totalMembers);
+                
+                notificationService.notifyUser(project.getInstructor(), title, message);
+            }
+        }
     }
 }

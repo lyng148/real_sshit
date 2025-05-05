@@ -2,8 +2,10 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
+import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,7 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final UserService userService;
+    private final GroupRepository groupRepository;
     
     /**
      * Create a new project for an instructor
@@ -141,6 +144,23 @@ public class ProjectService {
         
         project.setPressureThreshold(request.getPressureThreshold());
         return projectRepository.save(project);
+    }
+    
+    /**
+     * Check if the current user is a leader of any group in the project
+     * @param projectId The project ID to check
+     * @return True if the user is a leader of any group in the project, false otherwise
+     */
+    public boolean isUserGroupLeaderInProject(Long projectId) {
+        User currentUser = getCurrentUser();
+        Project project = getProjectById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
+        
+        List<Group> projectGroups = groupRepository.findByProject(project);
+        
+        return projectGroups.stream()
+                .anyMatch(group -> group.getLeader() != null && 
+                                  Objects.equals(group.getLeader().getId(), currentUser.getId()));
     }
     
     /**

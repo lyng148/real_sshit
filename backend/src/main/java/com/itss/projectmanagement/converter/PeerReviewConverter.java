@@ -53,6 +53,7 @@ public class PeerReviewConverter {
                 .reviewWeek(peerReview.getReviewWeek())
                 .comment(peerReview.getComment())
                 .isCompleted(peerReview.getIsCompleted())
+                .isValid(peerReview.getIsValid())
                 .createdAt(peerReview.getCreatedAt())
                 .updatedAt(peerReview.getUpdatedAt())
                 .build();

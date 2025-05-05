@@ -132,7 +132,7 @@ public class ContributionScoreController {
     @GetMapping("/groups/{groupId}")
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN', 'STUDENT')")
     @Operation(summary = "Get all contribution scores for a group", 
-               description = "Returns the latest calculated contribution scores for all users in a group. Sinh viên chỉ xem được điểm nhóm của mình.")
+               description = "Returns the latest calculated contribution scores for all users in a group. Student can only see scores of his group.")
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByGroup(@PathVariable Long groupId, @AuthenticationPrincipal User currentUser) {
         try {
             Group group = groupRepository.findById(groupId)

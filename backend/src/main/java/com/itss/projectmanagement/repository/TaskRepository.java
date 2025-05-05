@@ -15,6 +15,7 @@ import java.util.List;
 
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
+    List<Task> findByGroupAndAssignee(Group group, User assignee);
     
     List<Task> findByAssignee(User assignee);
     

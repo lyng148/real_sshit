@@ -24,6 +24,7 @@ public class PeerReviewResponse {
     private Integer reviewWeek;
     private String comment;
     private Boolean isCompleted;
+    private Boolean isValid;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

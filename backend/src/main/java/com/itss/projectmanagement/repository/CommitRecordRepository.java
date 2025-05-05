@@ -39,4 +39,8 @@ public interface CommitRecordRepository extends JpaRepository<CommitRecord, Long
     
     @Query("SELECT COUNT(cr) FROM CommitRecord cr WHERE cr.group.project.id = :projectId AND cr.authorEmail = :email AND cr.isValid = true")
     long countByProjectIdAndAuthorEmailAndIsValidTrue(@Param("projectId") Long projectId, @Param("email") String email);
+
+    List<CommitRecord> findByGroupAndIsValidAndTimestampAfter(Group group, boolean isValid, LocalDateTime timestamp);
+
+    List<CommitRecord> findByGroupAndIsValid(Group group, boolean isValid);
 }

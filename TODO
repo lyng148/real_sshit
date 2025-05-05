@@ -31,7 +31,7 @@
 - [x] Entity `Task` (title, desc, difficulty, deadline, assignee, group)
 - [x] Service tính Pressure Score khi gán task
 - [x] Controller CRUD task + gán member
-- [] Notification (event) khi task được phân chia
+- [x] Notification (event) khi task được phân chia
 
 ## 7. Cập nhật tiến độ task (UC005)
 - [x] Endpoint update progress
@@ -60,8 +60,8 @@
 - [ ] Endpoint báo cáo chi tiết cho instructor
 
 ## 12. Phát hiện free‑rider (UC010)
-- [ ] Service tính điểm trung bình nhóm + so sánh threshold
-- [ ] Endpoint/cơ chế cảnh báo leader & instructor
+- [x] Service tính điểm trung bình nhóm + so sánh threshold
+- [x] Endpoint/cơ chế cảnh báo leader & instructor
 
 ## 13. Pressure Score chi tiết (UC013)
 - [ ] Service tính TUF (theo ngày), TPS, TMPS

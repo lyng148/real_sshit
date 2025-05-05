@@ -41,8 +41,9 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
         // 1. Calculate WeightedTaskCompletionScore
         Double weightedTaskCompletionScore = calculateWeightedTaskCompletionScore(user, project);
         
-        // 2. Get peer review score (average from peer reviews)
+        // 2. Get peer review score (average from valid and completed peer reviews only)
         Double peerReviewScore = peerReviewRepository.findAverageScoreByRevieweeAndProject(user, project);
+        log.info("Peer review score for user {} in project {}: {}", user.getUsername(), project.getName(), peerReviewScore);
         if (peerReviewScore == null) peerReviewScore = 0.0;
         
         // 3. Count valid commits related to user's tasks
@@ -108,8 +109,7 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     @Override
     @Transactional(readOnly = true)
     public ContributionScoreResponse getScoreByUserAndProject(User user, Project project) {
-        ContributionScore score = contributionScoreRepository.findByUserAndProject(user, project)
-                .orElseGet(() -> calculateScore(user, project));
+        ContributionScore score = calculateScore(user, project);
                 
         return contributionScoreConverter.toResponse(score);
     }
@@ -208,7 +208,7 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
                 .filter(task -> task.getGroup() != null && 
                        task.getGroup().getProject() != null && 
                        task.getGroup().getProject().getId().equals(project.getId()))
-                .collect(Collectors.toList());
+                .toList();
         
         log.info("After filtering, found {} tasks for user {} in project {}", 
                 userTasks.size(), user.getUsername(), project.getName());
@@ -246,7 +246,7 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
                     .filter(commit -> commit.isValid() && 
                             taskIdStr.equals(commit.getTaskId()) && 
                             (commit.getTask() == null || !commit.getTask().getId().equals(task.getId())))
-                    .collect(Collectors.toList());
+                    .toList();
             
             log.info("Task ID {}: Found {} additional commits by string taskId", 
                     task.getId(), matchingCommits.size());

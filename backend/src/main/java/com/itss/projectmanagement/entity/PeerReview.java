@@ -51,6 +51,10 @@ public class PeerReview extends BaseEntity {
     @Builder.Default
     private Boolean isCompleted = false;
 
+    @Column(name = "is_valid", nullable = false)
+    @Builder.Default
+    private Boolean isValid = true;
+
     @Column(name = "assigned_at")
     private LocalDateTime assignedAt;
 

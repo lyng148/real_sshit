@@ -4,9 +4,15 @@ import com.itss.projectmanagement.converter.ProjectConverter;
 import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
+import com.itss.projectmanagement.dto.response.chart.CommitCountChartDTO;
+import com.itss.projectmanagement.dto.response.chart.ContributionPieChartDTO;
+import com.itss.projectmanagement.dto.response.chart.ProgressTimelineChartDTO;
 import com.itss.projectmanagement.dto.response.project.ProjectDTO;
+import com.itss.projectmanagement.dto.response.report.ProjectReportDTO;
 import com.itss.projectmanagement.entity.Project;
+import com.itss.projectmanagement.service.ChartService;
 import com.itss.projectmanagement.service.ProjectService;
+import com.itss.projectmanagement.service.ReportService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,6 +39,8 @@ public class ProjectController {
 
     private final ProjectService projectService;
     private final ProjectConverter projectConverter;
+    private final ChartService chartService;
+    private final ReportService reportService;
 
     @Operation(summary = "Create a new project", description = "Creates a new project for the current instructor")
     @ApiResponses(value = {
@@ -228,6 +236,148 @@ public class ProjectController {
             );
             
             return new ResponseEntity<>(response, status);
+        }
+    }
+
+    @Operation(summary = "Get commit count chart data", description = "Retrieves commit count chart data for a project")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved chart data"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
+    })
+    @GetMapping("/{id}/charts/commit-counts")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    public ResponseEntity<ApiResponse<CommitCountChartDTO>> getCommitCountChart(
+            @Parameter(description = "ID of the project") @PathVariable Long id,
+            @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
+        try {
+            // Check if the student is a leader of any group in this project
+            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+                ApiResponse<CommitCountChartDTO> response = ApiResponse.error(
+                        "Only group leaders or instructors can access this chart data",
+                        HttpStatus.FORBIDDEN
+                );
+                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            }
+            
+            CommitCountChartDTO chartData = chartService.getCommitCountChart(id, rangeType);
+            
+            ApiResponse<CommitCountChartDTO> response = ApiResponse.success(
+                    chartData,
+                    "Commit count chart data retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<CommitCountChartDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Get progress timeline chart data", description = "Retrieves progress timeline chart data for a project")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved chart data"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
+    })
+    @GetMapping("/{id}/charts/progress-timeline")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    public ResponseEntity<ApiResponse<ProgressTimelineChartDTO>> getProgressTimelineChart(
+            @Parameter(description = "ID of the project") @PathVariable Long id,
+            @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
+        try {
+            // Check if the student is a leader of any group in this project
+            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+                ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.error(
+                        "Only group leaders or instructors can access this chart data",
+                        HttpStatus.FORBIDDEN
+                );
+                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            }
+            
+            ProgressTimelineChartDTO chartData = chartService.getProgressTimelineChart(id, rangeType);
+            
+            ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.success(
+                    chartData,
+                    "Progress timeline chart data retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Get contribution pie chart data", description = "Retrieves contribution percentage pie chart data for a project")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved chart data"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
+    })
+    @GetMapping("/{id}/charts/contribution")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    public ResponseEntity<ApiResponse<ContributionPieChartDTO>> getContributionPieChart(
+            @Parameter(description = "ID of the project") @PathVariable Long id,
+            @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
+        try {
+            // Check if the student is a leader of any group in this project
+            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+                ApiResponse<ContributionPieChartDTO> response = ApiResponse.error(
+                        "Only group leaders or instructors can access this chart data",
+                        HttpStatus.FORBIDDEN
+                );
+                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            }
+            
+            ContributionPieChartDTO chartData = chartService.getContributionPieChart(id, rangeType);
+            
+            ApiResponse<ContributionPieChartDTO> response = ApiResponse.success(
+                    chartData,
+                    "Contribution pie chart data retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<ContributionPieChartDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Get project detailed report", description = "Retrieves detailed project report for instructor evaluation")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved project report"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
+    })
+    @GetMapping("/{id}/report")
+    @PreAuthorize("hasAuthority('INSTRUCTOR')")
+    public ResponseEntity<ApiResponse<ProjectReportDTO>> getProjectReport(
+            @Parameter(description = "ID of the project") @PathVariable Long id) {
+        try {
+            ProjectReportDTO reportData = reportService.getProjectReport(id);
+            
+            ApiResponse<ProjectReportDTO> response = ApiResponse.success(
+                    reportData,
+                    "Project detailed report retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<ProjectReportDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
 }

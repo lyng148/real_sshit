@@ -51,6 +51,19 @@ public class PeerReviewScheduler {
         
         log.info("Found {} overdue peer reviews that need notifications", overdueReviews.size());
         
+        // Mark overdue reviews as invalid since they weren't completed within 24 hours
+        int invalidatedCount = 0;
+        for (PeerReview review : overdueReviews) {
+            if (review.getIsValid()) {
+                review.setIsValid(false);
+                invalidatedCount++;
+            }
+        }
+        
+        if (invalidatedCount > 0) {
+            log.info("Marked {} overdue peer reviews as invalid (isValid=false)", invalidatedCount);
+        }
+        
         // Group reviews by project for efficient processing
         Map<Long, List<PeerReview>> reviewsByProject = overdueReviews.stream()
                 .collect(Collectors.groupingBy(review -> review.getProject().getId()));

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.jpa.repository.Modifying;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,10 +31,10 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
      * Find incomplete peer reviews assigned more than 24 hours ago that haven't been notified yet
      */
     List<PeerReview> findByIsCompletedFalseAndCheckNotifiedFalseAndAssignedAtBefore(LocalDateTime cutoffTime);
-    
-    @Query("SELECT AVG(pr.score) FROM PeerReview pr WHERE pr.reviewee = :reviewee AND pr.project = :project")
+
+    @Query("SELECT AVG(pr.score) FROM PeerReview pr WHERE pr.reviewee = :reviewee AND pr.project = :project AND pr.isValid = true AND pr.isCompleted = true")
     Double findAverageScoreByRevieweeAndProject(@Param("reviewee") User reviewee, @Param("project") Project project);
-    
+
     @Query("SELECT COUNT(pr) FROM PeerReview pr WHERE pr.reviewer = :user AND pr.project = :project AND pr.isCompleted = true")
     Long countCompletedReviewsByReviewerAndProject(@Param("user") User user, @Param("project") Project project);
     
@@ -41,4 +43,51 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
     
     @Query("SELECT pr.reviewee FROM PeerReview pr WHERE pr.reviewer.id = :reviewerId AND pr.project = :project AND pr.isCompleted = false")
     List<User> findMembersNotReviewedByReviewer(@Param("project") Project project, @Param("reviewerId") Long reviewerId);
+    
+    /**
+     * Find members that have not been reviewed by a specific reviewer with validity check
+     */
+    @Query("SELECT pr.reviewee FROM PeerReview pr WHERE pr.reviewer.id = :reviewerId AND pr.project = :project AND pr.isCompleted = false AND pr.isValid = true")
+    List<User> findMembersNotReviewedByReviewerAndValid(@Param("project") Project project, @Param("reviewerId") Long reviewerId);
+    
+    /**
+     * Find incomplete and valid peer reviews by reviewer
+     */
+    List<PeerReview> findByReviewerAndIsCompletedFalseAndIsValidTrue(User reviewer);
+    
+    /**
+     * Find incomplete reviews by a reviewer that were assigned before a specific time
+     */
+    List<PeerReview> findByReviewerAndIsCompletedFalseAndAssignedAtBefore(User reviewer, LocalDateTime cutoffTime);
+    
+    /**
+     * Update peer reviews that are over a day old and haven't been completed
+     * Sets their isValid field to false
+     * @param cutoffTime The time threshold (typically now minus 24 hours)
+     * @return Number of records updated
+     */
+    @Modifying
+    @Transactional
+    @Query("UPDATE PeerReview pr SET pr.isValid = false WHERE pr.isCompleted = false AND pr.isValid = true AND pr.assignedAt < :cutoffTime")
+    int invalidateOverduePeerReviews(@Param("cutoffTime") LocalDateTime cutoffTime);
+    
+    /**
+     * Đếm số lần không hoàn thành đánh giá chéo (invalid) của người dùng trong một dự án
+     */
+    @Query("SELECT COUNT(pr) FROM PeerReview pr WHERE pr.reviewer = :user AND pr.project = :project AND pr.isValid = false")
+    Long countInvalidReviewsByUserAndProject(@Param("user") User user, @Param("project") Project project);
+    
+    /**
+     * Tìm người dùng có nhiều đánh giá không hợp lệ nhất trong một dự án
+     */
+    @Query("SELECT pr.reviewer, COUNT(pr) as failureCount FROM PeerReview pr " +
+           "WHERE pr.project = :project AND pr.isValid = false " +
+           "GROUP BY pr.reviewer ORDER BY failureCount DESC")
+    List<Object[]> findUsersWithMostInvalidReviewsByProject(@Param("project") Project project);
+    
+    /**
+     * Tìm các đánh giá không hợp lệ trong khoảng thời gian
+     */
+    @Query("SELECT pr FROM PeerReview pr WHERE pr.isValid = false AND pr.updatedAt >= :startDate")
+    List<PeerReview> findRecentInvalidReviews(@Param("startDate") LocalDateTime startDate);
 }
