@@ -12,6 +12,7 @@ import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
+import com.itss.projectmanagement.service.NotificationService;
 import com.itss.projectmanagement.service.TaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class TaskServiceImpl implements TaskService {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final TaskConverter taskConverter;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -63,10 +65,10 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskConverter.toEntity(request, group, assignee);
         Task savedTask = taskRepository.save(task);
         
-        // Here you would trigger notification for task assignment
         if (assignee != null) {
-            // In a real implementation, this would use a messaging system
-            System.out.println("Notification: Task '" + task.getTitle() + "' assigned to " + assignee.getFullName());
+            String title = "Bạn được giao nhiệm vụ mới";
+            String message = "Bạn vừa được giao task: '" + task.getTitle() + "' trong dự án '" + group.getProject().getName() + "'.";
+            notificationService.notifyUser(assignee, title, message);
         }
         
         return taskConverter.toResponse(savedTask, pressureWarning);
@@ -113,9 +115,9 @@ public class TaskServiceImpl implements TaskService {
             }
             
             task.setAssignee(assignee);
-            
-            // Here you would trigger notification for task reassignment
-            System.out.println("Notification: Task '" + task.getTitle() + "' reassigned to " + assignee.getFullName());
+            String title = "Bạn được giao lại nhiệm vụ";
+            String message = "Bạn vừa được giao lại task: '" + task.getTitle() + "' trong dự án '" + group.getProject().getName() + "'.";
+            notificationService.notifyUser(assignee, title, message);
         } else if (assignee == null) {
             task.setAssignee(null);
         }
@@ -191,8 +193,9 @@ public class TaskServiceImpl implements TaskService {
         task.setAssignee(assignee);
         Task updatedTask = taskRepository.save(task);
         
-        // Here you would trigger notification for task assignment
-        System.out.println("Notification: Task '" + task.getTitle() + "' assigned to " + assignee.getFullName());
+        String title = "Bạn được giao nhiệm vụ mới";
+        String message = "Bạn vừa được giao task: '" + task.getTitle() + "' trong dự án '" + project.getName() + "'.";
+        notificationService.notifyUser(assignee, title, message);
         
         return taskConverter.toResponse(updatedTask, pressureWarning);
     }

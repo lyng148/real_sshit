@@ -49,10 +49,10 @@
 - [x] Lưu điểm cuối cùng
 
 ## 10. Đánh giá chéo (UC008)
-- [ ] Entity `PeerReview` + Controller cho đánh giá chéo
-- [ ] Scheduler khởi động weekly review
-- [ ] Validation: buộc hoàn thành review trước khi sử dụng tính năng khác
-- [ ] Service cập nhật điểm đánh giá trung bình + ảnh hưởng UC007
+- [x] Entity `PeerReview` + Controller cho đánh giá chéo
+- [x] Scheduler khởi động weekly review
+- [x] Validation: buộc hoàn thành review trước khi sử dụng tính năng khác
+- [x] Service cập nhật điểm đánh giá trung bình + ảnh hưởng UC007
 
 ## 11. Biểu đồ & báo cáo (UC009, UC011)
 - [ ] Endpoint trả dữ liệu chart (commit counts, progress timeline, contribution %)
