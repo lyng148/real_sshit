@@ -5,7 +5,7 @@ import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.security.CurrentUser;
 import com.itss.projectmanagement.security.UserPrincipal;
-import com.itss.projectmanagement.security.SecurityUtils;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import com.itss.projectmanagement.service.FreeRiderDetectionService;
 import com.itss.projectmanagement.service.PeerReviewService;
 import io.swagger.v3.oas.annotations.Operation;

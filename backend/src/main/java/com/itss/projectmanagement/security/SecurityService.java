@@ -23,29 +23,6 @@ public class SecurityService {
     private final ProjectRepository projectRepository;
 
     /**
-     * Checks if a user is the leader of any group in the project
-     * 
-     * @param userId The ID of the user to check
-     * @param projectId The ID of the project
-     * @return True if the user is a leader of any group in the project
-     */
-//    public boolean isProjectGroupLeader(Long userId, Long projectId) {
-//        Optional<Project> project = projectRepository.findById(projectId);
-//        if (project.isEmpty()) {
-//            return false;
-//        }
-//
-//        List<Group> groups = groupRepository.findByProject(project.get());
-//        return groups.stream()
-//                .anyMatch(group -> {
-//                    if (group.getLeader() == null) {
-//                        return false;
-//                    }
-//                    return group.getLeader().getId().equals(userId);
-//                });
-//    }
-    
-    /**
      * Checks if a user is the leader of a specific group
      * 
      * @param userId The ID of the user to check
@@ -92,13 +69,9 @@ public class SecurityService {
      */
     public boolean isGroupMember(Long userId, Long groupId) {
         Optional<Group> group = groupRepository.findById(groupId);
-        if (group.isEmpty()) {
-            return false;
-        }
-        
-        // Check if user is in members list or is the leader
-        return group.get().getMembers().stream()
+        return group.filter(value -> value.getMembers().stream()
                 .anyMatch(member -> member.getId().equals(userId)) ||
-               (group.get().getLeader() != null && group.get().getLeader().getId().equals(userId));
+                (value.getLeader() != null && value.getLeader().getId().equals(userId))).isPresent();
+        
     }
 }
