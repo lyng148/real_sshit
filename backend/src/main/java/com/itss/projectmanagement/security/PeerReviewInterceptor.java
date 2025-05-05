@@ -41,6 +41,10 @@ public class PeerReviewInterceptor implements HandlerInterceptor {
         if (request.getMethod().equals("OPTIONS")) {
             return true;
         }
+        // Cho phép tất cả các request GET (phương thức đọc) truy cập
+        if (request.getMethod().equalsIgnoreCase("GET")) {
+            return true;
+        }
         
         // Check if the requested path is in the allowed endpoints list
         String requestPath = request.getRequestURI();
