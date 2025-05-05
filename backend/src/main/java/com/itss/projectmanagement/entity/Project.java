@@ -60,6 +60,11 @@ public class Project extends BaseEntity {
     @Builder.Default
     private Integer pressureThreshold = 15; // Default threshold
     
+    // Project status - indicates if the project is finalized
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isFinalized = false; // Default is not finalized
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "instructor_id", nullable = false)
     private User instructor;

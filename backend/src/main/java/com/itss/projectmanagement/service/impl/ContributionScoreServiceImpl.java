@@ -8,6 +8,7 @@ import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.CommitRecordRepository;
 import com.itss.projectmanagement.repository.ContributionScoreRepository;
 import com.itss.projectmanagement.repository.GroupRepository;
+import com.itss.projectmanagement.repository.PeerReviewRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.service.ContributionScoreService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     private final CommitRecordRepository commitRecordRepository;
     private final GroupRepository groupRepository;
     private final ContributionScoreConverter contributionScoreConverter;
+    private final PeerReviewRepository peerReviewRepository;
     
     @Override
     @Transactional
@@ -39,9 +41,9 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
         // 1. Calculate WeightedTaskCompletionScore
         Double weightedTaskCompletionScore = calculateWeightedTaskCompletionScore(user, project);
         
-        // 2. Get peer review score (placeholder - will be implemented in future)
-        // For now, we'll set a default value
-        Double peerReviewScore = 0.0; // Will be replaced with actual implementation
+        // 2. Get peer review score (average from peer reviews)
+        Double peerReviewScore = peerReviewRepository.findAverageScoreByRevieweeAndProject(user, project);
+        if (peerReviewScore == null) peerReviewScore = 0.0;
         
         // 3. Count valid commits related to user's tasks
         Long commitCount = countValidCommitsForUserTasks(user, project);

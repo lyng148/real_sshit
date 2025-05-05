@@ -39,6 +39,15 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     List<Group> findByLeader(User leader);
     
     /**
+     * Find all groups where the user is either a member or the leader
+     * @param member the user as member
+     * @param leaderId the user id as leader
+     * @return list of groups
+     */
+    @Query("SELECT g FROM Group g WHERE :member MEMBER OF g.members OR g.leader.id = :leaderId")
+    List<Group> findByMembersContainingOrLeaderId(@Param("member") User member, @Param("leaderId") Long leaderId);
+    
+    /**
      * Find a group in a project by name
      * @param name the group name
      * @param project the project

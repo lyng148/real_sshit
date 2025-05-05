@@ -5,136 +5,93 @@ import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.List;
 
 /**
- * Utility class for security and authorization related operations
+ * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils} instead.
+ * This class is kept for backwards compatibility and will be removed in future versions.
  */
+@Deprecated
 public class SecurityUtils {
 
     /**
-     * Checks if the current authenticated user has admin role
-     * @return true if the user has admin role, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#isAdmin()} instead.
      */
+    @Deprecated
     public static boolean isAdmin() {
-        return hasAuthority("ADMIN");
+        return com.itss.projectmanagement.security.SecurityUtils.isAdmin();
     }
     
     /**
-     * Checks if the current authenticated user has instructor role
-     * @return true if the user has instructor role, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#isInstructor()} instead.
      */
+    @Deprecated
     public static boolean isInstructor() {
-        return hasAuthority("INSTRUCTOR");
+        return com.itss.projectmanagement.security.SecurityUtils.isInstructor();
     }
     
     /**
-     * Checks if the current authenticated user has student role
-     * @return true if the user has student role, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#isStudent()} instead.
      */
+    @Deprecated
     public static boolean isStudent() {
-        return hasAuthority("STUDENT");
+        return com.itss.projectmanagement.security.SecurityUtils.isStudent();
     }
     
     /**
-     * Checks if the current authenticated user is the leader of a specific group
-     * @param groupRepository the group repository
-     * @param groupId the group ID to check
-     * @return true if the user is the leader of the specified group, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#isGroupLeader(GroupRepository, Long)} instead.
      */
+    @Deprecated
     public static boolean isGroupLeader(GroupRepository groupRepository, Long groupId) {
-        String username = getCurrentUsername();
-        if (username == null) {
-            return false;
-        }
-        
-        return groupRepository.findById(groupId)
-                .filter(group -> group.getLeader() != null)
-                .map(group -> group.getLeader().getUsername().equals(username))
-                .orElse(false);
+        return com.itss.projectmanagement.security.SecurityUtils.isGroupLeader(groupRepository, groupId);
     }
     
     /**
-     * Checks if the current authenticated user is the leader of any group
-     * @param groupRepository the group repository
-     * @return true if the user is a leader of any group, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#isAnyGroupLeader(GroupRepository, UserRepository)} instead.
      */
+    @Deprecated
     public static boolean isAnyGroupLeader(GroupRepository groupRepository, UserRepository userRepository) {
-        User currentUser = getCurrentUser(userRepository);
-        if (currentUser == null) {
-            return false;
-        }
-        
-        List<Group> leadGroups = groupRepository.findByLeader(currentUser);
-        return !leadGroups.isEmpty();
+        return com.itss.projectmanagement.security.SecurityUtils.isAnyGroupLeader(groupRepository, userRepository);
     }
     
     /**
-     * Checks if the current authenticated user has the specified authority/role
-     * @param authority the authority/role to check
-     * @return true if the user has the authority, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#hasAuthority(String)} instead.
      */
+    @Deprecated
     public static boolean hasAuthority(String authority) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-        
-        return authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .anyMatch(auth -> auth.equals(authority));
+        return com.itss.projectmanagement.security.SecurityUtils.hasAuthority(authority);
     }
     
     /**
-     * Checks if the current authenticated user has any of the specified authorities/roles
-     * @param roles the roles to check
-     * @return true if the user has any of the roles, false otherwise
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#hasAnyRole(Role...)} instead.
      */
+    @Deprecated
     public static boolean hasAnyRole(Role... roles) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return false;
-        }
-        
-        for (Role role : roles) {
-            if (authentication.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority)
-                    .anyMatch(auth -> auth.equals(role.name()))) {
-                return true;
-            }
-        }
-        
-        return false;
+        return com.itss.projectmanagement.security.SecurityUtils.hasAnyRole(roles);
     }
     
     /**
-     * Get the username of the current authenticated user
-     * @return the username or null if not authenticated
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#getCurrentUsername()} instead.
      */
+    @Deprecated
     public static String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null) {
-            return null;
-        }
-        return authentication.getName();
+        return com.itss.projectmanagement.security.SecurityUtils.getCurrentUsername();
     }
     
     /**
-     * Get the current authenticated user entity from the database
-     * @param userRepository the user repository to fetch user data
-     * @return the current User entity or throws IllegalStateException if not found
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#getCurrentUser(UserRepository)} instead.
      */
+    @Deprecated
     public static User getCurrentUser(UserRepository userRepository) {
-        String username = getCurrentUsername();
-        if (username == null) {
-            throw new IllegalStateException("No authenticated user found");
-        }
-        
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("User not found: " + username));
+        return com.itss.projectmanagement.security.SecurityUtils.getCurrentUser(userRepository);
+    }
+    
+    /**
+     * @deprecated Use {@link com.itss.projectmanagement.security.SecurityUtils#getCurrentUserId()} instead.
+     */
+    @Deprecated
+    public static Long getCurrentUserId() {
+        return com.itss.projectmanagement.security.SecurityUtils.getCurrentUserId();
     }
 }
