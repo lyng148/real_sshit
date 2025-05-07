@@ -76,6 +76,8 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
             if (contributionScore.getAdjustedScore() == null) {
                 contributionScore.setAdjustedScore(calculatedScore);
             }
+            log.info("Updating existing contribution score for user {} in project {}",
+                    user.getUsername(), project.getName());
         } else {
             contributionScore = ContributionScore.builder()
                     .user(user)
@@ -107,7 +109,7 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     }
     
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public ContributionScoreResponse getScoreByUserAndProject(User user, Project project) {
         ContributionScore score = calculateScore(user, project);
                 
@@ -159,7 +161,7 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     }
     
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<ContributionScoreResponse> getScoresByGroup(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new ResourceNotFoundException("Group not found"));

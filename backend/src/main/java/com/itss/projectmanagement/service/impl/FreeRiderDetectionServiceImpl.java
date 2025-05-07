@@ -26,7 +26,6 @@ public class FreeRiderDetectionServiceImpl implements FreeRiderDetectionService 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ContributionScoreRepository contributionScoreRepository;
-    private final PeerReviewRepository peerReviewRepository;
     private final GroupRepository groupRepository;
     private final NotificationService notificationService;
     

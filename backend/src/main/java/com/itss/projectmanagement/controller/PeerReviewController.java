@@ -10,6 +10,7 @@ import com.itss.projectmanagement.utils.SecurityUtils;
 import com.itss.projectmanagement.service.FreeRiderDetectionService;
 import com.itss.projectmanagement.service.PeerReviewService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,12 @@ public class PeerReviewController {
 
     @PostMapping
     @Operation(summary = "Submit a peer review")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Peer review submitted successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<PeerReviewResponse>> submitReview(
             @Valid @RequestBody PeerReviewRequest request,
@@ -48,6 +55,11 @@ public class PeerReviewController {
 
     @PostMapping("/start-review")
     @Operation(summary = "Start peer review process for a group (group leader only)")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Peer review process has been started for your group"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @PreAuthorize("hasAuthority('STUDENT')")  
     public ResponseEntity<ApiResponse<Void>> startPeerReviewForGroup(
             @RequestParam Long groupId,
@@ -63,6 +75,10 @@ public class PeerReviewController {
 
     @GetMapping("/submitted")
     @Operation(summary = "Get reviews submitted by the current user for a project")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Fetched submitted reviews successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<PeerReviewResponse>>> getSubmittedReviews(
             @RequestParam Long projectId,
@@ -78,6 +94,10 @@ public class PeerReviewController {
 
     @GetMapping("/received")
     @Operation(summary = "Get reviews received by the current user for a project")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Fetched received reviews successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<PeerReviewResponse>>> getReceivedReviews(
             @RequestParam Long projectId,
@@ -93,6 +113,10 @@ public class PeerReviewController {
 
     @GetMapping("/members-to-review")
     @Operation(summary = "Get list of team members that need to be reviewed by the current user")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Fetched members to review successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<User>>> getMembersToReview(
             @RequestParam Long projectId,
@@ -108,6 +132,10 @@ public class PeerReviewController {
 
     @GetMapping("/completion-status")
     @Operation(summary = "Check if the current user has completed all required peer reviews")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Checked completion status successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<Boolean>> hasCompletedAllReviews(
             @RequestParam Long projectId,
@@ -123,6 +151,11 @@ public class PeerReviewController {
 
     @GetMapping("/free-riders")
     @Operation(summary = "Detect free riders in a project")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Detected free riders successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<User>>> detectFreeRiders(
             @RequestParam Long projectId) {
@@ -132,6 +165,11 @@ public class PeerReviewController {
 
     @GetMapping("/free-rider-risk")
     @Operation(summary = "Get free rider risk scores for all users in a project")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Fetched free rider risk scores successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<Map<Long, Double>>> getFreeRiderRiskScores(
             @RequestParam Long projectId) {
@@ -141,6 +179,11 @@ public class PeerReviewController {
 
     @GetMapping("/free-rider-report")
     @Operation(summary = "Generate report about potential free riders in a project")
+    @ApiResponses(value = {
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Generated free rider report successfully"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')") 
     public ResponseEntity<ApiResponse<String>> generateFreeRiderReport(
             @RequestParam Long projectId) {

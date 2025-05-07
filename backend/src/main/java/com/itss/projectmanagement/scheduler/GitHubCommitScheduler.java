@@ -19,9 +19,6 @@ public class GitHubCommitScheduler {
     private final GitHubService gitHubService;
     private final GroupRepository groupRepository;
 
-    @Value("${github.commit.fetch-interval:3600000}")
-    private long fetchInterval;
-
     /**
      * Periodically fetches commits from GitHub for all groups
      * Default interval is 1 hour (3600000 ms)

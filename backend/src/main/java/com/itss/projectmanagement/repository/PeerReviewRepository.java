@@ -41,14 +41,8 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
     @Query("SELECT COUNT(DISTINCT u) FROM Group g JOIN g.members u WHERE g.project = :project AND u.id != :userId")
     Long countTeamMembersToReview(@Param("project") Project project, @Param("userId") Long userId);
     
-    @Query("SELECT pr.reviewee FROM PeerReview pr WHERE pr.reviewer.id = :reviewerId AND pr.project = :project AND pr.isCompleted = false")
-    List<User> findMembersNotReviewedByReviewer(@Param("project") Project project, @Param("reviewerId") Long reviewerId);
-    
-    /**
-     * Find members that have not been reviewed by a specific reviewer with validity check
-     */
     @Query("SELECT pr.reviewee FROM PeerReview pr WHERE pr.reviewer.id = :reviewerId AND pr.project = :project AND pr.isCompleted = false AND pr.isValid = true")
-    List<User> findMembersNotReviewedByReviewerAndValid(@Param("project") Project project, @Param("reviewerId") Long reviewerId);
+    List<User> findMembersNotReviewedByReviewer(@Param("project") Project project, @Param("reviewerId") Long reviewerId);
     
     /**
      * Find incomplete and valid peer reviews by reviewer

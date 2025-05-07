@@ -112,7 +112,7 @@ public class PeerReviewServiceImpl implements PeerReviewService {
                 .orElseThrow(() -> new NotFoundException("Project not found with ID: " + projectId));
         
         // Check for valid peer reviews that need completion
-        long validReviewsToComplete = peerReviewRepository.findMembersNotReviewedByReviewerAndValid(project, userId).size();
+        long validReviewsToComplete = peerReviewRepository.findMembersNotReviewedByReviewer(project, userId).size();
 
         log.info("User {} has {} reviews left to complete for project {}",
                 user.getUsername(), validReviewsToComplete, project.getName());
