@@ -55,9 +55,9 @@
 - [x] Service cập nhật điểm đánh giá trung bình + ảnh hưởng UC007
 
 ## 11. Biểu đồ & báo cáo (UC009, UC011)
-- [ ] Endpoint trả dữ liệu chart (commit counts, progress timeline, contribution %)
-- [ ] DTO/Service tổng hợp dữ liệu cho UI
-- [ ] Endpoint báo cáo chi tiết cho instructor
+- [x] Endpoint trả dữ liệu chart (commit counts, progress timeline, contribution %)
+- [x] DTO/Service tổng hợp dữ liệu cho UI
+- [x] Endpoint báo cáo chi tiết cho instructor
 
 ## 12. Phát hiện free‑rider (UC010)
 - [x] Service tính điểm trung bình nhóm + so sánh threshold

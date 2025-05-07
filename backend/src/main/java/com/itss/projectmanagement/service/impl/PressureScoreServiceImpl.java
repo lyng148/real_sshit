@@ -12,6 +12,7 @@ import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
+import com.itss.projectmanagement.service.NotificationService;
 import com.itss.projectmanagement.service.PressureScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,7 @@ public class PressureScoreServiceImpl implements PressureScoreService {
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
+    private final NotificationService notificationService;
     
     private static final double RISK_THRESHOLD_PERCENTAGE = 0.7; // 70%
 
@@ -249,12 +251,55 @@ public class PressureScoreServiceImpl implements PressureScoreService {
             log.info("User {}: Pressure Score = {}, Status = {}", 
                 user.getUsername(), pressureScore.getPressureScore(), pressureScore.getStatus());
             
-            // If pressure score is OVERLOADED, we could add notification logic here
+            // If pressure score is OVERLOADED, notify relevant parties
             if (pressureScore.getStatus() == PressureStatus.OVERLOADED) {
                 log.warn("User {} is OVERLOADED with pressure score {} in project {}", 
                     user.getUsername(), pressureScore.getPressureScore(), project.getName());
                 
-                // TODO: Add notification to user/group leader/instructor if needed
+                // 1. Notify the overloaded user
+                String userTitle = "Cảnh báo: Áp lực công việc quá tải";
+                String userMessage = String.format(
+                    "Điểm áp lực công việc của bạn hiện tại là %.2f, vượt quá ngưỡng cho phép (%.2f) trong dự án '%s'. " +
+                    "Điều này có nghĩa là bạn đang quá tải với các nhiệm vụ hiện tại. " +
+                    "Vui lòng liên hệ trưởng nhóm để được hỗ trợ.",
+                    pressureScore.getPressureScore(), 
+                    (double) pressureScore.getThreshold(),
+                    project.getName()
+                );
+                notificationService.notifyUser(user, userTitle, userMessage);
+                
+                // 2. Notify the group leaders
+                // Find the user's group(s) in this project
+                List<Group> userGroups = groupRepository.findByMembersContainingAndProject(user, project);
+                for (Group group : userGroups) {
+                    if (group.getLeader() != null && !group.getLeader().getId().equals(user.getId())) {
+                        String leaderTitle = "Cảnh báo: Thành viên trong nhóm quá tải";
+                        String leaderMessage = String.format(
+                            "Thành viên %s (%s) trong nhóm '%s' đang bị quá tải. " +
+                            "Điểm áp lực là %.2f, vượt quá ngưỡng cho phép (%.2f). " +
+                            "Bạn cần xem xét lại phân công nhiệm vụ cho thành viên này.",
+                            user.getFullName(), 
+                            user.getUsername(),
+                            group.getName(),
+                            pressureScore.getPressureScore(), 
+                            (double) pressureScore.getThreshold()
+                        );
+                        notificationService.notifyUser(group.getLeader(), leaderTitle, leaderMessage);
+                    }
+                }
+                
+                // 3. Notify the project instructor
+                String instructorTitle = "Cảnh báo: Thành viên quá tải trong dự án";
+                String instructorMessage = String.format(
+                    "Thành viên %s (%s) đang bị quá tải trong dự án '%s'. " +
+                    "Điểm áp lực là %.2f, vượt quá ngưỡng cho phép (%.2f).",
+                    user.getFullName(), 
+                    user.getUsername(),
+                    project.getName(),
+                    pressureScore.getPressureScore(), 
+                    (double) pressureScore.getThreshold()
+                );
+                notificationService.notifyUser(project.getInstructor(), instructorTitle, instructorMessage);
             }
         }
     }
@@ -287,7 +332,7 @@ public class PressureScoreServiceImpl implements PressureScoreService {
         }
         
         // Determine threshold and status
-        Integer threshold = project != null ? project.getPressureThreshold() : 15; // Default if no specific project
+        int threshold = project != null ? project.getPressureThreshold() : 15; // Default if no specific project
         double thresholdPercentage = threshold > 0 ? (pressureScore / threshold) : 0.0;
         
         PressureStatus status;

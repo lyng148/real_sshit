@@ -82,4 +82,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     boolean isUserInAnyGroupForProject(@Param("user") User user, @Param("project") Project project);
 
     List<Group> findByMembersContainingOrLeader(User user, User user1);
+
+    List<Group> findByMembersContainingAndProject(User user, Project project);
 }
