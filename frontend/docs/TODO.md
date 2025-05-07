@@ -1,35 +1,22 @@
 # Frontend Development TODO List
 
-## 1. Initial Project Setup
-
-- [x] Set up Vue 3 project using Vue CLI
-- [x] Configure Vue Router for navigation
-- [x] Set up Vuex/Pinia for state management
-- [x] Configure Axios for API requests
-- [x] Implement JWT authentication handling
-- [x] Set up basic responsive layout with CSS framework (Tailwind/Bootstrap)
-- [x] Create environment configuration (.env files)
-
 ## 2. Authentication Module
-
 - [x] Create login page with username/password fields
 - [x] Implement authentication API integration
 - [x] Set up JWT token storage
 - [x] Create authentication guards for protected routes
 - [x] Implement user session management
-- [x] Add logout functionality
+- [] Add logout functionality
 
 ## 3. User Management (Admin)
-
-- [ ] Create user listing page with filtering options
-- [ ] Implement user creation form
-- [ ] Develop user edit/update functionality
-- [ ] Add user deletion with confirmation
-- [ ] Implement role assignment interface
-- [ ] Create user detail view
+- [x] Create user listing page with filtering options
+- [x] Implement user creation form
+- [x] Develop user edit/update functionality
+- [x] Add user deletion with confirmation
+- [x] Implement role assignment interface
+- [x] Create user detail view
 
 ## 4. Project Management
-
 - [ ] Create projects listing view for instructors
 - [ ] Implement project creation form with all fields:
   - [ ] Basic info (name, description, max members)
@@ -44,7 +31,6 @@
 - [ ] Add project statistics dashboard
 
 ## 5. Group Management
-
 - [ ] Create group listing interface
 - [ ] Implement group creation form
 - [ ] Build group joining mechanism
@@ -53,7 +39,6 @@
 - [ ] Implement group leader designation functionality
 
 ## 6. Task Management
-
 - [ ] Create task board/listing view by group
 - [ ] Implement task creation form with:
   - [ ] Title and description
@@ -70,7 +55,6 @@
 - [ ] Create task filtering and sorting options
 
 ## 7. GitHub Integration
-
 - [ ] Implement GitHub API connection configuration
 - [ ] Create commit history display by project/group
 - [ ] Build commit visualization by task (with TASK-ID detection)
@@ -78,7 +62,6 @@
 - [ ] Add error handling for GitHub connection issues
 
 ## 8. Contribution Score System
-
 - [ ] Create contribution score calculation visualization
 - [ ] Implement detailed score breakdown view:
   - [ ] Task completion weighted score
@@ -89,7 +72,6 @@
 - [ ] Create final evaluation recording system
 
 ## 9. Peer Review System
-
 - [ ] Implement weekly peer review trigger mechanism
 - [ ] Create peer review form with:
   - [ ] Task completion rating (1-5)
@@ -100,7 +82,6 @@
 - [ ] Create peer review results visualization
 
 ## 10. Pressure Score System
-
 - [ ] Create pressure score visualization by user
 - [ ] Implement pressure warning display:
   - [ ] Safe zone indicator
@@ -110,7 +91,6 @@
 - [ ] Create pressure score filtering by time period
 
 ## 11. Free-Rider Detection
-
 - [ ] Implement free-rider detection visualization
 - [ ] Create evidence collection display
   - [ ] Commit history evidence
@@ -120,7 +100,6 @@
 - [ ] Implement free-rider case management interface
 
 ## 12. Performance Dashboard
-
 - [ ] Create group leader dashboard with:
   - [ ] Bar chart: Commit counts by member
   - [ ] Line chart: Task completion progress over time
@@ -130,28 +109,24 @@
 - [ ] Implement data export functionality
 
 ## 13. Comment System
-
 - [ ] Create comment listing component
 - [ ] Implement comment creation form
 - [ ] Build comment editing functionality
 - [ ] Add comment deletion with confirmation
 
 ## 14. Final Assessment
-
 - [ ] Create final assessment form for instructors
 - [ ] Implement grading interface with evidence display
 - [ ] Build assessment submission and notification system
 
 ## 15. General UI/UX
-
-- [x] Design consistent component styling
-- [x] Implement responsive design for all views
-- [x] Create loading states and indicators
-- [x] Add error handling and notifications
-- [x] Implement confirmation dialogs for critical actions
+- [ ] Design consistent component styling
+- [ ] Implement responsive design for all views
+- [ ] Create loading states and indicators
+- [ ] Add error handling and notifications
+- [ ] Implement confirmation dialogs for critical actions
 
 ## Testing and Quality Assurance
-
 - [ ] Write unit tests for critical components
 - [ ] Implement integration tests for main workflows
 - [ ] Create end-to-end tests for key user journeys
@@ -159,7 +134,6 @@
 - [ ] Conduct accessibility testing
 
 ## Deployment
-
 - [ ] Configure build process for production
 - [ ] Set up continuous integration/deployment
 - [ ] Create deployment documentation

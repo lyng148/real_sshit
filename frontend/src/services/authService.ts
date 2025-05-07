@@ -1,83 +1,86 @@
-import api from './api'
-import { useAuthStore } from '@/stores/auth'
+import axios from 'axios';
 
-export interface LoginCredentials {
-  username: string
-  password: string
-}
+const API_URL = 'http://localhost:8080/api';
 
-export interface RegisterData {
-  username: string
-  password: string
-  email: string
-  fullName: string
-}
+// Tạo axios instance
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
-export interface AuthResponse {
-  token: string
-  user: {
-    id: number
-    username: string
-    email: string
-    fullName: string
-    roles: string[]
+// Interceptor để thêm token vào header
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user && user.token) {
+      config.headers['Authorization'] = `Bearer ${user.token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-}
+);
 
-const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await api.post<{ success: boolean; data: AuthResponse }>(
-      '/auth/login',
-      credentials,
-    )
+// Interceptor để xử lý response
+axiosInstance.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    // Nếu token hết hạn (401), logout user
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
-    if (response.data.success) {
-      const { token, user } = response.data.data
-      localStorage.setItem('token', token)
-      localStorage.setItem('user', JSON.stringify(user)) // Lưu thông tin user vào localStorage
-
-      console.log('Login successful, user data:', user)
-      console.log('User roles:', user.roles)
-
-      const authStore = useAuthStore()
-      authStore.setUser(user)
-      authStore.setAuthenticated(true)
-
-      return response.data.data
-    } else {
-      throw new Error('Login failed')
+export const authService = {
+  async login(username: string, password: string) {
+    try {
+      const response = await axiosInstance.post('/auth/login', {
+        username,
+        password
+      });
+      
+      if (response.data.data?.token) {
+        localStorage.setItem('user', JSON.stringify(response.data.data));
+      }
+      
+      return response.data;
+    } catch (error) {
+      throw error;
     }
   },
-
-  async register(data: RegisterData): Promise<AuthResponse> {
-    const response = await api.post<{ success: boolean; data: AuthResponse }>(
-      '/auth/register',
-      data,
-    )
-
-    if (response.data.success) {
-      return response.data.data
-    } else {
-      throw new Error('Registration failed')
+  
+  async signup(username: string, email: string, fullName: string, password: string) {
+    try {
+      const response = await axiosInstance.post('/auth/register', {
+        username,
+        email,
+        fullName,
+        password
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
     }
   },
-
-  logout(): void {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-
-    const authStore = useAuthStore()
-    authStore.setUser(null)
-    authStore.setAuthenticated(false)
+  
+  logout() {
+    localStorage.removeItem('user');
   },
+  
+  getCurrentUser() {
+    const userStr = localStorage.getItem('user');
+    if (userStr) return JSON.parse(userStr);
+    return null;
+  }
+};
 
-  isAuthenticated(): boolean {
-    return !!localStorage.getItem('token')
-  },
-
-  getToken(): string | null {
-    return localStorage.getItem('token')
-  },
-}
-
-export default authService
+// Export axiosInstance để các service khác sử dụng
+export default axiosInstance;

@@ -139,11 +139,30 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN') or @userService.isCurrentUser(#id)")
     public ResponseEntity<ApiResponse<UserDTO>> updateUser(
             @Parameter(description = "ID of the user to update") @PathVariable Long id,
-            @RequestBody User user) {
+            @RequestBody User userRequest) {
         return userService.getUserById(id)
                 .map(existingUser -> {
-                    user.setId(id);
-                    User updatedUser = userService.updateUser(user);
+                    // Only update fields that are provided in the request
+                    if (userRequest.getUsername() != null) {
+                        existingUser.setUsername(userRequest.getUsername());
+                    }
+                    if (userRequest.getFullName() != null) {
+                        existingUser.setFullName(userRequest.getFullName());
+                    }
+                    if (userRequest.getEmail() != null) {
+                        existingUser.setEmail(userRequest.getEmail());
+                    }
+                    if (userRequest.getRoles() != null) {
+                        existingUser.setRoles(userRequest.getRoles());
+                    }
+                    if (userRequest.getPassword() != null) {
+                        // Password will be encoded in the service
+                        existingUser.setPassword(userRequest.getPassword());
+                    }
+                    // Update enabled status if explicitly set in the request
+                    existingUser.setEnabled(userRequest.isEnabled());
+                    
+                    User updatedUser = userService.updateUser(existingUser);
                     UserDTO userDTO = userConverter.toDTO(updatedUser);
                     
                     ApiResponse<UserDTO> response = ApiResponse.success(
