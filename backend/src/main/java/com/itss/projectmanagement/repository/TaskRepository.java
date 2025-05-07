@@ -30,6 +30,12 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("assignee") User assignee, 
             @Param("project") Project project, 
             @Param("status") TaskStatus status);
+    @Query("SELECT t FROM Task t WHERE t.assignee = :assignee AND t.group.project = :project AND t.status != :status")
+    List<Task> findByAssigneeAndGroupProjectAndStatusNot(
+            @Param("assignee") User assignee,
+            @Param("project") Project project,
+            @Param("status") TaskStatus status
+    );
     
     @Query("SELECT t FROM Task t WHERE t.assignee = :assignee AND t.group.project = :project AND t.deadline < :currentDate AND t.status != :completedStatus")
     List<Task> findOverdueTasksByAssigneeAndProject(

@@ -80,4 +80,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
      */
     @Query("SELECT COUNT(g) > 0 FROM Group g JOIN g.members m WHERE m = :user AND g.project = :project")
     boolean isUserInAnyGroupForProject(@Param("user") User user, @Param("project") Project project);
+
+    List<Group> findByMembersContainingOrLeader(User user, User user1);
 }
