@@ -52,12 +52,13 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtTokenProvider.generateToken((User) authentication.getPrincipal());
+        User user = (User) authentication.getPrincipal();
+        String jwt = jwtTokenProvider.generateToken(user);
         
         // Update last login timestamp
         userService.updateLastLogin(loginRequest.getUsername());
 
-        AuthResponse authResponse = new AuthResponse(jwt);
+        AuthResponse authResponse = new AuthResponse(jwt, user);
         return ResponseEntity.ok(com.itss.projectmanagement.dto.common.ApiResponse.success(
                 authResponse,
                 "Authentication successful"
