@@ -19,7 +19,7 @@ public class Project extends BaseEntity {
     
     @NotBlank(message = "Project name is required")
     @Size(max = 100, message = "Project name cannot exceed 100 characters")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String name;
     
     @Size(max = 500, message = "Description cannot exceed 500 characters")

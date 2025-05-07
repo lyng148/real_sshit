@@ -17,18 +17,17 @@
 - [x] Create user detail view
 
 ## 4. Project Management
-- [ ] Create projects listing view for instructors
-- [ ] Implement project creation form with all fields:
-  - [ ] Basic info (name, description, max members)
-  - [ ] Assessment criteria configuration
-  - [ ] GitHub repository link
-  - [ ] Weight factors configuration (W1-W4)
-  - [ ] Free-rider detection threshold setting
-  - [ ] Pressure Score configuration
-- [ ] Build project detail view
-- [ ] Create project editing interface
-- [ ] Implement project deletion with confirmation
-- [ ] Add project statistics dashboard
+- [x] Change mockup data with calling api to get project info
+- [x] Implement project creation form with all fields (only instructor can see the button + to create project):
+  - [x] Basic info (name, description, max members)
+  - [x] Assessment criteria configuration
+  - [x] Weight factors configuration (W1-W4) (write default value in form)
+  - [x] Free-rider detection threshold setting (write default value in form)
+  - [x] Pressure Score configuration (write default value in form)
+- [x] Build project detail view
+- [x] Create project editing interface
+- [x] Implement project deletion with confirmation
+- [x] Add project statistics dashboard
 
 ## 5. Group Management
 - [ ] Create group listing interface

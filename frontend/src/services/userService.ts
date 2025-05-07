@@ -1,9 +1,9 @@
-import axiosInstance from './authService';
+import axiosInstance from './axiosInstance';
 
 export const userService = {
   async getAllUsers(filters = {}) {
     try {
-      const response = await axiosInstance.get('/users', { params: filters });
+      const response = await axiosInstance.get('/api/users', { params: filters });
       return response.data;
     } catch (error) {
       throw error;
@@ -12,7 +12,7 @@ export const userService = {
   
   async getUserById(id: number) {
     try {
-      const response = await axiosInstance.get(`/users/${id}`);
+      const response = await axiosInstance.get(`/api/users/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -21,7 +21,7 @@ export const userService = {
   
   async createUser(userData: any) {
     try {
-      const response = await axiosInstance.post('/users', userData);
+      const response = await axiosInstance.post('/api/users', userData);
       return response.data;
     } catch (error) {
       throw error;
@@ -30,7 +30,7 @@ export const userService = {
   
   async updateUser(id: number, userData: any) {
     try {
-      const response = await axiosInstance.put(`/users/${id}`, userData);
+      const response = await axiosInstance.put(`/api/users/${id}`, userData);
       return response.data;
     } catch (error) {
       throw error;
@@ -39,7 +39,7 @@ export const userService = {
   
   async deleteUser(id: number) {
     try {
-      const response = await axiosInstance.delete(`/users/${id}`);
+      const response = await axiosInstance.delete(`/api/users/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -48,7 +48,7 @@ export const userService = {
   
   async assignRoles(id: number, roles: string[]) {
     try {
-      const response = await axiosInstance.put(`/users/${id}/roles`, { roles });
+      const response = await axiosInstance.put(`/api/users/${id}/roles`, { roles });
       return response.data;
     } catch (error) {
       throw error;

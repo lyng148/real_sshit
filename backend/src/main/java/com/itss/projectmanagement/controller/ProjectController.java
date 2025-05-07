@@ -62,12 +62,12 @@ public class ProjectController {
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
-    @Operation(summary = "Get all projects", description = "Retrieves all projects (admin) or instructor's projects")
+    @Operation(summary = "Get all projects", description = "Retrieves all projects")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved projects")
     })
     @GetMapping
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<ProjectDTO>>> getProjects() {
         List<Project> projects;
         String message;

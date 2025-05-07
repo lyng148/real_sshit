@@ -2,16 +2,26 @@ import React, { useState } from 'react';
 import { Home, Settings, User, LogOut, UserCog } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProjectList from './ProjectList';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
 export const Sidebar = () => {
   const [searchValue, setSearchValue] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
   const { currentUser } = useAuth();
   
   // Sửa lại việc kiểm tra quyền ADMIN để tránh lỗi khi currentUser là null/undefined 
   const isAdmin = currentUser?.user.roles ? currentUser.user.roles.includes('ADMIN') : false;
+  const isInstructor = currentUser?.user.roles ? currentUser.user.roles.includes('INSTRUCTOR') : false;
+
+  // Handle navigation to create project page
+  const handleCreateProject = () => {
+    // Only instructors and admins can create projects
+    if (isInstructor || isAdmin) {
+      navigate('/projects/create');
+    }
+  };
 
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
@@ -69,7 +79,14 @@ export const Sidebar = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
               </svg>
             </button>
-            <button className="text-gray-400 hover:text-gray-600 ml-1">
+            <button 
+              className={cn(
+                "text-gray-400 hover:text-gray-600 ml-1", 
+                (isInstructor || isAdmin) ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+              )}
+              onClick={handleCreateProject}
+              title={(isInstructor || isAdmin) ? "Create Project" : "Only instructors can create projects"}
+            >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
               </svg>

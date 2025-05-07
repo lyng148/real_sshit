@@ -70,9 +70,9 @@ const Login = () => {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-md relative">
           {/* Blue gradient background effect */}
-          <div className="absolute -z-10 w-full h-full max-w-[30rem] max-h-[30rem] blur-3xl rounded-full bg-gradient-to-br from-blue-600 to-purple-800 opacity-20"></div>
+          <div className="absolute -z-10 w-full h-full max-w-[30rem] max-h-[30rem] blur-3xl rounded-full bg-gradient-to-br from-blue-600 to-blue-400 opacity-30"></div>
           
-          <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+          <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-sm rounded-lg">
             <CardHeader>
               <CardTitle className="text-2xl">Welcome back</CardTitle>
               <CardDescription className="text-gray-400">
@@ -87,7 +87,7 @@ const Login = () => {
                     id="username" 
                     type="text" 
                     placeholder="your_username" 
-                    className="bg-gray-800 border-gray-700 focus:border-blue-500"
+                    className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -100,7 +100,7 @@ const Login = () => {
                       id="password" 
                       type={showPassword ? "text" : "password"} 
                       placeholder="••••••••" 
-                      className="bg-gray-800 border-gray-700 focus:border-blue-500 pr-10"
+                      className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 pr-10"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required

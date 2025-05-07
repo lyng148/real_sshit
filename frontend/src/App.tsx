@@ -21,7 +21,11 @@ import GroupsPage from "./pages/GroupsPage";
 import CreateGroupPage from "./pages/CreateGroupPage";
 import GroupAnalyzePage from "./pages/GroupAnalyzePage";
 import AdminAnalyzePage from "./pages/AdminAnalyzePage";
+import ProjectCreate from "./pages/ProjectCreate";
+import ProjectDetails from "./pages/ProjectDetails";
+import ProjectEdit from "./pages/ProjectEdit";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProjectAnalyzePage from "./pages/ProjectAnalyzePage";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +78,22 @@ const App = () => (
                 <UserEdit />
               </ProtectedRoute>
             } />
+            {/* Project Management Routes */}
+            <Route path="/projects/create" element={
+              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                <ProjectCreate />
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:projectId/details" element={
+              <ProtectedRoute>
+                <ProjectDetails />
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:projectId/edit" element={
+              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                <ProjectEdit />
+              </ProtectedRoute>
+            } />
             <Route path="/projects/:projectId/groups" element={
               <ProtectedRoute>
                 <GroupsPage />
@@ -94,8 +114,13 @@ const App = () => (
                 <GroupAnalyzePage />
               </ProtectedRoute>
             } />
+            <Route path="/projects/:projectId/project-analyze" element={
+              <ProtectedRoute>
+                <ProjectAnalyzePage />
+              </ProtectedRoute>
+            } />
             <Route path="/projects/:projectId/admin-analyze" element={
-              <ProtectedRoute roles={["ADMIN"]}>
+              <ProtectedRoute roles={["ADMIN", "INSTRUCTOR"]}>
                 <AdminAnalyzePage />
               </ProtectedRoute>
             } />
