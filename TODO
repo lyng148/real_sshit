@@ -64,9 +64,9 @@
 - [x] Endpoint/cơ chế cảnh báo leader & instructor
 
 ## 13. Pressure Score chi tiết (UC013)
-- [ ] Service tính TUF (theo ngày), TPS, TMPS
-- [ ] Scheduler cập nhật hàng ngày
-- [ ] Endpoint xem trạng thái áp lực
+- [x] Service tính TUF (theo ngày), TPS, TMPS
+- [x] Scheduler cập nhật hàng ngày
+- [x] Endpoint xem trạng thái áp lực
 
 ## 15. Tài liệu & bảo trì
 - [ ] Swagger/OpenAPI doc cho tất cả endpoint

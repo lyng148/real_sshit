@@ -85,6 +85,32 @@ public class UserController {
                 });
     }
 
+    @Operation(summary = "Get user by username", description = "Retrieves a user by their username")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User found"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/username/{username}")
+    public ResponseEntity<ApiResponse<UserDTO>> getUserByUsername(
+            @Parameter(description = "Username of the user to retrieve") @PathVariable String username) {
+        return userService.getUserByUsername(username)
+                .map(user -> {
+                    UserDTO userDTO = userConverter.toDTO(user);
+                    ApiResponse<UserDTO> response = ApiResponse.success(
+                            userDTO,
+                            "User retrieved successfully"
+                    );
+                    return ResponseEntity.ok(response);
+                })
+                .orElseGet(() -> {
+                    ApiResponse<UserDTO> response = ApiResponse.error(
+                            "User not found with username: " + username,
+                            HttpStatus.NOT_FOUND
+                    );
+                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+                });
+    }
+
     @Operation(summary = "Create a new user", description = "Creates a new user in the system")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User created successfully"),

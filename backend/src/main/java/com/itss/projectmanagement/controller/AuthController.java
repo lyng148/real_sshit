@@ -10,7 +10,6 @@ import com.itss.projectmanagement.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -38,13 +37,13 @@ public class AuthController {
 
     @Operation(summary = "Authenticate user", description = "Login with username and password to get JWT token")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Authentication successful",
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Authentication successful",
                     content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = AuthResponse.class))),
-            @ApiResponse(responseCode = "401", description = "Authentication failed")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Authentication failed")
     })
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> authenticateUser(@RequestBody AuthRequest loginRequest) {
+    public ResponseEntity<com.itss.projectmanagement.dto.common.ApiResponse<AuthResponse>> authenticateUser(@RequestBody AuthRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -58,15 +57,19 @@ public class AuthController {
         // Update last login timestamp
         userService.updateLastLogin(loginRequest.getUsername());
 
-        return ResponseEntity.ok(new AuthResponse(jwt));
+        AuthResponse authResponse = new AuthResponse(jwt);
+        return ResponseEntity.ok(com.itss.projectmanagement.dto.common.ApiResponse.success(
+                authResponse,
+                "Authentication successful"
+        ));
     }
     
     @Operation(summary = "Register a new user", description = "Register a new user with default STUDENT role")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User registered successfully",
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User registered successfully",
                     content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = RegisterResponse.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input or username/email already exists")
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input or username/email already exists")
     })
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
