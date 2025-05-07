@@ -1,0 +1,1108 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+      "title": "Project Management System API",
+      "description": "API for managing student project groups in university courses",
+      "contact": {
+        "name": "ITSS Project",
+        "url": "https://itss.example.com",
+        "email": "contact@itss.example.com"
+      },
+      "license": {
+        "name": "MIT License",
+        "url": "https://opensource.org/licenses/MIT"
+      },
+      "version": "1.0.0"
+    },
+    "servers": [
+      {
+        "url": "http://localhost:8080",
+        "description": "Generated server url"
+      }
+    ],
+    "security": [
+      {
+        "Bearer Authentication": []
+      }
+    ],
+    "tags": [
+      {
+        "name": "Contribution Score",
+        "description": "Endpoints for managing user contribution scores"
+      },
+      {
+        "name": "GitHub Integration",
+        "description": "Endpoints for GitHub integration and commit management"
+      },
+      {
+        "name": "User Management",
+        "description": "APIs for managing users"
+      },
+      {
+        "name": "Pressure Score",
+        "description": "APIs for managing pressure scores in the system"
+      },
+      {
+        "name": "Peer Review",
+        "description": "Peer Review API"
+      },
+      {
+        "name": "Task Management",
+        "description": "APIs for managing tasks"
+      },
+      {
+        "name": "Group Management",
+        "description": "APIs for managing project groups"
+      },
+      {
+        "name": "Project Management",
+        "description": "APIs for managing projects"
+      },
+      {
+        "name": "Authentication",
+        "description": "APIs for user authentication"
+      },
+      {
+        "name": "Comment Management",
+        "description": "APIs for managing comments"
+      }
+    ],
+    "paths": {
+      "/api/users/{id}": {
+        "get": {
+          "tags": [
+            "User Management"
+          ],
+          "summary": "Get user by ID",
+          "description": "Retrieves a user by their ID",
+          "operationId": "getUserById",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the user to retrieve",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseUserDTO"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseUserDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "User Management"
+          ],
+          "summary": "Update an existing user",
+          "description": "Updates an existing user's information",
+          "operationId": "updateUser",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the user to update",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "User updated successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseUserDTO"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseUserDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "User Management"
+          ],
+          "summary": "Delete a user",
+          "description": "Deletes a user from the system",
+          "operationId": "deleteUser",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the user to delete",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "User deleted successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "User not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/comments": {
+        "post": {
+          "tags": [
+            "Comment Management"
+          ],
+          "summary": "Create a new comment",
+          "description": "Creates a new comment for a task",
+          "operationId": "createComment",
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentRequest"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "201": {
+              "description": "Comment created successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input data",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Task not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/comments/{id}": {
+        "get": {
+          "tags": [
+            "Comment Management"
+          ],
+          "summary": "Get comment by ID",
+          "description": "Retrieves a comment by its ID",
+          "operationId": "getComment",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the comment to retrieve",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Comment retrieved successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Comment not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Comment Management"
+          ],
+          "summary": "Update comment",
+          "description": "Updates an existing comment. Only the author can update their own comment.",
+          "operationId": "updateComment",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the comment to update",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentRequest"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "200": {
+              "description": "Comment updated successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input data",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Not authorized to update this comment",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Comment not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseCommentDTO"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Comment Management"
+          ],
+          "summary": "Delete comment",
+          "description": "Deletes an existing comment. Comment authors, group leaders, and project instructors can delete comments.",
+          "operationId": "deleteComment",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "description": "ID of the comment to delete",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Comment deleted successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Not authorized to delete this comment",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Comment not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/comments/task/{taskId}": {
+        "get": {
+          "tags": [
+            "Comment Management"
+          ],
+          "summary": "Get comments for task",
+          "description": "Retrieves all comments for a specific task",
+          "operationId": "getCommentsForTask",
+          "parameters": [
+            {
+              "name": "taskId",
+              "in": "path",
+              "description": "ID of the task",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Comments retrieved successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseListCommentDTO"
+                  }
+                }
+              }
+            },
+            "404": {
+              "description": "Task not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseListCommentDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "/api/tasks/{taskId}": {
+        "get": {
+          "tags": [
+            "Task Management"
+          ],
+          "summary": "Get task by ID",
+          "description": "Retrieves a task by its ID",
+          "operationId": "getTaskById",
+          "parameters": [
+            {
+              "name": "taskId",
+              "in": "path",
+              "description": "ID of the task to retrieve",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "404": {
+              "description": "Task not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseTaskResponse"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Successfully retrieved task",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseTaskResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "put": {
+          "tags": [
+            "Task Management"
+          ],
+          "summary": "Update a task",
+          "description": "Updates an existing task",
+          "operationId": "updateTask",
+          "parameters": [
+            {
+              "name": "taskId",
+              "in": "path",
+              "description": "ID of the task to update",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TaskCreateRequest"
+                }
+              }
+            },
+            "required": true
+          },
+          "responses": {
+            "404": {
+              "description": "Task not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseTaskResponse"
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Invalid input data",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseTaskResponse"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Task updated successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseTaskResponse"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Not authorized to update tasks",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseTaskResponse"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "delete": {
+          "tags": [
+            "Task Management"
+          ],
+          "summary": "Delete task",
+          "description": "Deletes an existing task",
+          "operationId": "deleteTask",
+          "parameters": [
+            {
+              "name": "taskId",
+              "in": "path",
+              "description": "ID of the task to delete",
+              "required": true,
+              "schema": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          ],
+          "responses": {
+            "404": {
+              "description": "Task not found",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            },
+            "200": {
+              "description": "Task deleted successfully",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            },
+            "403": {
+              "description": "Not authorized to delete tasks",
+              "content": {
+                "*/*": {
+                  "schema": {
+                    "$ref": "#/components/schemas/ApiResponseVoid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "schemas": {
+        "GrantedAuthority": {
+          "type": "object",
+          "properties": {
+            "authority": {
+              "type": "string"
+            }
+          }
+        },
+        "User": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "username": {
+              "type": "string"
+            },
+            "password": {
+              "type": "string"
+            },
+            "fullName": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "roles": {
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "STUDENT",
+                  "INSTRUCTOR",
+                  "ADMIN"
+                ]
+              }
+            },
+            "lastLoginAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "authorities": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/GrantedAuthority"
+              }
+            },
+            "accountNonExpired": {
+              "type": "boolean"
+            },
+            "credentialsNonExpired": {
+              "type": "boolean"
+            },
+            "accountNonLocked": {
+              "type": "boolean"
+            }
+          }
+        },
+        "ApiResponseUserDTO": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/UserDTO"
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "UserDTO": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "username": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "fullName": {
+              "type": "string"
+            },
+            "roles": {
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "STUDENT",
+                  "INSTRUCTOR",
+                  "ADMIN"
+                ]
+              }
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "lastLoginAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "RoleAssignmentRequest": {
+          "required": [
+            "roles"
+          ],
+          "type": "object",
+          "properties": {
+            "roles": {
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "STUDENT",
+                  "INSTRUCTOR",
+                  "ADMIN"
+                ]
+              }
+            }
+          }
+        },
+        "ApiResponseRoleAssignmentResponse": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/RoleAssignmentResponse"
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "RoleAssignmentResponse": {
+          "type": "object",
+          "properties": {
+            "userId": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "username": {
+              "type": "string"
+            },
+            "roles": {
+              "uniqueItems": true,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "STUDENT",
+                  "INSTRUCTOR",
+                  "ADMIN"
+                ]
+              }
+            },
+            "message": {
+              "type": "string"
+            }
+          }
+        },
+        "TaskCreateRequest": {
+          "required": [
+            "deadline",
+            "difficulty",
+            "groupId",
+            "title"
+          ],
+          "type": "object",
+          "properties": {
+            "title": {
+              "maxLength": 100,
+              "minLength": 0,
+              "type": "string"
+            },
+            "description": {
+              "maxLength": 500,
+              "minLength": 0,
+              "type": "string"
+            },
+            "difficulty": {
+              "type": "string",
+              "enum": [
+                "EASY",
+                "MEDIUM",
+                "HARD"
+              ]
+            },
+            "deadline": {
+              "type": "string",
+              "format": "date"
+            },
+            "assigneeId": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "groupId": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "ApiResponseTaskResponse": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/TaskResponse"
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "TaskResponse": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "type": "string"
+            },
+            "difficulty": {
+              "type": "string",
+              "enum": [
+                "EASY",
+                "MEDIUM",
+                "HARD"
+              ]
+            },
+            "deadline": {
+              "type": "string",
+              "format": "date"
+            },
+            "assigneeId": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "assigneeName": {
+              "type": "string"
+            },
+            "groupId": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "groupName": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "NOT_STARTED",
+                "IN_PROGRESS",
+                "COMPLETED"
+              ]
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "pressureWarning": {
+              "type": "string"
+            }
+          }
+        },
+        "CommentRequest": {
+          "required": [
+            "content",
+            "taskId"
+          ],
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string",
+              "maxLength": 500
+            },
+            "taskId": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        "ApiResponseCommentDTO": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "data": {
+              "$ref": "#/components/schemas/CommentDTO"
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        },
+        "CommentDTO": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "content": {
+              "type": "string"
+            },
+            "taskId": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "authorId": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "authorName": {
+              "type": "string"
+            },
+            "createdAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "updatedAt": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        },
+        "ApiResponseListCommentDTO": {
+          "type": "object",
+          "properties": {
+            "success": {
+              "type": "boolean"
+            },
+            "message": {
+              "type": "string"
+            },
+            "data": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/CommentDTO"
+              }
+            },
+            "metadata": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object"
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        }
+      },
+      "securitySchemes": {
+        "Bearer Authentication": {
+          "type": "http",
+          "scheme": "bearer",
+          "bearerFormat": "JWT"
+        }
+      }
+    }
+  }
