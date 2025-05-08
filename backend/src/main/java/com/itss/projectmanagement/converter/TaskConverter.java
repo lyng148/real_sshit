@@ -37,6 +37,7 @@ public class TaskConverter {
                 .status(task.getStatus())
                 .createdAt(task.getCreatedAt())
                 .updatedAt(task.getUpdatedAt())
+                .completedAt(task.getCompletedAt())
                 .pressureWarning(null) // Default to null, will be set by service if needed
                 .build();
     }

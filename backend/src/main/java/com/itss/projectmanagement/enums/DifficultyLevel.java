@@ -1,5 +1,8 @@
 package com.itss.projectmanagement.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum DifficultyLevel {
     EASY(1),
     MEDIUM(2),
@@ -10,8 +13,5 @@ public enum DifficultyLevel {
     DifficultyLevel(int value) {
         this.value = value;
     }
-    
-    public int getValue() {
-        return value;
-    }
+
 }

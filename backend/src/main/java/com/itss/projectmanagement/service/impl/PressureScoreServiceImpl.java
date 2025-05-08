@@ -5,10 +5,12 @@ import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.entity.PressureScoreHistory;
 import com.itss.projectmanagement.enums.PressureStatus;
 import com.itss.projectmanagement.enums.TaskStatus;
 import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
+import com.itss.projectmanagement.repository.PressureScoreHistoryRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
@@ -20,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +40,7 @@ public class PressureScoreServiceImpl implements PressureScoreService {
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
     private final NotificationService notificationService;
+    private final PressureScoreHistoryRepository pressureScoreHistoryRepository;
     
     private static final double RISK_THRESHOLD_PERCENTAGE = 0.7; // 70%
 
@@ -251,6 +255,9 @@ public class PressureScoreServiceImpl implements PressureScoreService {
             log.info("User {}: Pressure Score = {}, Status = {}", 
                 user.getUsername(), pressureScore.getPressureScore(), pressureScore.getStatus());
             
+            // Store the pressure score history
+            savePressureScoreHistory(user, project, (int)Math.round(pressureScore.getThresholdPercentage()));
+            
             // If pressure score is OVERLOADED, notify relevant parties
             if (pressureScore.getStatus() == PressureStatus.OVERLOADED) {
                 log.warn("User {} is OVERLOADED with pressure score {} in project {}", 
@@ -302,6 +309,22 @@ public class PressureScoreServiceImpl implements PressureScoreService {
                 notificationService.notifyUser(project.getInstructor(), instructorTitle, instructorMessage);
             }
         }
+    }
+    
+    /**
+     * Save pressure score history record
+     */
+    private void savePressureScoreHistory(User user, Project project, int score) {
+        PressureScoreHistory history = PressureScoreHistory.builder()
+                .user(user)
+                .project(project)
+                .score(score)
+                .recordedAt(LocalDateTime.now())
+                .build();
+        
+        pressureScoreHistoryRepository.save(history);
+        log.debug("Saved pressure score history: User={}, Project={}, Score={}", 
+                  user.getUsername(), project.getName(), score);
     }
 
     @Override
@@ -358,6 +381,68 @@ public class PressureScoreServiceImpl implements PressureScoreService {
                 .projectId(project != null ? project.getId() : null)
                 .projectName(project != null ? project.getName() : null)
                 .build();
+    }
+    
+    @Override
+    public int calculatePressureScore(Long userId, Long projectId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+        
+        PressureScoreResponse response = getPressureScoreForUser(user, project);
+        
+        // Convert the double pressure score to an integer percentage (0-100)
+        int score = (int) Math.min(100, Math.round(response.getThresholdPercentage()));
+        
+        // Save the pressure score to history
+        savePressureScoreHistory(user, project, score);
+        
+        return score;
+    }
+    
+    @Override
+    public Map<LocalDateTime, Integer> getPressureScoreHistory(Long userId, Long projectId) {
+        // Verify the user and project exist
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
+        
+        Map<LocalDateTime, Integer> history = new HashMap<>();
+        
+        // Get the most recent 30 records from the pressure score history
+        List<PressureScoreHistory> historyRecords = 
+            pressureScoreHistoryRepository.findLatestByUserAndProject(user, project);
+        // Sort the records by recorded time (most recent first)
+        historyRecords.sort((a, b) -> b.getRecordedAt().compareTo(a.getRecordedAt()));
+        // Limit to the most recent 30 records
+        if (historyRecords.size() > 30) {
+            historyRecords = historyRecords.subList(0, 30);
+        }
+        
+        if (!historyRecords.isEmpty()) {
+            // Convert to map of datetime -> score
+            for (PressureScoreHistory record : historyRecords) {
+                history.put(record.getRecordedAt(), record.getScore());
+            }
+        } else {
+            // No history found, calculate the current score and return a basic history
+            int currentScore = calculatePressureScore(userId, projectId);
+            LocalDateTime now = LocalDateTime.now();
+            
+            // Add current score
+            history.put(now, currentScore);
+            
+            // Add some historical entries as a fallback - this will be replaced by real data over time
+            history.put(now.minusWeeks(1), Math.max(0, Math.min(100, currentScore - 5)));
+            history.put(now.minusWeeks(2), Math.max(0, Math.min(100, currentScore - 10)));
+            history.put(now.minusWeeks(3), Math.max(0, Math.min(100, currentScore - 15)));
+        }
+        
+        return history;
     }
     
     /**

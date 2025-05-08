@@ -310,4 +310,15 @@ public class GitHubService {
         
         notificationService.notifyUser(group.getLeader(), "Invalid commit detected", message);
     }
+
+    /**
+     * Get commit count in a specific date range for a project
+     * @param projectId The project ID
+     * @param startDate Start date of the range
+     * @param endDate End date of the range
+     * @return Number of commits in the date range
+     */
+    public int getCommitCountInDateRange(Long projectId, LocalDateTime startDate, LocalDateTime endDate) {
+        return commitRecordRepository.countByProjectIdAndTimestampBetween(projectId, startDate, endDate);
+    }
 }

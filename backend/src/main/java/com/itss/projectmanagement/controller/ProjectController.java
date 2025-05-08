@@ -8,11 +8,13 @@ import com.itss.projectmanagement.dto.response.chart.CommitCountChartDTO;
 import com.itss.projectmanagement.dto.response.chart.ContributionPieChartDTO;
 import com.itss.projectmanagement.dto.response.chart.ProgressTimelineChartDTO;
 import com.itss.projectmanagement.dto.response.project.ProjectDTO;
+import com.itss.projectmanagement.dto.response.project.ProjectStatisticsDTO;
 import com.itss.projectmanagement.dto.response.report.ProjectReportDTO;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.service.ChartService;
 import com.itss.projectmanagement.service.ProjectService;
 import com.itss.projectmanagement.service.ReportService;
+import com.itss.projectmanagement.service.StatisticsService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,6 +32,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/projects")
@@ -41,6 +44,7 @@ public class ProjectController {
     private final ProjectConverter projectConverter;
     private final ChartService chartService;
     private final ReportService reportService;
+    private final StatisticsService statisticsService;
 
     @Operation(summary = "Create a new project", description = "Creates a new project for the current instructor")
     @ApiResponses(value = {
@@ -378,6 +382,53 @@ public class ProjectController {
             );
             
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @Operation(summary = "Get project statistics", description = "Retrieves detailed statistics for a project")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved project statistics"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
+    })
+    @GetMapping("/{id}/statistics")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    public ResponseEntity<ApiResponse<ProjectStatisticsDTO>> getProjectStatistics(
+            @Parameter(description = "ID of the project") @PathVariable Long id) {
+        try {
+            // Check if project exists
+            Optional<Project> project = projectService.getProjectById(id);
+            if (project.isEmpty()) {
+                ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
+                        "Project not found with id: " + id,
+                        HttpStatus.NOT_FOUND
+                );
+                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+            }
+
+            // Check if the student is a leader of any group in this project
+            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+                ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
+                        "Only group leaders or instructors can access project statistics",
+                        HttpStatus.FORBIDDEN
+                );
+                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            }
+            
+            ProjectStatisticsDTO statistics = statisticsService.getProjectStatistics(id);
+            
+            ApiResponse<ProjectStatisticsDTO> response = ApiResponse.success(
+                    statistics,
+                    "Project statistics retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -43,4 +44,15 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("project") Project project,
             @Param("currentDate") LocalDate currentDate,
             @Param("completedStatus") TaskStatus completedStatus);
+    
+    // Find tasks by project
+    @Query("SELECT t FROM Task t WHERE t.group.project = :project")
+    List<Task> findByProject(@Param("project") Project project);
+    
+    // Find tasks by project and date range
+    @Query("SELECT t FROM Task t WHERE t.group.project = :project AND t.createdAt BETWEEN :startDate AND :endDate")
+    List<Task> findByProjectAndCreatedAtBetween(
+            @Param("project") Project project,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 }

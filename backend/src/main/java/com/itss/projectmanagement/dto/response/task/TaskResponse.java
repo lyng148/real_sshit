@@ -27,5 +27,6 @@ public class TaskResponse {
     private TaskStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime completedAt;
     private String pressureWarning;
 }

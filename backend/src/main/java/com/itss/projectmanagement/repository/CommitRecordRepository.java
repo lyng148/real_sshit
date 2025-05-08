@@ -43,4 +43,10 @@ public interface CommitRecordRepository extends JpaRepository<CommitRecord, Long
     List<CommitRecord> findByGroupAndIsValidAndTimestampAfter(Group group, boolean isValid, LocalDateTime timestamp);
 
     List<CommitRecord> findByGroupAndIsValid(Group group, boolean isValid);
+
+    @Query("SELECT COUNT(cr) FROM CommitRecord cr WHERE cr.group.project.id = :projectId AND cr.timestamp BETWEEN :startDate AND :endDate")
+    int countByProjectIdAndTimestampBetween(
+            @Param("projectId") Long projectId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 }

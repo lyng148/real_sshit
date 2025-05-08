@@ -60,4 +60,12 @@ public interface ContributionScoreService {
      * @return List of finalized contribution score response DTOs
      */
     List<ContributionScoreResponse> finalizeScores(Long projectId);
+    
+    /**
+     * Calculate contribution score for a user in a project (integer version for statistics)
+     * @param userId The user ID
+     * @param projectId The project ID
+     * @return The calculated contribution score as an integer
+     */
+    int calculateContributionScore(Long userId, Long projectId);
 }

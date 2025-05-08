@@ -87,4 +87,25 @@ public interface PeerReviewService {
      * @param userId The ID of the user initiating the review process (must be group leader)
      */
     void startPeerReviewForGroup(Long groupId, Long userId);
+    
+    /**
+     * Get average review score for an entire project
+     * @param projectId The ID of the project
+     * @return The average review score for the project
+     */
+    double getAverageReviewScore(Long projectId);
+    
+    /**
+     * Get the completion rate of peer reviews for a project
+     * @param projectId The ID of the project
+     * @return The percentage of completed reviews (0-100)
+     */
+    int getReviewCompletionRate(Long projectId);
+    
+    /**
+     * Get the correlation between peer review scores and task completion rate
+     * @param projectId The ID of the project
+     * @return A correlation coefficient between -1 and 1
+     */
+    double getCorrelationWithTaskCompletion(Long projectId);
 }

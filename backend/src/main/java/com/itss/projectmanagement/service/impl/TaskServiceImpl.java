@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -206,7 +207,17 @@ public class TaskServiceImpl implements TaskService {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
         
+        TaskStatus oldStatus = task.getStatus();
         task.setStatus(status);
+        
+        // Set completedAt when status changes to COMPLETED
+        if (status == TaskStatus.COMPLETED && oldStatus != TaskStatus.COMPLETED) {
+            task.setCompletedAt(LocalDateTime.now());
+        } 
+        // Clear completedAt if status changes from COMPLETED to something else
+        else if (oldStatus == TaskStatus.COMPLETED && status != TaskStatus.COMPLETED) {
+            task.setCompletedAt(null);
+        }
         
         Task updatedTask = taskRepository.save(task);
         return taskConverter.toResponse(updatedTask);

@@ -60,14 +60,7 @@ export const generateMockStatistics = (projectId: number): ProjectStatisticsResp
         { week: 1, taskCount: Math.floor(Math.random() * 20), commitCount: Math.floor(Math.random() * 40) },
         { week: 2, taskCount: Math.floor(Math.random() * 20), commitCount: Math.floor(Math.random() * 40) },
         { week: 3, taskCount: Math.floor(Math.random() * 20), commitCount: Math.floor(Math.random() * 40) },
-      ],
-      peakActivityPeriods: [
-        { day: 'Monday', hourRange: '19:00-23:00' },
-        { day: 'Sunday', hourRange: '14:00-18:00' },
-      ],
-      inactivePeriods: [
-        { startDate: '2025-04-15', endDate: '2025-04-17', reason: 'Mid-semester break' },
-      ],
+      ]
     },
   };
 };

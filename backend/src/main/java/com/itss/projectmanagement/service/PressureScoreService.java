@@ -4,7 +4,9 @@ import com.itss.projectmanagement.dto.response.pressure.PressureScoreResponse;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 public interface PressureScoreService {
     
@@ -72,4 +74,22 @@ public interface PressureScoreService {
      * @return The pressure score response
      */
     PressureScoreResponse getPressureScoreForUser(User user, Project project);
+    
+    /**
+     * Calculate pressure score for a specific user in a project
+     * 
+     * @param userId The user ID
+     * @param projectId The project ID
+     * @return The calculated pressure score (0-100)
+     */
+    int calculatePressureScore(Long userId, Long projectId);
+    
+    /**
+     * Get pressure score history for a user in a project
+     * 
+     * @param userId The user ID
+     * @param projectId The project ID
+     * @return Map of timestamp to pressure score
+     */
+    Map<LocalDateTime, Integer> getPressureScoreHistory(Long userId, Long projectId);
 }

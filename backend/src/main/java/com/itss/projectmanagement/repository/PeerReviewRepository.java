@@ -84,4 +84,20 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
      */
     @Query("SELECT pr FROM PeerReview pr WHERE pr.isValid = false AND pr.updatedAt >= :startDate")
     List<PeerReview> findRecentInvalidReviews(@Param("startDate") LocalDateTime startDate);
+    
+    /**
+     * Find average score across all reviews in a project
+     */
+    @Query("SELECT AVG(pr.score) FROM PeerReview pr WHERE pr.project = :project AND pr.isValid = true AND pr.isCompleted = true")
+    Double findAverageScoreByProject(@Param("project") Project project);
+    
+    /**
+     * Count total reviews for a project
+     */
+    long countByProject(Project project);
+    
+    /**
+     * Count reviews by project and completion status
+     */
+    long countByProjectAndIsCompleted(Project project, boolean isCompleted);
 }

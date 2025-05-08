@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,6 +54,9 @@ public class Task extends BaseEntity {
     @Column(nullable = false)
     @Builder.Default
     private TaskStatus status = TaskStatus.NOT_STARTED;
+    
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
     
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

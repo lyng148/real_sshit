@@ -68,15 +68,6 @@ export interface TimeStatistics {
     taskCount: number;
     commitCount: number;
   }[];
-  peakActivityPeriods: {
-    day: string;
-    hourRange: string;
-  }[];
-  inactivePeriods: {
-    startDate: string;
-    endDate: string;
-    reason: string;
-  }[];
 }
 
 // Complete project statistics response
