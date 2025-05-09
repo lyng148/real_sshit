@@ -18,10 +18,10 @@ public interface ContributionScoreService {
     
     /**
      * Calculate contribution scores for all users in a project
+     *
      * @param project The project
-     * @return List of calculated contribution scores
      */
-    List<ContributionScore> calculateScoresForProject(Project project);
+    void calculateScoresForProject(Project project);
     
     /**
      * Get contribution score for a specific user in a project
@@ -32,14 +32,14 @@ public interface ContributionScoreService {
     ContributionScoreResponse getScoreByUserAndProject(User user, Project project);
     
     /**
-     * Get latest contribution scores for all users in a project
+     * Get contribution scores for all users in a project
      * @param project The project
      * @return List of contribution score response DTOs
      */
     List<ContributionScoreResponse> getScoresByProject(Project project);
     
     /**
-     * Get latest contribution scores for all users in a group
+     * Get contribution scores for all users in a group
      * @param groupId The group ID
      * @return List of contribution score response DTOs
      */

@@ -24,7 +24,7 @@ const Login = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
       const response = await login(username, password);
       if (response.success) {
@@ -74,8 +74,8 @@ const Login = () => {
           
           <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-sm rounded-lg">
             <CardHeader>
-              <CardTitle className="text-2xl">Welcome back</CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardTitle className="text-2xl text-center font-semibold">Welcome back</CardTitle>
+              <CardDescription className="text-gray-400 text-center">
                 Sign in to your MindTask account
               </CardDescription>
             </CardHeader>
@@ -87,7 +87,7 @@ const Login = () => {
                     id="username" 
                     type="text" 
                     placeholder="your_username" 
-                    className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500"
+                    className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 rounded-lg p-3 text-white"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
@@ -100,7 +100,7 @@ const Login = () => {
                       id="password" 
                       type={showPassword ? "text" : "password"} 
                       placeholder="••••••••" 
-                      className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 pr-10"
+                      className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 pr-10 rounded-lg p-3 text-white"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -129,7 +129,7 @@ const Login = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col">
-                <Button className="w-full mb-4" type="submit" disabled={loading}>
+                <Button className="w-full mb-4 bg-blue-500 hover:bg-blue-400" type="submit" disabled={loading}>
                   {loading ? "Signing in..." : "Sign in"}
                 </Button>
                 <p className="text-center text-gray-400 text-sm">

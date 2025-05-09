@@ -1,6 +1,7 @@
 package com.itss.projectmanagement.dto.response.task;
 
 import com.itss.projectmanagement.enums.DifficultyLevel;
+import com.itss.projectmanagement.enums.TaskPriority;
 import com.itss.projectmanagement.enums.TaskStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +20,7 @@ public class TaskResponse {
     private String title;
     private String description;
     private DifficultyLevel difficulty;
+    private TaskPriority priority;
     private LocalDate deadline;
     private Long assigneeId;
     private String assigneeName;

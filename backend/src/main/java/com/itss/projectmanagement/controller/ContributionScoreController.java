@@ -141,7 +141,7 @@ public class ContributionScoreController {
             if (currentUser.getRoles().contains(Role.STUDENT)) {
                 boolean isMember = group.getMembers().contains(currentUser) || (group.getLeader() != null && group.getLeader().getId().equals(currentUser.getId()));
                 if (!isMember) {
-                    throw new ForbiddenException("Bạn không có quyền xem điểm nhóm này");
+                    throw new ForbiddenException("You dont't have permission to view this score");
                 }
             }
             List<ContributionScoreResponse> scores = contributionScoreService.getScoresByGroup(groupId);

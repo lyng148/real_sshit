@@ -9,7 +9,7 @@ export const Sidebar = () => {
   const [searchValue, setSearchValue] = useState('');
   const location = useLocation();
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, logout } = useAuth();
   
   // Sửa lại việc kiểm tra quyền ADMIN để tránh lỗi khi currentUser là null/undefined 
   const isAdmin = currentUser?.user.roles ? currentUser.user.roles.includes('ADMIN') : false;
@@ -23,6 +23,12 @@ export const Sidebar = () => {
     }
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
     <div className="h-screen w-64 bg-white border-r border-gray-200 flex flex-col">
       {/* Header with logo */}
@@ -30,7 +36,7 @@ export const Sidebar = () => {
         <div className="w-8 h-8 rounded bg-blue-500 flex items-center justify-center mr-3">
           <span className="text-white text-lg">✉️</span>
         </div>
-        <span className="font-semibold text-gray-800">MindTask Inc.</span>
+        <span className="font-semibold text-gray-800">TasuMana Inc.</span>
         <button className="ml-auto text-gray-400">
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
@@ -102,7 +108,17 @@ export const Sidebar = () => {
         <ul>
           <NavItem icon={<Settings size={18} />} label="Settings" to="/settings" active={location.pathname === '/settings'} />
           <NavItem icon={<User size={18} />} label="Profile" to="/profile" active={location.pathname === '/profile'} />
-          <NavItem icon={<LogOut size={18} />} label="Log Out" to="#" />
+          <li>
+            <button
+              onClick={handleLogout}
+              className={cn(
+                "flex items-center w-full px-4 py-2 text-sm text-gray-800 hover:bg-gray-100",
+              )}
+            >
+              <span className="mr-3 text-gray-500"><LogOut size={18} /></span>
+              <span>Log Out</span>
+            </button>
+          </li>
         </ul>
       </div>
     </div>

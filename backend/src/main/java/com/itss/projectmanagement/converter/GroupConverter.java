@@ -103,9 +103,7 @@ public class GroupConverter {
             group.setLeader(newLeader);
             
             // Ensure the leader is also a member of the group
-            if (!group.getMembers().contains(newLeader)) {
-                group.getMembers().add(newLeader);
-            }
+            group.getMembers().add(newLeader);
         }
         
         return group;

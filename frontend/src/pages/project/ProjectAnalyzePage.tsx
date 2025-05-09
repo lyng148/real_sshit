@@ -28,13 +28,44 @@ const ProjectAnalyzePage: React.FC = () => {
   const { toast } = useToast();
   const [loading, setLoading] = useState<boolean>(true);
   const [statistics, setStatistics] = useState<ProjectStatisticsResponse | null>(null);
+  const [progress, setProgress] = useState<number>(0);
+  const [analyzing, setAnalyzing] = useState<boolean>(false);
 
   // Fetch project statistics
   useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    let timeout: NodeJS.Timeout | null = null;
     const fetchStatistics = async () => {
       try {
         setLoading(true);
+        setProgress(0);
+        setAnalyzing(true);
+        let fakeProgress = 0;
+        interval = setInterval(() => {
+          fakeProgress += Math.random() * 5 + 1;
+          if (fakeProgress < 90) {
+            setProgress(Math.floor(fakeProgress));
+          } else {
+            setProgress(90);
+            clearInterval(interval!);
+          }
+        }, 300);
+        timeout = setTimeout(() => {
+          setAnalyzing(false);
+          setLoading(false);
+          setProgress(100);
+          clearInterval(interval!);
+          toast({
+            title: "Timeout",
+            description: "Phân tích quá lâu, vui lòng thử lại sau.",
+            variant: "destructive",
+          });
+        }, 30000);
         const response = await projectService.getProjectStatistics(Number(projectId));
+        if (timeout) clearTimeout(timeout);
+        if (interval) clearInterval(interval);
+        setProgress(100);
+        setAnalyzing(false);
         if (response.success) {
           setStatistics(response.data);
         } else {
@@ -45,6 +76,10 @@ const ProjectAnalyzePage: React.FC = () => {
           });
         }
       } catch (error) {
+        setAnalyzing(false);
+        setProgress(100);
+        if (interval) clearInterval(interval);
+        if (timeout) clearTimeout(timeout);
         console.error("Error fetching project statistics:", error);
         toast({
           title: "Error",
@@ -55,8 +90,11 @@ const ProjectAnalyzePage: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchStatistics();
+    return () => {
+      if (interval) clearInterval(interval);
+      if (timeout) clearTimeout(timeout);
+    };
   }, [projectId, toast]);
 
   const taskStatusData = statistics?.taskStatistics ? [
@@ -82,6 +120,21 @@ const ProjectAnalyzePage: React.FC = () => {
             <h1 className="text-2xl font-bold text-gray-800">Project Analysis</h1>
             <p className="text-gray-600">Analytics and statistics for the entire project</p>
           </div>
+
+          {analyzing && (
+            <div className="mb-6">
+              <div className="flex items-center gap-4">
+                <span className="font-medium text-blue-700 animate-pulse">Analyzing...</span>
+                <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 transition-all duration-200"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+                <span className="w-12 text-right text-sm text-gray-700">{progress}%</span>
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -275,7 +328,7 @@ const ProjectAnalyzePage: React.FC = () => {
                       <CardDescription>Mean contribution score</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-4xl font-bold">{statistics?.contributionStatistics.avgContributionScore}</div>
+                      <div className="text-4xl font-bold">{statistics?.contributionStatistics.avgContributionScore.toFixed(1)}</div>
                     </CardContent>
                   </Card>
                   <Card>
@@ -284,7 +337,7 @@ const ProjectAnalyzePage: React.FC = () => {
                       <CardDescription>Top contribution</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="text-4xl font-bold">{statistics?.contributionStatistics.groupDistribution.max}</div>
+                      <div className="text-4xl font-bold">{statistics?.contributionStatistics.groupDistribution.max.toFixed(1)}</div>
                     </CardContent>
                   </Card>
                   <Card>
@@ -308,7 +361,7 @@ const ProjectAnalyzePage: React.FC = () => {
                       {statistics?.contributionStatistics.topContributors.map((contributor, index) => (
                         <li key={index} className="flex justify-between items-center p-2 border-b">
                           <span className="font-medium">{contributor.studentId}</span>
-                          <span className="text-green-600 font-bold">{contributor.score}</span>
+                          <span className="text-green-600 font-bold">{contributor.score.toFixed(1)}</span>
                         </li>
                       ))}
                     </ul>
@@ -325,7 +378,7 @@ const ProjectAnalyzePage: React.FC = () => {
                       {statistics?.contributionStatistics.lowContributors.map((contributor, index) => (
                         <li key={index} className="flex justify-between items-center p-2 border-b">
                           <span className="font-medium">{contributor.studentId}</span>
-                          <span className="text-red-600 font-bold">{contributor.score}</span>
+                          <span className="text-red-600 font-bold">{contributor.score.toFixed(1)}</span>
                         </li>
                       ))}
                     </ul>

@@ -23,16 +23,16 @@ public class Group extends BaseEntity {
     
     @NotBlank(message = "Group name is required")
     @Size(max = 100, message = "Group name cannot exceed 100 characters")
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String name;
     
     @Size(max = 500, message = "Description cannot exceed 500 characters")
-    @Column(length = 500)
+    @Column(length = 500, columnDefinition = "varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String description;
     
     @Pattern(regexp = "^(https://github\\.com/[\\w-]+/[\\w-]+|git@github\\.com:[\\w-]+/[\\w-]+(\\.git)?)$", 
             message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository or git@github.com:username/repository.git")
-    @Column(name = "repository_url")
+    @Column(name = "repository_url", columnDefinition = "varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String repositoryUrl;
     
     @NotNull(message = "Project is required")

@@ -123,18 +123,18 @@ const ProjectDetails: React.FC = () => {
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
       <Sidebar />
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-6 relative">
+        {/* Overlay Spinner */}
+        {loading && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+            <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+            </svg>
+          </div>
+        )}
         <div className="max-w-4xl mx-auto">
-          {loading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-1/3" />
-              <Skeleton className="h-4 w-1/4" />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                <Skeleton className="h-64 w-full" />
-                <Skeleton className="h-64 w-full" />
-              </div>
-            </div>
-          ) : project ? (
+          {!loading && project ? (
             <>
               <div className="flex justify-between items-start mb-6">
                 <div>
@@ -299,7 +299,7 @@ const ProjectDetails: React.FC = () => {
                 </div>
               </div>
             </>
-          ) : (
+          ) : !loading && !project ? (
             <div className="text-center py-12">
               <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
               <h2 className="text-xl font-bold text-gray-800">Project Not Found</h2>
@@ -308,7 +308,7 @@ const ProjectDetails: React.FC = () => {
                 Return to Dashboard
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </div>

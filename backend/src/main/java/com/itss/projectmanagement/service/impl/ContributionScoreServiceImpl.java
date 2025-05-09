@@ -97,21 +97,21 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     
     @Override
     @Transactional
-    public List<ContributionScore> calculateScoresForProject(Project project) {
+    public void calculateScoresForProject(Project project) {
         List<ContributionScore> scores = new ArrayList<>();
         List<User> projectUsers = getAllProjectUsers(project);
         
         for (User user : projectUsers) {
             scores.add(calculateScore(user, project));
         }
-        
-        return scores;
+
     }
     
     @Override
     @Transactional
     public ContributionScoreResponse getScoreByUserAndProject(User user, Project project) {
-        ContributionScore score = calculateScore(user, project);
+        ContributionScore score = contributionScoreRepository.findByUserAndProject(user, project)
+                .orElseThrow(() -> new ResourceNotFoundException("Contribution score not found"));
                 
         return contributionScoreConverter.toResponse(score);
     }
@@ -119,10 +119,8 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     @Override
     @Transactional 
     public List<ContributionScoreResponse> getScoresByProject(Project project) {
-        // Luôn tính toán lại điểm mới nhất cho tất cả người dùng trong dự án
-        log.info("Recalculating latest contribution scores for project {}", project.getName());
-        List<ContributionScore> scores = calculateScoresForProject(project);
-        
+        // lấy điểm hiện có từ db
+        List<ContributionScore> scores = contributionScoreRepository.findByProject(project);
         return scores.stream()
                 .map(contributionScoreConverter::toResponse)
                 .collect(Collectors.toList());

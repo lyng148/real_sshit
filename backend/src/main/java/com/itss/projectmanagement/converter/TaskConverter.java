@@ -5,6 +5,7 @@ import com.itss.projectmanagement.dto.response.task.TaskResponse;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.TaskPriority;
 import com.itss.projectmanagement.enums.TaskStatus;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ public class TaskConverter {
                 .description(request.getDescription())
                 .difficulty(request.getDifficulty())
                 .deadline(request.getDeadline())
+                .priority(request.getPriority() != null ? request.getPriority() : TaskPriority.MEDIUM)
                 .group(group)
                 .assignee(assignee)
                 .status(TaskStatus.NOT_STARTED)
@@ -29,6 +31,7 @@ public class TaskConverter {
                 .title(task.getTitle())
                 .description(task.getDescription())
                 .difficulty(task.getDifficulty())
+                .priority(task.getPriority())
                 .deadline(task.getDeadline())
                 .assigneeId(task.getAssignee() != null ? task.getAssignee().getId() : null)
                 .assigneeName(task.getAssignee() != null ? task.getAssignee().getFullName() : null)

@@ -8,7 +8,11 @@ import com.itss.projectmanagement.dto.request.group.GroupJoinRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
+import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.repository.GroupRepository;
+import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.service.GroupService;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +39,8 @@ public class GroupController {
     
     private final GroupService groupService;
     private final GroupConverter groupConverter;
+    private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
     
     @Operation(summary = "Create a new group", description = "Creates a new group for a project and assigns the creator as leader")
     @ApiResponses(value = {
@@ -351,6 +357,35 @@ public class GroupController {
             ApiResponse<List<GroupDTO>> response = ApiResponse.success(
                     groupDTOs,
                     "User groups retrieved successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ApiResponse<List<GroupDTO>> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @Operation(summary = "Get all groups led by current user", description = "Retrieves all groups where the current authenticated user is the leader")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Groups retrieved successfully",
+                    content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = GroupDTO.class))),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
+    })
+    @GetMapping("/my-led-groups")
+    public ResponseEntity<ApiResponse<List<GroupDTO>>> getMyLedGroups() {
+        try {
+            List<Group> groups = groupService.getGroupsLedByCurrentUser();
+            List<GroupDTO> groupDTOs = groupConverter.toDTO(groups);
+            
+            ApiResponse<List<GroupDTO>> response = ApiResponse.success(
+                    groupDTOs,
+                    "Groups where you are leader retrieved successfully"
             );
             
             return ResponseEntity.ok(response);

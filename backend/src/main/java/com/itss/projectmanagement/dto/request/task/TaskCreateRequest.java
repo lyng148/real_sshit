@@ -1,6 +1,7 @@
 package com.itss.projectmanagement.dto.request.task;
 
 import com.itss.projectmanagement.enums.DifficultyLevel;
+import com.itss.projectmanagement.enums.TaskPriority;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,8 @@ public class TaskCreateRequest {
     
     @NotNull(message = "Difficulty level is required")
     private DifficultyLevel difficulty;
+    
+    private TaskPriority priority;
     
     @NotNull(message = "Deadline is required")
     @FutureOrPresent(message = "Deadline must be today or in the future")

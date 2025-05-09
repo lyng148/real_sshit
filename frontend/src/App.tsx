@@ -5,27 +5,27 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
+import Settings from "./pages/settings/Settings";
+import Profile from "./pages/user/Profile";
 import NotFound from "./pages/NotFound";
-import Landing from "./pages/Landing";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Admin from "./pages/Admin";
-import UserManagement from "./pages/UserManagement";
-import UserCreate from "./pages/UserCreate";
-import UserEdit from "./pages/UserEdit";
-import UserDetail from "./pages/UserDetail";
-import TasksPage from "./pages/TasksPage";
-import GroupsPage from "./pages/GroupsPage";
-import CreateGroupPage from "./pages/CreateGroupPage";
-import GroupAnalyzePage from "./pages/GroupAnalyzePage";
-import AdminAnalyzePage from "./pages/AdminAnalyzePage";
-import ProjectCreate from "./pages/ProjectCreate";
-import ProjectDetails from "./pages/ProjectDetails";
-import ProjectEdit from "./pages/ProjectEdit";
+import Landing from "./pages/landing/Landing";
+import Login from "./pages/auth/Login";
+import Signup from "./pages/auth/Signup";
+import Admin from "./pages/admin/Admin";
+import UserManagement from "./pages/user/UserManagement";
+import UserCreate from "./pages/user/UserCreate";
+import UserEdit from "./pages/user/UserEdit";
+import UserDetail from "./pages/user/UserDetail";
+import TasksPage from "./pages/task/TasksPage";
+import GroupsPage from "./pages/group/GroupsPage";
+import CreateGroupPage from "./pages/group/CreateGroupPage";
+import GroupAnalyzePage from "./pages/group/GroupAnalyzePage";
+import AdminAnalyzePage from "./pages/admin/AdminAnalyzePage";
+import ProjectCreate from "./pages/project/ProjectCreate";
+import ProjectDetails from "./pages/project/ProjectDetails";
+import ProjectEdit from "./pages/project/ProjectEdit";
 import ProtectedRoute from "./components/ProtectedRoute";
-import ProjectAnalyzePage from "./pages/ProjectAnalyzePage";
+import ProjectAnalyzePage from "./pages/project/ProjectAnalyzePage";
 
 const queryClient = new QueryClient();
 
@@ -99,6 +99,11 @@ const App = () => (
                 <GroupsPage />
               </ProtectedRoute>
             } />
+            <Route path="/projects/:projectId/groups/:groupId" element={
+              <ProtectedRoute>
+                <GroupsPage />
+              </ProtectedRoute>
+            } />
             <Route path="/projects/:projectId/create-group" element={
               <ProtectedRoute>
                 <CreateGroupPage />
@@ -109,7 +114,7 @@ const App = () => (
                 <TasksPage />
               </ProtectedRoute>
             } />
-            <Route path="/projects/:projectId/group-analyze" element={
+            <Route path="/projects/:projectId/groups/:groupId/analyze" element={
               <ProtectedRoute>
                 <GroupAnalyzePage />
               </ProtectedRoute>

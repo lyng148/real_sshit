@@ -1,6 +1,7 @@
 package com.itss.projectmanagement.entity;
 
 import com.itss.projectmanagement.enums.DifficultyLevel;
+import com.itss.projectmanagement.enums.TaskPriority;
 import com.itss.projectmanagement.enums.TaskStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -40,6 +41,11 @@ public class Task extends BaseEntity {
     @NotNull(message = "Deadline is required")
     @Column(nullable = false)
     private LocalDate deadline;
+    
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    @Builder.Default
+    private TaskPriority priority = TaskPriority.MEDIUM;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignee_id")

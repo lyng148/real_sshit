@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:8080';
 // Create an Axios instance with default configuration
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 10000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json; charset=utf-8',
     'Accept': 'application/json',

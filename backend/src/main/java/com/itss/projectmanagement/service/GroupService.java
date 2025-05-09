@@ -55,6 +55,7 @@ public class GroupService {
         Group group = Group.builder()
                 .name(request.getName())
                 .description(request.getDescription())
+                .repositoryUrl(request.getRepositoryUrl())
                 .project(project)
                 .leader(currentUser)
                 .members(new HashSet<>(Collections.singletonList(currentUser)))
@@ -123,23 +124,15 @@ public class GroupService {
         // Find groups with available space
         List<Group> availableGroups = groupRepository.findGroupsWithAvailableSpace(project, project.getMaxMembers());
         
-        // If no groups available, create a new one
+        // If no groups available, throw exception
         if (availableGroups.isEmpty()) {
-            Group newGroup = Group.builder()
-                    .name("Auto-created Group " + UUID.randomUUID().toString().substring(0, 6))
-                    .description("Automatically created group")
-                    .project(project)
-                    .leader(currentUser)
-                    .members(new HashSet<>(Collections.singletonList(currentUser)))
-                    .build();
-            
-            return groupRepository.save(newGroup);
+            throw new IllegalStateException("No available groups to join");
         }
         
         // Sort groups by member count to balance distribution
         availableGroups.sort(Comparator.comparing(group -> group.getMembers().size()));
         
-        // Add user to the group with fewest members
+        // Add user to the group with the fewest members
         Group selectedGroup = availableGroups.get(0);
         selectedGroup.getMembers().add(currentUser);
         
@@ -160,9 +153,16 @@ public class GroupService {
             return groupRepository.findByProject(project);
         }
         
-        // Students can only see groups they are part of
+        // Students can see all groups if they haven't joined any group for this project
         User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        boolean isUserInAnyGroupForThisProject = groupRepository.isUserInAnyGroupForProject(currentUser, project);
         
+        if (!isUserInAnyGroupForThisProject) {
+            // Student hasn't joined any group for this project, show all groups
+            return groupRepository.findByProject(project);
+        }
+        
+        // Otherwise, students can only see groups they are part of
         return groupRepository.findByMember(currentUser).stream()
                 .filter(group -> group.getProject().getId().equals(projectId))
                 .collect(Collectors.toList());
@@ -198,6 +198,17 @@ public class GroupService {
     public List<Group> getCurrentUserGroups() {
         User currentUser = SecurityUtils.getCurrentUser(userRepository);
         return groupRepository.findByMember(currentUser);
+    }
+
+    /**
+     * Get all groups led by the current user
+     * @return list of groups where the current user is leader
+     */
+    public List<Group> getGroupsLedByCurrentUser() {
+        User currentUser = userRepository.findById(Objects.requireNonNull(SecurityUtils.getCurrentUserId()))
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        List<Group> groups = groupRepository.findByLeader(currentUser);
+        return groups;
     }
 
     /**
@@ -300,7 +311,7 @@ public class GroupService {
         
         // Process leader change if requested
         User newLeader = null;
-        if (updateRequest.getLeaderId() != null && (isInstructor || isGroupLeader)) {
+        if (updateRequest.getLeaderId() != null) {
             newLeader = userRepository.findById(updateRequest.getLeaderId())
                     .orElseThrow(() -> new IllegalArgumentException("New leader not found"));
             

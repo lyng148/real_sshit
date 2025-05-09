@@ -1,12 +1,23 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Users, Check, List, UserCog, BarChart } from 'lucide-react';
+import { Plus, Users, Check, List, BarChart, Eye } from 'lucide-react';
+import { UserCog } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/contexts/AuthContext';
 import projectService from '@/services/projectService';
+import groupService, { Group } from '@/services/groupService';
 import { useToast } from '@/components/ui/use-toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+
+// Dùng một đối tượng global để cache danh sách dự án
+const cachedProjects = {
+  projects: [],
+  isLoaded: false
+};
 
 interface Project {
   id: number;
@@ -16,12 +27,6 @@ interface Project {
   isActive?: boolean;
 }
 
-interface Group {
-  id: number;
-  name: string;
-  members: number;
-}
-
 export const ProjectList: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -29,51 +34,135 @@ export const ProjectList: React.FC = () => {
   const { toast } = useToast();
   const isAdmin = currentUser?.user.roles?.includes('ADMIN');
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
-  const isLeader = currentUser?.user.roles?.includes('LEADER');
   
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedProject, setSelectedProject] = useState<number | null>(null);
-  const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(!cachedProjects.isLoaded);
+  const [projects, setProjects] = useState<Project[]>(cachedProjects.projects);
+  const [ledGroups, setLedGroups] = useState<Group[]>([]);
+  const [myGroups, setMyGroups] = useState<Group[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
+  const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [showGroupListForProject, setShowGroupListForProject] = useState<number | null>(null);
+  
+  // Extract the projectId from the current URL
+  const pathSegments = location.pathname.split('/');
+  const projectIdFromUrl = pathSegments.length > 2 && pathSegments[1] === 'projects' 
+    ? parseInt(pathSegments[2], 10) 
+    : null;
+    
+  // Use the URL projectId for state, or fallback to component state
+  const [selectedProject, setSelectedProject] = useState<number | null>(projectIdFromUrl);
 
-  // Fetch projects from the API
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const response = await projectService.getAllProjects();
-        if (response.success) {
-          setProjects(response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load projects. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
+  // Memoize the fetchProjects function
+  const fetchProjects = useCallback(async () => {
+    // Skip if projects are already cached
+    if (cachedProjects.isLoaded) {
+      setProjects(cachedProjects.projects);
+      setLoading(false);
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const response = await projectService.getAllProjects();
+      if (response.success) {
+        // Update both the state and the cache
+        setProjects(response.data);
+        cachedProjects.projects = response.data;
+        cachedProjects.isLoaded = true;
       }
-    };
-
-    fetchProjects();
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load projects. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   }, [toast]);
 
-  const handleProjectClick = (projectId: number) => {
-    if (selectedProject === projectId) {
-      setSelectedProject(null);
+  // Update selected project when URL changes
+  useEffect(() => {
+    if (projectIdFromUrl && !isNaN(projectIdFromUrl)) {
+      setSelectedProject(projectIdFromUrl);
     } else {
-      setSelectedProject(projectId);
-      if (!selectedGroup) {
-        navigate(`/projects/${projectId}/groups`);
+      // Reset selection if we're not on a project route
+      if (!location.pathname.includes('/projects/')) {
+        setSelectedProject(null);
       }
     }
+  }, [location.pathname, projectIdFromUrl]);
+
+  // Fetch projects once on component mount
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
+  
+  // Fetch led groups
+  useEffect(() => {
+    const fetchLedGroups = async () => {
+      if (currentUser) {
+        try {
+          const response = await groupService.getMyLedGroups();
+          if (response.success) {
+            setLedGroups(response.data || []);
+          }
+        } catch (error) {
+          console.error("Error fetching led groups:", error);
+        }
+      }
+    };
+    
+    fetchLedGroups();
+  }, [currentUser]);
+
+  // Fetch all groups user is a member of
+  useEffect(() => {
+    const fetchMyGroups = async () => {
+      if (currentUser) {
+        try {
+          const response = await groupService.getMyGroups();
+          if (response.success) {
+            setMyGroups(response.data || []);
+          }
+        } catch (error) {
+          console.error("Error fetching my groups:", error);
+        }
+      }
+    };
+    fetchMyGroups();
+  }, [currentUser]);
+
+  // Fetch all groups for selected project (for ALL GROUPS and admin/instructor logic)
+  useEffect(() => {
+    if (selectedProject) {
+      groupService.getAllGroups(selectedProject).then(res => {
+        if (res.success) setAllGroups(res.data || []);
+      });
+    }
+  }, [selectedProject]);
+
+  const handleProjectClick = (projectId: number) => {
+    setSelectedProject(projectId); // cập nhật state ngay lập tức
+    navigate(`/projects/${projectId}/groups`);
   };
 
-  const handleGroupJoin = (groupId: number) => {
-    setSelectedGroup(groupId);
+  // Check if user is a leader of a group in the selected project
+  const isGroupLeader = (projectId: number): boolean => {
+    return ledGroups.some(group => group.projectId === projectId);
+  };
+
+  // Lấy group đầu tiên của user trong project
+  const getFirstUserGroupId = (projectId: number) => {
+    const group = myGroups.find(g => g.projectId === projectId);
+    return group ? group.id : null;
+  };
+
+  // Chức năng làm mới danh sách dự án
+  const handleRefreshProjects = () => {
+    cachedProjects.isLoaded = false;
+    fetchProjects();
   };
 
   return (
@@ -81,7 +170,15 @@ export const ProjectList: React.FC = () => {
       {loading ? (
         <div className="p-4 text-center text-sm text-gray-500">Loading projects...</div>
       ) : projects.length === 0 ? (
-        <div className="p-4 text-center text-sm text-gray-500">No projects found</div>
+        <div className="p-4 text-center text-sm text-gray-500">
+          No projects found
+          <button 
+            onClick={handleRefreshProjects}
+            className="ml-2 text-blue-500 hover:text-blue-700 text-xs"
+          >
+            Refresh
+          </button>
+        </div>
       ) : (
         projects.map((project) => (
           <div key={project.id}>
@@ -100,159 +197,62 @@ export const ProjectList: React.FC = () => {
               </div>
               <span className="truncate">{project.name}</span>
             </div>
-            
             {selectedProject === project.id && (
               <div className="ml-9 border-l border-gray-200">
-                {!selectedGroup ? (
-                  <div className="pl-3 pr-4 py-2">
-                    <div className="flex flex-col space-y-2">
-                      {/* Show different options based on user role */}
-                      {(isAdmin || isInstructor || isLeader) ? (
-                        <div className="flex flex-col space-y-2">
-                          {/* Project Analysis option for admin, instructors and leaders */}
-                          <Link 
-                            to={`/projects/${selectedProject}/project-analyze`}
-                            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-                          >
-                            <BarChart size={14} /> Project Analysis
-                          </Link>
-                          
-                          {/* Group Analysis option for admin, instructors and leaders */}
-                          <Link 
-                            to={`/projects/${selectedProject}/group-analyze`}
-                            className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800"
-                          >
-                            <Users size={14} /> Group Analysis
-                          </Link>
-                          
-                          {/* Project Management for admins and instructors only */}
-                          {(isAdmin || isInstructor) && (
-                            <Link 
-                              to={`/projects/${selectedProject}/edit`}
-                              className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800"
-                            >
-                              <UserCog size={14} /> Manage Project
-                            </Link>
-                          )}
-                        </div>
-                      ) : (
-                        /* Regular options for normal students */
-                        <div className="flex justify-between mb-2">
-                          <button 
-                            className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800"
-                            onClick={() => navigate(`/projects/${project.id}/create-group`)}
-                          >
-                            <Plus size={14} /> Create Group
-                          </button>
-                          <button 
-                            className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800"
-                            onClick={() => {
-                              // Auto-join logic would go here
-                              if (groups.length > 0) {
-                                handleGroupJoin(groups[0].id);
-                              }
-                            }}
-                          >
-                            <Users size={14} /> Auto Join
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Only show available groups to regular students */}
-                      {!(isAdmin || isInstructor || isLeader) && (
-                        <>
-                          <div className="text-xs text-gray-500 font-medium mt-2 mb-1">AVAILABLE GROUPS</div>
-                          {groups.length > 0 ? (
-                            groups.map(group => (
-                              <button
-                                key={group.id}
-                                className="flex justify-between items-center px-2 py-1.5 text-sm hover:bg-gray-100 rounded"
-                                onClick={() => handleGroupJoin(group.id)}
-                              >
-                                <span>{group.name}</span>
-                                <span className="text-xs text-gray-500">{group.members} members</span>
-                              </button>
-                            ))
-                          ) : (
-                            <div className="text-xs text-gray-500 py-2">No groups available</div>
-                          )}
-                        </>
-                      )}
+                <div>
+                  {(isGroupLeader(project.id) || isAdmin || isInstructor) && (
+                    <div
+                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        let groupId: number | null = null;
+                        if (isAdmin || isInstructor) {
+                          // Lấy group đầu tiên của project (cho admin/instructor)
+                          groupId = allGroups.find(g => g.projectId === project.id)?.id || null;
+                        } else {
+                          // Lấy group đầu tiên của user (student)
+                          groupId = getFirstUserGroupId(project.id);
+                        }
+                        if (groupId) {
+                          navigate(`/projects/${project.id}/groups/${groupId}/analyze`);
+                        } else {
+                          toast({
+                            title: "No group found",
+                            description: isAdmin || isInstructor ? "No group exists in this project." : "You are not a member/leader of any group in this project.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <Users size={14} className="mr-2 text-green-600" />
+                      <span className="text-green-600">Group Analysis</span>
                     </div>
-                  </div>
-                ) : (
-                  <div>
-                    <Collapsible>
-                      <CollapsibleTrigger className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left">
-                        <List size={14} className="mr-2" />
-                        <span>Tasks</span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <Link 
-                          to={`/projects/${project.id}/tasks`}
-                          className="flex items-center pl-9 pr-4 py-1.5 text-xs hover:bg-gray-100"
-                        >
-                          View Kanban
-                        </Link>
-                      </CollapsibleContent>
-                    </Collapsible>
-                    
-                    <Collapsible>
-                      <CollapsibleTrigger className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left">
-                        <Users size={14} className="mr-2" />
-                        <span>Group Analyze</span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <Link 
-                          to={`/projects/${project.id}/group-analyze`}
-                          className="flex items-center pl-9 pr-4 py-1.5 text-xs hover:bg-gray-100"
-                        >
-                          View Analytics
-                        </Link>
-                      </CollapsibleContent>
-                    </Collapsible>
-                    
-                    {(isAdmin || isInstructor || isLeader) && (
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left">
-                          <BarChart size={14} className="mr-2" />
-                          <span>Project Analyze</span>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <Link 
-                            to={`/projects/${project.id}/project-analyze`}
-                            className="flex items-center pl-9 pr-4 py-1.5 text-xs hover:bg-gray-100"
-                          >
-                            View Project Analytics
-                          </Link>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-
-                    {(isAdmin || isInstructor) && (
-                      <Collapsible>
-                        <CollapsibleTrigger className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left">
-                          <UserCog size={14} className="mr-2" />
-                          <span>Project Management</span>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <Link 
-                            to={`/projects/${project.id}/edit`}
-                            className="flex items-center pl-9 pr-4 py-1.5 text-xs hover:bg-gray-100"
-                          >
-                            Edit Project
-                          </Link>
-                          <Link 
-                            to={`/projects/${project.id}/details`}
-                            className="flex items-center pl-9 pr-4 py-1.5 text-xs hover:bg-gray-100"
-                          >
-                            View Details
-                          </Link>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-                  </div>
-                )}
+                  )}
+                  {(isAdmin || isInstructor) && (
+                    <div
+                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/projects/${project.id}/project-analyze`);
+                      }}
+                    >
+                      <BarChart size={14} className="mr-2 text-blue-600" />
+                      <span className="text-blue-600">Project Analysis</span>
+                    </div>
+                  )}
+                  {(isAdmin || isInstructor) && (
+                    <div
+                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/projects/${project.id}/edit`);
+                      }}
+                    >
+                      <UserCog size={14} className="mr-2 text-orange-500" />
+                      <span className="text-orange-500">Manage Project</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

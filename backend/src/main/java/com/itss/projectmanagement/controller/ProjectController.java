@@ -77,14 +77,15 @@ public class ProjectController {
         String message;
         
         // Admin can see all projects, instructors can only see their own
-        if (SecurityUtils.isAdmin()) {
-            projects = projectService.getAllProjects();
-            message = "All projects retrieved successfully";
-        } else {
-            projects = projectService.getInstructorProjects();
-            message = "Instructor projects retrieved successfully";
-        }
-        
+//        if (SecurityUtils.isAdmin()) {
+//            projects = projectService.getAllProjects();
+//            message = "All projects retrieved successfully";
+//        } else {
+//            projects = projectService.getInstructorProjects();
+//            message = "Instructor projects retrieved successfully";
+//        }
+        projects = projectService.getAllProjects();
+        message = "All projects retrieved successfully";
         List<ProjectDTO> projectDTOs = projectConverter.toDTO(projects);
         
         // Add metadata

@@ -96,12 +96,16 @@ public class TaskServiceImpl implements TaskService {
                 throw new IllegalArgumentException("Assignee is not a member of the group");
             }
         }
-        
-        task.setTitle(request.getTitle());
+          task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
         task.setDifficulty(request.getDifficulty());
         task.setDeadline(request.getDeadline());
         task.setGroup(group);
+        
+        // Set priority if provided, otherwise keep existing priority
+        if (request.getPriority() != null) {
+            task.setPriority(request.getPriority());
+        }
         
         // If assignee is changing, recalculate pressure score
         if (assignee != null && (task.getAssignee() == null || !task.getAssignee().getId().equals(assignee.getId()))) {

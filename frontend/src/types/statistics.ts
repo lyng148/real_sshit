@@ -79,3 +79,75 @@ export interface ProjectStatisticsResponse {
   pressureScoreAnalysis: PressureScoreAnalysis;
   timeStatistics: TimeStatistics;
 }
+
+// Group info
+export interface GroupInfo {
+  id: number;
+  name: string;
+  description: string;
+  repositoryUrl: string;
+  projectId: number;
+  projectName: string;
+  memberCount: number;
+  maxMembers: number;
+}
+
+// Group task statistics
+export interface GroupTaskStatistics {
+  totalTasks: number;
+  tasksByStatus: {
+    notStarted: number;
+    inProgress: number;
+    completed: number;
+  };
+  completionRate: number;
+  avgCompletionTime: string;
+  onTimeCompletionRate: number;
+}
+
+// Member contribution factors
+export interface ContributionFactors {
+  taskCompletion: number;
+  peerReview: number;
+  commitCount: number;
+  taskDifficulty: number;
+}
+
+// Member contribution
+export interface MemberContribution {
+  id: number;
+  name: string;
+  isLeader: boolean;
+  completedTasks: number;
+  inProgressTasks: number;
+  notStartedTasks: number;
+  contributionScore: number;
+  contributionFactors: ContributionFactors;
+}
+
+// Group contribution statistics
+export interface GroupContributionStatistics {
+  avgContributionScore: number;
+  highestScore: number;
+  lowestScore: number;
+}
+
+// Recent task
+export interface RecentTask {
+  id: number;
+  title: string;
+  assigneeId: number;
+  assigneeName: string;
+  status: string;
+  deadline: string;
+}
+
+// Complete group statistics response
+export interface GroupStatisticsResponse {
+  groupInfo: GroupInfo;
+  taskStatistics: GroupTaskStatistics;
+  memberContributions: MemberContribution[];
+  contributionStatistics: GroupContributionStatistics;
+  timeStatistics: TimeStatistics;
+  recentTasks: RecentTask[];
+}
