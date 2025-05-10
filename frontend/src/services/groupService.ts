@@ -76,9 +76,21 @@ export const groupService = {
     }
   },
   
-  async joinGroup(groupId: number) {
+  async joinGroup(groupId: number, projectId: number) {
     try {
-      const response = await axiosInstance.post(`/api/groups/${groupId}/join`);
+      // Kiểm tra và ép kiểu projectId thành number
+      const projectIdNumber = Number(projectId);
+
+      if (isNaN(projectIdNumber)) {
+        throw new Error('projectId must be a valid number');
+      }
+
+      const data = {
+        groupId: groupId,
+        projectId: projectIdNumber
+      };
+
+      const response = await axiosInstance.post(`/api/groups/join`, data);
       return response.data;
     } catch (error) {
       throw error;
@@ -106,6 +118,18 @@ export const groupService = {
   async getMyLedGroups() {
     try {
       const response = await axiosInstance.get('/api/groups/my-led-groups');
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  // This method would be implemented in a real API
+  async transferLeadership(groupId: number, newLeaderId: number) {
+    try {
+      const response = await axiosInstance.post(`/api/groups/${groupId}/transfer-leadership`, {
+        newLeaderId
+      });
       return response.data;
     } catch (error) {
       throw error;

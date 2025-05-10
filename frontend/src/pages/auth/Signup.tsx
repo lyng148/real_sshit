@@ -101,7 +101,7 @@ const Signup = () => {
             <CardHeader>
               <CardTitle className="text-2xl">Create an account</CardTitle>
               <CardDescription className="text-gray-400">
-                Get started with MindTask
+                Get started with Taga
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSignup}>

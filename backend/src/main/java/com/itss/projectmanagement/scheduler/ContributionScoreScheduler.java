@@ -21,7 +21,7 @@ public class ContributionScoreScheduler {
     /**
      * Runs every day at midnight to recalculate contribution scores for all active projects.
      */
-    @Scheduled(cron = "0 0 0 * * ?", zone = "Asia/Ho_Chi_Minh")
+    @Scheduled(cron = "0 * * * * ?", zone = "Asia/Ho_Chi_Minh")
     public void calculateDailyContributionScores() {
         log.info("Scheduled task: Starting daily contribution score calculation");
         List<Project> activeProjects = projectRepository.findAllActiveProjects();

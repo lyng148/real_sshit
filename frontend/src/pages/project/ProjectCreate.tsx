@@ -16,12 +16,12 @@ const ProjectCreate = () => {
     description: '',
     evaluationCriteria: '',
     maxMembers: 4,
-    weightFactorW1: 25,
-    weightFactorW2: 25,
-    weightFactorW3: 25,
-    weightFactorW4: 25,
-    freeRiderDetectionThreshold: 30,
-    pressureScoreThreshold: 70
+    weightW1: 25,
+    weightW2: 25,
+    weightW3: 25,
+    weightW4: 25,
+    freeriderThreshold: 30,
+    pressureThreshold: 70
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -44,12 +44,12 @@ const ProjectCreate = () => {
         description: formData.description,
         evaluationCriteria: formData.evaluationCriteria,
         maxMembers: formData.maxMembers || 4, // Provide default value
-        weightFactorW1: formData.weightFactorW1,
-        weightFactorW2: formData.weightFactorW2,
-        weightFactorW3: formData.weightFactorW3,
-        weightFactorW4: formData.weightFactorW4,
-        freeRiderDetectionThreshold: formData.freeRiderDetectionThreshold,
-        pressureScoreThreshold: formData.pressureScoreThreshold
+        weightW1: formData.weightW1,
+        weightW2: formData.weightW2,
+        weightW3: formData.weightW3,
+        weightW4: formData.weightW4,
+        freeriderThreshold: formData.freeriderThreshold,
+        pressureThreshold: formData.pressureThreshold
       };
       
       const response = await projectService.createProject(projectData);
@@ -135,12 +135,12 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="weightFactorW1">Weight Factor W1</Label>
+              <Label htmlFor="weightW1">Weight Factor W1</Label>
               <Input
                 type="number"
-                id="weightFactorW1"
-                name="weightFactorW1"
-                value={formData.weightFactorW1}
+                id="weightW1"
+                name="weightW1"
+                value={formData.weightW1}
                 onChange={handleChange}
                 required
                 min="0"
@@ -149,12 +149,12 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="weightFactorW2">Weight Factor W2</Label>
+              <Label htmlFor="weightW2">Weight Factor W2</Label>
               <Input
                 type="number"
-                id="weightFactorW2"
-                name="weightFactorW2"
-                value={formData.weightFactorW2}
+                id="weightW2"
+                name="weightW2"
+                value={formData.weightW2}
                 onChange={handleChange}
                 required
                 min="0"
@@ -163,12 +163,12 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="weightFactorW3">Weight Factor W3</Label>
+              <Label htmlFor="weightW3">Weight Factor W3</Label>
               <Input
                 type="number"
-                id="weightFactorW3"
-                name="weightFactorW3"
-                value={formData.weightFactorW3}
+                id="weightW3"
+                name="weightW3"
+                value={formData.weightW3}
                 onChange={handleChange}
                 required
                 min="0"
@@ -177,12 +177,12 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="weightFactorW4">Weight Factor W4</Label>
+              <Label htmlFor="weightW4">Weight Factor W4</Label>
               <Input
                 type="number"
-                id="weightFactorW4"
-                name="weightFactorW4"
-                value={formData.weightFactorW4}
+                id="weightW4"
+                name="weightW4"
+                value={formData.weightW4}
                 onChange={handleChange}
                 required
                 min="0"
@@ -191,12 +191,12 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="freeRiderDetectionThreshold">Free Rider Detection Threshold</Label>
+              <Label htmlFor="freeriderThreshold">Free Rider Detection Threshold</Label>
               <Input
                 type="number"
-                id="freeRiderDetectionThreshold"
-                name="freeRiderDetectionThreshold"
-                value={formData.freeRiderDetectionThreshold}
+                id="freeriderThreshold"
+                name="freeriderThreshold"
+                value={formData.freeriderThreshold}
                 onChange={handleChange}
                 required
                 min="0"
@@ -205,12 +205,12 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="pressureScoreThreshold">Pressure Score Threshold</Label>
+              <Label htmlFor="pressureThreshold">Pressure Score Threshold</Label>
               <Input
                 type="number"
-                id="pressureScoreThreshold"
-                name="pressureScoreThreshold"
-                value={formData.pressureScoreThreshold}
+                id="pressureThreshold"
+                name="pressureThreshold"
+                value={formData.pressureThreshold}
                 onChange={handleChange}
                 required
                 min="0"

@@ -26,7 +26,7 @@
   - [x] Pressure Score configuration (write default value in form)
 - [x] Build project detail view
 - [x] Create project editing interface
-- [x] Implement project deletion with confirmation
+- [] Implement project deletion with confirmation
 - [x] Add project statistics dashboard
 
 ## 5. Group Management

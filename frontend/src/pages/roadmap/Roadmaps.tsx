@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Sidebar } from '@/components/Sidebar';
-import { MainContent } from '@/components/MainContent';
+import MainContent  from '@/components/MainContent';
 
 const Roadmaps = () => {
   return (

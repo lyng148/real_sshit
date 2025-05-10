@@ -6,12 +6,12 @@ interface ProjectCreateRequest {
   description: string;
   maxMembers: number;
   evaluationCriteria: string;
-  weightFactorW1: number;
-  weightFactorW2: number;
-  weightFactorW3: number;
-  weightFactorW4: number;
-  freeRiderDetectionThreshold: number;
-  pressureScoreThreshold: number;
+  weightW1: number;
+  weightW2: number;
+  weightW3: number;
+  weightW4: number;
+  freeriderThreshold: number;
+  pressureThreshold: number;
 }
 
 interface ProjectUpdateRequest extends ProjectCreateRequest {

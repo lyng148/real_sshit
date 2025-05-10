@@ -21,12 +21,12 @@ const ProjectEdit = () => {
     description: '',
     maxMembers: 4,
     evaluationCriteria: '',
-    weightFactorW1: 0.25,
-    weightFactorW2: 0.25,
-    weightFactorW3: 0.25,
-    weightFactorW4: 0.25,
-    freeRiderDetectionThreshold: 0.5,
-    pressureScoreThreshold: 70,
+    weightW1: 0.25,
+    weightW2: 0.25,
+    weightW3: 0.25,
+    weightW4: 0.25,
+    freeriderThreshold: 0.5,
+    pressureThreshold: 70,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,18 +38,19 @@ const ProjectEdit = () => {
       try {
         const response = await projectService.getProjectById(Number(projectId));
         if (response.success) {
+          console.log("Project data:", response.data);
           setProject(response.data);
           setFormData({
             name: response.data.name,
             description: response.data.description,
             maxMembers: response.data.maxMembers,
             evaluationCriteria: response.data.evaluationCriteria,
-            weightFactorW1: response.data.weightFactorW1,
-            weightFactorW2: response.data.weightFactorW2,
-            weightFactorW3: response.data.weightFactorW3,
-            weightFactorW4: response.data.weightFactorW4,
-            freeRiderDetectionThreshold: response.data.freeRiderDetectionThreshold,
-            pressureScoreThreshold: response.data.pressureScoreThreshold,
+            weightW1: response.data.weightW1,
+            weightW2: response.data.weightW2,
+            weightW3: response.data.weightW3,
+            weightW4: response.data.weightW4,
+            freeriderThreshold: response.data.freeriderThreshold,
+            pressureThreshold: response.data.pressureThreshold,
           });
         } else {
           toast({
@@ -74,10 +75,10 @@ const ProjectEdit = () => {
   }, [projectId, toast]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
     setFormData(prevData => ({
       ...prevData,
-      [name]: name === 'maxMembers' ? Number(value) : value
+      [name]: type === 'number' ? Number(value) : value
     }));
   };
 
@@ -86,6 +87,7 @@ const ProjectEdit = () => {
     setIsSubmitting(true);
 
     try {
+      console.log("Submitting form data:", formData);
       // Ensure all required fields are provided
       const projectData: ProjectUpdateRequest = {
         id: Number(projectId),
@@ -93,15 +95,15 @@ const ProjectEdit = () => {
         description: formData.description || project!.description, // Ensure description is always provided
         maxMembers: formData.maxMembers || project!.maxMembers, // Ensure maxMembers is always provided
         evaluationCriteria: formData.evaluationCriteria || project!.evaluationCriteria, // Ensure evaluationCriteria is always provided
-        weightFactorW1: formData.weightFactorW1,
-        weightFactorW2: formData.weightFactorW2,
-        weightFactorW3: formData.weightFactorW3,
-        weightFactorW4: formData.weightFactorW4,
-        freeRiderDetectionThreshold: formData.freeRiderDetectionThreshold,
-        pressureScoreThreshold: formData.pressureScoreThreshold,
+        weightW1: formData.weightW1 || project!.weightW1,
+        weightW2: formData.weightW2 || project!.weightW2,
+        weightW3: formData.weightW3 || project!.weightW3,
+        weightW4: formData.weightW4 || project!.weightW4,
+        freeriderThreshold: formData.freeriderThreshold || project!.freeriderThreshold,
+        pressureThreshold: formData.pressureThreshold || project!.pressureThreshold,
       };
 
-      const response = await projectService.updateProject(projectData);
+      const response = await projectService.updateProject(Number(projectId), projectData);
       if (response.success) {
         toast({
           title: "Success",
@@ -223,7 +225,7 @@ const ProjectEdit = () => {
                     required
                   />
                 </div>
-                 <div className="space-y-2">
+                <div className="space-y-2">
                   <Label htmlFor="evaluationCriteria">Evaluation Criteria</Label>
                   <Textarea
                     id="evaluationCriteria"
@@ -232,6 +234,33 @@ const ProjectEdit = () => {
                     onChange={handleChange}
                     rows={3}
                   />
+                </div>
+                {/* Additional fields for weight factors and detection thresholds */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="weightW1">Weight Factor W1</Label>
+                    <Input type="number" id="weightW1" name="weightW1" value={formData.weightW1} onChange={handleChange} step="0.01" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weightW2">Weight Factor W2</Label>
+                    <Input type="number" id="weightW2" name="weightW2" value={formData.weightW2} onChange={handleChange} step="0.01" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weightW3">Weight Factor W3</Label>
+                    <Input type="number" id="weightW3" name="weightW3" value={formData.weightW3} onChange={handleChange} step="0.01" required />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="weightW4">Weight Factor W4</Label>
+                    <Input type="number" id="weightW4" name="weightW4" value={formData.weightW4} onChange={handleChange} step="0.01" required />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="freeriderThreshold">Free Rider Detection Threshold</Label>
+                  <Input type="number" id="freeriderThreshold" name="freeriderThreshold" value={formData.freeriderThreshold} onChange={handleChange} step="0.01" required />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pressureThreshold">Pressure Score Threshold</Label>
+                  <Input type="number" id="pressureThreshold" name="pressureThreshold" value={formData.pressureThreshold} onChange={handleChange} required />
                 </div>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Updating..." : "Update Project"}

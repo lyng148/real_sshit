@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Plus, Users, Check, List, BarChart, Eye } from 'lucide-react';
-import { UserCog } from 'lucide-react';
+import { Plus, Users, Check, List, BarChart, Eye, UserCog, Info } from 'lucide-react';
 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useAuth } from '@/contexts/AuthContext';
@@ -159,6 +157,11 @@ export const ProjectList: React.FC = () => {
     return group ? group.id : null;
   };
 
+  // Check if user is a member of any group in the project
+  const isGroupMember = (projectId: number): boolean => {
+    return myGroups.some(group => group.projectId === projectId);
+  };
+
   // Chức năng làm mới danh sách dự án
   const handleRefreshProjects = () => {
     cachedProjects.isLoaded = false;
@@ -200,6 +203,58 @@ export const ProjectList: React.FC = () => {
             {selectedProject === project.id && (
               <div className="ml-9 border-l border-gray-200">
                 <div>
+                  {/* Project Info option - available for all users */}
+                  <div
+                    className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/projects/${project.id}/details`);
+                    }}
+                  >
+                    <Info size={14} className="mr-2 text-blue-600" />
+                    <span className="text-blue-600">Project Info</span>
+                  </div>
+
+                  {/* Manage Group option - available for group leaders, admins, and instructors */}
+                  {(isGroupLeader(project.id) || isAdmin || isInstructor) && isGroupMember(project.id) && (
+                    <div
+                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        let groupId: number | null = null;
+                        
+                        if (isGroupLeader(project.id)) {
+                          // Get the group that the user is a leader of in this project
+                          const ledGroup = ledGroups.find(g => g.projectId === project.id);
+                          groupId = ledGroup ? ledGroup.id : null;
+                        } else if (isAdmin || isInstructor) {
+                          // If admin/instructor is also a member of a group, use that group
+                          const userGroup = myGroups.find(g => g.projectId === project.id);
+                          if (userGroup) {
+                            groupId = userGroup.id;
+                          } else {
+                            // Otherwise, get the first group in the project
+                            groupId = allGroups.find(g => g.projectId === project.id)?.id || null;
+                          }
+                        }
+                        
+                        if (groupId) {
+                          navigate(`/projects/${project.id}/groups/${groupId}/manage`);
+                        } else {
+                          toast({
+                            title: "No group found",
+                            description: "You don't have access to manage any group in this project.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <UserCog size={14} className="mr-2 text-purple-600" />
+                      <span className="text-purple-600">Manage Group</span>
+                    </div>
+                  )}
+
+                  {/* Group Analysis option */}
                   {(isGroupLeader(project.id) || isAdmin || isInstructor) && (
                     <div
                       className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
@@ -228,6 +283,7 @@ export const ProjectList: React.FC = () => {
                       <span className="text-green-600">Group Analysis</span>
                     </div>
                   )}
+                  {/* Other existing options */}
                   {(isAdmin || isInstructor) && (
                     <div
                       className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"

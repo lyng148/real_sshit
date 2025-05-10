@@ -202,9 +202,38 @@ const GroupsPage = () => {
     );
   };
 
-  const handleJoinGroup = async (groupId: number) => {
+  const handleAutoJoinGroup = async (groupId: number) => {
+    // make a placeholder function to simulate auto-join
+    const autoJoinGroup = async () => {
+      try {
+        const response = await groupService.joinGroup(groupId);
+        if (response.success) {
+          toast({
+            title: "Success",
+            description: "You have successfully joined the group",
+          });
+          setUserGroup(groups.find(group => group.id === groupId) || null);
+        } else {
+          toast({
+            title: "Error",
+            description: response.message || "Failed to join group",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        console.error("Error joining group:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
+    };
+  }
+
+  const handleJoinGroup = async (groupId: number, projectId: number) => {
     try {
-      const response = await groupService.joinGroup(groupId);
+      const response = await groupService.joinGroup(groupId, projectId);
       if (response.success) {
         toast({
           title: "Success",
@@ -252,7 +281,7 @@ const GroupsPage = () => {
       // Find a group with available spots
       const availableGroup = groups.find(group => group.memberCount < group.maxMembers);
       if (availableGroup) {
-        await handleJoinGroup(availableGroup.id);
+        await handleAutoJoinGroup(availableGroup.id);
       } else {
         toast({
           title: "No Available Groups",
@@ -752,7 +781,7 @@ const GroupsPage = () => {
                       View Members
                     </Button>
                     <Button 
-                      onClick={() => handleJoinGroup(group.id)} 
+                      onClick={() => handleJoinGroup(group.id, projectId)} 
                       variant="outline" 
                       size="sm"
                       className="ml-auto"

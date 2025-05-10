@@ -104,16 +104,33 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
         for (User user : projectUsers) {
             scores.add(calculateScore(user, project));
         }
-
     }
     
     @Override
     @Transactional
     public ContributionScoreResponse getScoreByUserAndProject(User user, Project project) {
-        ContributionScore score = contributionScoreRepository.findByUserAndProject(user, project)
-                .orElseThrow(() -> new ResourceNotFoundException("Contribution score not found"));
-                
-        return contributionScoreConverter.toResponse(score);
+        Optional<ContributionScore> score = contributionScoreRepository.findByUserAndProject(user, project);
+        if (score.isEmpty()) {
+            return ContributionScoreResponse.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .fullName(user.getFullName())
+                    .email(user.getEmail())
+                    .projectId(project.getId())
+                    .projectName(project.getName())
+                    .taskCompletionScore(0.0)
+                    .peerReviewScore(0.0)
+                    .commitCount(0L)
+                    .lateTaskCount(0L)
+                    .calculatedScore(0.0)
+                    .adjustedScore(0.0)
+                    .adjustmentReason(null)
+                    .isFinal(false)
+                    .updatedAt(LocalDate.now().atStartOfDay())
+                    .build();
+        }
+
+        return contributionScoreConverter.toResponse(score.get());
     }
     
     @Override

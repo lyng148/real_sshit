@@ -107,7 +107,7 @@ public class ProjectController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<ProjectDTO>> getProjectById(
             @Parameter(description = "ID of the project to retrieve") @PathVariable Long id) {
         return projectService.getProjectById(id)

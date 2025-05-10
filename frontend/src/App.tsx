@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import TasksPage from "./pages/task/TasksPage";
 import GroupsPage from "./pages/group/GroupsPage";
 import CreateGroupPage from "./pages/group/CreateGroupPage";
 import GroupAnalyzePage from "./pages/group/GroupAnalyzePage";
+import GroupManagePage from "./pages/group/GroupManagePage";
 import AdminAnalyzePage from "./pages/admin/AdminAnalyzePage";
 import ProjectCreate from "./pages/project/ProjectCreate";
 import ProjectDetails from "./pages/project/ProjectDetails";
@@ -102,6 +104,11 @@ const App = () => (
             <Route path="/projects/:projectId/groups/:groupId" element={
               <ProtectedRoute>
                 <GroupsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/projects/:projectId/groups/:groupId/manage" element={
+              <ProtectedRoute>
+                <GroupManagePage />
               </ProtectedRoute>
             } />
             <Route path="/projects/:projectId/create-group" element={

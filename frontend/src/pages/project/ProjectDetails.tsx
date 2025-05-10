@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
@@ -18,12 +19,12 @@ interface Project {
   description: string;
   evaluationCriteria: string;
   maxMembers: number;
-  weightFactorW1: number;
-  weightFactorW2: number;
-  weightFactorW3: number;
-  weightFactorW4: number;
-  freeRiderDetectionThreshold: number;
-  pressureScoreThreshold: number;
+  weightW1: number;
+  weightW2: number;
+  weightW3: number;
+  weightW4: number;
+  freeriderThreshold: number;
+  pressureThreshold: number;
   createdAt: string;
   updatedAt: string;
   creatorId: number;
@@ -44,7 +45,6 @@ const ProjectDetails: React.FC = () => {
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
   const isStudent = currentUser?.user.roles?.includes('STUDENT');
   const canEdit = isAdmin || isInstructor;
-  const isLeader = false; // This would need to be determined by checking if user is a group leader
   
   // For the purpose of this implementation, let's assume we have this check
   // In a real app, we would fetch this info from an API
@@ -186,7 +186,7 @@ const ProjectDetails: React.FC = () => {
                     <CardTitle className="text-sm font-medium">Free Rider Detection Threshold</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{project.freeRiderDetectionThreshold}</div>
+                    <div className="text-2xl font-bold">{project.freeriderThreshold}</div>
                   </CardContent>
                 </Card>
                 
@@ -195,7 +195,7 @@ const ProjectDetails: React.FC = () => {
                     <CardTitle className="text-sm font-medium">Pressure Score Threshold</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">{project.pressureScoreThreshold}</div>
+                    <div className="text-2xl font-bold">{project.pressureThreshold}</div>
                   </CardContent>
                 </Card>
               </div>
@@ -233,71 +233,73 @@ const ProjectDetails: React.FC = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Task Completion (W1)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightFactorW1}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW1}%</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Peer Review (W2)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightFactorW2}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW2}%</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Commit Count (W3)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightFactorW3}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW3}%</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg bg-gray-50">
-                      <div className="text-sm font-medium text-gray-500">Task Difficulty (W4)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightFactorW4}%</div>
+                      <div className="text-sm font-medium text-gray-500">Task Late Count (W4)</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW4}%</div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
-              <div className="mt-8 space-y-4">
-                <h2 className="text-xl font-bold text-gray-800">Actions</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Show different options based on user role */}
-                  {(isInstructor || isProjectLeader) ? (
-                    // For instructors and leaders: show analyze options
-                    <>
-                      <Button 
-                        variant="default" 
-                        className="w-full" 
-                        onClick={() => navigate(`/projects/${projectId}/analyze`)}
-                      >
-                        <BarChart className="h-5 w-5 mr-2" /> Project Analysis
-                      </Button>
-                      <Button 
-                        variant="default" 
-                        className="w-full" 
-                        onClick={() => navigate(`/projects/${projectId}/groups/analyze`)}
-                      >
-                        <ChartBar className="h-5 w-5 mr-2" /> Group Analysis
-                      </Button>
-                    </>
-                  ) : (
-                    // For regular students: show join/create group options
-                    <>
-                      <Button 
-                        variant="default" 
-                        className="w-full" 
-                        onClick={() => navigate(`/projects/${projectId}/groups/join`)}
-                      >
-                        <Users className="h-5 w-5 mr-2" /> Join Group
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="w-full" 
-                        onClick={() => navigate(`/projects/${projectId}/groups/create`)}
-                      >
-                        <Users className="h-5 w-5 mr-2" /> Create Group
-                      </Button>
-                    </>
-                  )}
+              {/* Only show Actions section for staff or group leaders */}
+              {(isInstructor || isAdmin || isProjectLeader) && (
+                <div className="mt-8 space-y-4">
+                  <h2 className="text-xl font-bold text-gray-800">Actions</h2>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* For instructors and admins: show analyze options */}
+                    {(isInstructor || isAdmin) && (
+                      <>
+                        <Button 
+                          variant="default" 
+                          className="w-full" 
+                          onClick={() => navigate(`/projects/${projectId}/project-analyze`)}
+                        >
+                          <BarChart className="h-5 w-5 mr-2" /> Project Analysis
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          className="w-full" 
+                          onClick={() => navigate(`/projects/${projectId}/groups`)}
+                        >
+                          <ChartBar className="h-5 w-5 mr-2" /> Group Management
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* For regular students: show join/create group options */}
+              {isStudent && (
+                <div className="mt-8 space-y-4">
+                  <h2 className="text-xl font-bold text-gray-800">Group Options</h2>
+                  
+                  <div className="grid grid-cols-1  gap-4">
+                    <Button 
+                      variant="default" 
+                      className="w-full" 
+                      onClick={() => navigate(`/projects/${projectId}/groups`)}
+                    >
+                      <Users className="h-5 w-5 mr-2" /> View Groups
+                    </Button>
+  
+                  </div>
+                </div>
+              )}
             </>
           ) : !loading && !project ? (
             <div className="text-center py-12">
