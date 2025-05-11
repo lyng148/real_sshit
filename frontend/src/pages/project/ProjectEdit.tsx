@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/components/ui/use-toast";
-import { Skeleton } from "@/components/ui/skeleton";
-import projectService, { Project, ProjectUpdateRequest } from '@/services/projectService';
+import { Sidebar } from '@/components/Sidebar';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/use-toast';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import projectService from '@/services/projectService';
+import { format } from 'date-fns';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface Project {
+  id: number;
+  name: string;
+  description: string;
+  deadline: string;
+  // Add other fields as needed
+}
+
+interface ProjectUpdateRequest {
+  name: string;
+  description: string;
+  deadline: string;
+  // Add other fields as needed
+}
 
 const ProjectEdit = () => {
   const { projectId } = useParams<{ projectId: string }>();

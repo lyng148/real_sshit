@@ -110,7 +110,7 @@ export interface ContributionFactors {
   taskCompletion: number;
   peerReview: number;
   commitCount: number;
-  taskDifficulty: number;
+  lateTaskCount: number;
 }
 
 // Member contribution

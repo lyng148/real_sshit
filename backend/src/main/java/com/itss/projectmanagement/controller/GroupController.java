@@ -398,4 +398,40 @@ public class GroupController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Operation(summary = "Delete group", description = "Deletes an existing group and all its related data (tasks, comments, commit records)")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Group deleted successfully"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Not authorized to delete this group"),
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Group not found")
+    })
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'INSTRUCTOR', 'STUDENT')")
+    public ResponseEntity<ApiResponse<Void>> deleteGroup(
+            @Parameter(description = "ID of the group to delete") @PathVariable Long id) {
+        try {
+            groupService.deleteGroup(id);
+            
+            ApiResponse<Void> response = ApiResponse.success(
+                    null,
+                    "Group deleted successfully"
+            );
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            ApiResponse<Void> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        } catch (IllegalStateException e) {
+            ApiResponse<Void> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.FORBIDDEN
+            );
+            
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+    }
 }

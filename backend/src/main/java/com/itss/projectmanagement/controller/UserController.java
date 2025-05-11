@@ -148,8 +148,7 @@ public class UserController {
                     }
                     if (userRequest.getFullName() != null) {
                         existingUser.setFullName(userRequest.getFullName());
-                    }
-                    if (userRequest.getEmail() != null) {
+                    }                    if (userRequest.getEmail() != null) {
                         existingUser.setEmail(userRequest.getEmail());
                     }
                     if (userRequest.getRoles() != null) {
@@ -158,6 +157,9 @@ public class UserController {
                     if (userRequest.getPassword() != null) {
                         // Password will be encoded in the service
                         existingUser.setPassword(userRequest.getPassword());
+                    }
+                    if (userRequest.getAvatarUrl() != null) {
+                        existingUser.setAvatarUrl(userRequest.getAvatarUrl());
                     }
                     // Update enabled status if explicitly set in the request
                     existingUser.setEnabled(userRequest.isEnabled());

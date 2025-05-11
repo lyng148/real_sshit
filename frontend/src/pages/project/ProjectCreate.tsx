@@ -67,12 +67,20 @@ const ProjectCreate = () => {
         });
       }
     } catch (error) {
-      console.error("Error creating project:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      if (error.response.status === 403) {
+        toast({
+          title: "Error",
+          description: "You do not have permission to create a project",
+          variant: "destructive",
+        });
+      } else {
+          console.error("Error creating project:", error);
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred",
+            variant: "destructive",
+          });
+      }
     } finally {
       setIsSubmitting(false);
     }

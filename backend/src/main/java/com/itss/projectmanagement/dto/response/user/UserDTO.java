@@ -21,8 +21,8 @@ public class UserDTO {
     private String email;
     private String fullName;
     private Set<Role> roles;
-    private boolean enabled;
-    private LocalDateTime lastLoginAt;
+    private boolean enabled;    private LocalDateTime lastLoginAt;
+    private String avatarUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -51,8 +52,7 @@ const GroupManagePage: React.FC = () => {
 
   const [group, setGroup] = useState<Group | null>(null);
   const [editMode, setEditMode] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [editedGroup, setEditedGroup] = useState<{
+  const [loading, setLoading] = useState(true);  const [editedGroup, setEditedGroup] = useState<{
     name: string;
     description: string;
     repositoryUrl: string;
@@ -63,10 +63,20 @@ const GroupManagePage: React.FC = () => {
   });
   const [confirmLeaderDialogOpen, setConfirmLeaderDialogOpen] = useState(false);
   const [selectedNewLeader, setSelectedNewLeader] = useState<Member | null>(null);
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
   const isAdmin = currentUser?.user.roles?.includes('ADMIN');
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
   const userId = currentUser?.user.id;
+  
+  // Helper function to get initials from full name
+  const getInitials = (name: string): string => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
   
   // Check if current user is the group leader
   const isLeader = userId && group?.leader?.id === userId;
@@ -203,6 +213,38 @@ const GroupManagePage: React.FC = () => {
     }
   };
 
+  // Handle group deletion
+  const handleDeleteGroup = async () => {
+    if (!groupId) return;
+    
+    try {
+      const response = await groupService.deleteGroup(Number(groupId));
+      
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Group and all related data (tasks, comments) deleted successfully",
+        });
+        navigate(`/projects/${projectId}`);
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to delete group",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting group:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while deleting the group",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen overflow-hidden">
@@ -284,11 +326,17 @@ const GroupManagePage: React.FC = () => {
                   <Button onClick={handleSaveGroup}>
                     <Save className="h-4 w-4 mr-2" /> Save Changes
                   </Button>
+                </>              ) : (
+                <>
+                  <Button onClick={() => setEditMode(true)}>
+                    <Edit className="h-4 w-4 mr-2" /> Edit Group
+                  </Button>
+                  {(isLeader || isAdmin || isInstructor) && (
+                    <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+                      <Trash className="h-4 w-4 mr-2" /> Delete Group
+                    </Button>
+                  )}
                 </>
-              ) : (
-                <Button onClick={() => setEditMode(true)}>
-                  <Edit className="h-4 w-4 mr-2" /> Edit Group
-                </Button>
               )}
             </div>
           </div>
@@ -380,12 +428,17 @@ const GroupManagePage: React.FC = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {/* First row always shows the leader */}
-                    <TableRow key={group.leader.id}>
+                    {/* First row always shows the leader */}                    <TableRow key={group.leader.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center space-x-2">
-                          <Crown className="h-4 w-4 text-amber-500" />
-                          <span>{group.leader.fullName}</span>
+                          <div className="flex items-center">
+                            <Avatar className="h-6 w-6 mr-2">
+                              {group.leader.avatarUrl && <AvatarImage src={group.leader.avatarUrl} alt={group.leader.fullName} />}
+                              <AvatarFallback>{getInitials(group.leader.fullName)}</AvatarFallback>
+                            </Avatar>
+                            <Crown className="h-4 w-4 text-amber-500 mr-1" />
+                            <span>{group.leader.fullName}</span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{group.leader.username}</TableCell>
@@ -393,12 +446,18 @@ const GroupManagePage: React.FC = () => {
                       <TableCell className="text-right">
                         {/* No actions for the leader */}
                       </TableCell>
-                    </TableRow>
-
-                    {/* Other members */}
+                    </TableRow>                    {/* Other members */}
                     {group.members.filter(member => member.id !== group.leader.id).map((member) => (
                       <TableRow key={member.id}>
-                        <TableCell className="font-medium">{member.fullName}</TableCell>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center">
+                            <Avatar className="h-6 w-6 mr-2">
+                              {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
+                              <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
+                            </Avatar>
+                            <span>{member.fullName}</span>
+                          </div>
+                        </TableCell>
                         <TableCell>{member.username}</TableCell>
                         <TableCell>Member</TableCell>
                         <TableCell className="text-right">
@@ -470,10 +529,23 @@ const GroupManagePage: React.FC = () => {
 
       {/* Transfer Leadership Dialog */}
       <Dialog open={confirmLeaderDialogOpen} onOpenChange={setConfirmLeaderDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent>          <DialogHeader>
             <DialogTitle>Transfer Group Leadership</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="pt-3">
+              {selectedNewLeader && (
+                <div className="flex items-center mb-4">
+                  <Avatar className="h-10 w-10 mr-3">
+                    {selectedNewLeader.avatarUrl && (
+                      <AvatarImage src={selectedNewLeader.avatarUrl} alt={selectedNewLeader.fullName} />
+                    )}
+                    <AvatarFallback>{getInitials(selectedNewLeader.fullName)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{selectedNewLeader.fullName}</p>
+                    <p className="text-xs text-gray-500">{selectedNewLeader.username}</p>
+                  </div>
+                </div>
+              )}
               Are you sure you want to make {selectedNewLeader?.fullName} the new leader of this group? 
               You will no longer be the leader.
             </DialogDescription>
@@ -484,6 +556,29 @@ const GroupManagePage: React.FC = () => {
             </Button>
             <Button onClick={handleTransferLeadership}>
               Confirm Transfer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>      {/* Delete Group Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Group</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this group? This action cannot be undone and will permanently delete:
+              <ul className="list-disc pl-5 mt-2">
+                <li>All tasks assigned to this group</li>
+                <li>All comments on these tasks</li>
+                <li>All commit records for this group</li>
+              </ul>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteGroup}>
+              Delete Group
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -9,12 +9,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Edit, User, Mail, MoreHorizontal, Key, Shield } from 'lucide-react';
 import { Group } from '@/services/groupService';
 import { useToast } from '@/components/ui/use-toast';
+import AvatarUpload from '@/components/user/AvatarUpload';
 
 const Profile = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, login } = useAuth();
   const { toast } = useToast();
   const [myGroups, setMyGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [userAvatar, setUserAvatar] = useState<string | undefined>(currentUser?.user.avatarUrl);
 
   useEffect(() => {
     const fetchMyGroups = async () => {
@@ -54,15 +56,16 @@ const Profile = () => {
           <h1 className="text-2xl font-bold mb-6">Profile</h1>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Profile Card */}
-            <Card className="md:col-span-1">
+            {/* Profile Card */}            <Card className="md:col-span-1">
               <CardContent className="pt-6 flex flex-col items-center">
-                <Avatar className="h-24 w-24 mb-4">
-                  <AvatarFallback className="text-lg">
-                    {currentUser?.user.fullName ? getInitials(currentUser.user.fullName) : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <h2 className="text-xl font-bold">{currentUser?.user.fullName}</h2>
+                {currentUser && (
+                  <AvatarUpload 
+                    user={currentUser.user} 
+                    onAvatarUpdated={(url) => setUserAvatar(url)} 
+                    getInitials={getInitials}
+                  />
+                )}
+                <h2 className="text-xl font-bold mt-4">{currentUser?.user.fullName}</h2>
                 <p className="text-gray-500 mb-4">{currentUser?.user.username}</p>
                 
                 <div className="w-full mt-4 space-y-2">

@@ -82,7 +82,6 @@ const ProjectDetails: React.FC = () => {
       fetchProjectDetails();
     }
   }, [projectId, toast]);
-
   const handleDeleteProject = async () => {
     try {
       const response = await projectService.deleteProject(Number(projectId));
@@ -90,7 +89,7 @@ const ProjectDetails: React.FC = () => {
       if (response.success) {
         toast({
           title: "Success",
-          description: "Project deleted successfully",
+          description: "Project and all related data (groups, tasks, comments) deleted successfully",
         });
         navigate('/');
       } else {
@@ -154,11 +153,17 @@ const ProjectDetails: React.FC = () => {
                           <Trash2 className="h-4 w-4 mr-2" /> Delete
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
+                      <DialogContent>                        <DialogHeader>
                           <DialogTitle>Delete Project</DialogTitle>
                           <DialogDescription>
-                            Are you sure you want to delete this project? This action cannot be undone.
+                            Are you sure you want to delete this project? This action cannot be undone and will permanently delete:
+                            <ul className="list-disc pl-5 mt-2">
+                              <li>All groups in this project</li>
+                              <li>All tasks assigned to these groups</li>
+                              <li>All comments on tasks</li>
+                              <li>All commit records for these groups</li>
+                              <li>All peer review data for this project</li>
+                            </ul>
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
@@ -227,28 +232,28 @@ const ProjectDetails: React.FC = () => {
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle>Weight Factors</CardTitle>
-                  <CardDescription>Weights used for calculating contribution scores</CardDescription>
+                  <CardDescription>Weights used for calculating contribution scores: W1*Task Completion + W2*Peer Review + W3*Commit Count + W4*Task Late Count</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Task Completion (W1)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW1}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW1}</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Peer Review (W2)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW2}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW2}</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Commit Count (W3)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW3}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW3}</div>
                     </div>
                     
                     <div className="p-4 border rounded-lg bg-gray-50">
                       <div className="text-sm font-medium text-gray-500">Task Late Count (W4)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW4}%</div>
+                      <div className="text-xl font-bold mt-1">{project.weightW4}</div>
                     </div>
                   </div>
                 </CardContent>

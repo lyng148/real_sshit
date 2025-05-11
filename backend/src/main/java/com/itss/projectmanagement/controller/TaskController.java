@@ -131,7 +131,7 @@ public class TaskController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Group not found")
     })
     @GetMapping("/group/{groupId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<TaskResponse>>> getTasksByGroup(
             @Parameter(description = "ID of the group") @PathVariable Long groupId) {
         try {

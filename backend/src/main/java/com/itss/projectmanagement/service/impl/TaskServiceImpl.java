@@ -156,16 +156,17 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findByAssignee(assignee).stream()
                 .map(taskConverter::toResponse)
                 .collect(Collectors.toList());
-    }
-
+    }    
+    
     @Override
     @Transactional
     public void deleteTask(Long taskId) {
-        if (!taskRepository.existsById(taskId)) {
-            throw new ResourceNotFoundException("Task not found with id: " + taskId);
-        }
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
         
-        taskRepository.deleteById(taskId);
+        // With cascading delete configured, this will automatically delete all comments
+        // and remove references from commit records
+        taskRepository.delete(task);
     }
 
     @Override

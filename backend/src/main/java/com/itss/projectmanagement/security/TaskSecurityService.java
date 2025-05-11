@@ -44,4 +44,50 @@ public class TaskSecurityService {
             return false;
         }
     }
+
+    /**
+     * Check if a user can view a task. This includes:
+     * - The user is the group leader
+     * - The user is assigned to the task
+     * - The user is a member of the group that owns the task
+     * 
+     * @param user The authenticated user
+     * @param taskId The task ID to check
+     * @return true if the user can view the task, false otherwise
+     */
+    public boolean canViewTask(Object user, Long taskId) {
+        if (user == null || taskId == null) {
+            return false;
+        }
+        
+        try {
+            User authenticatedUser = (User) user;
+            Optional<Task> taskOpt = taskRepository.findById(taskId);
+            
+            if (taskOpt.isEmpty()) {
+                return false;
+            }
+            
+            Task task = taskOpt.get();
+            
+            // Check if user is the group leader
+            if (task.getGroup().getLeader() != null && 
+                task.getGroup().getLeader().getId().equals(authenticatedUser.getId())) {
+                return true;
+            }
+            
+            // Check if user is assigned to the task
+            if (task.getAssignee() != null && 
+                task.getAssignee().getId().equals(authenticatedUser.getId())) {
+                return true;
+            }
+            
+            // Check if user is a member of the group
+            return task.getGroup().getMembers().stream()
+                .anyMatch(member -> member.getId().equals(authenticatedUser.getId()));
+                
+        } catch (ClassCastException e) {
+            return false;
+        }
+    }
 }

@@ -110,9 +110,8 @@ public class ProjectService {
         User instructor = getCurrentUser();
         return projectRepository.findByInstructor(instructor);
     }
-    
-    /**
-     * Delete a project
+      /**
+     * Delete a project and all related entities
      */
     @Transactional
     public void deleteProject(Long projectId) {
@@ -125,6 +124,12 @@ public class ProjectService {
             throw new IllegalArgumentException("Only the instructor who created the project can delete it");
         }
         
+        // With cascading delete configured in entities, this will automatically:
+        // 1. Delete all groups in the project
+        // 2. Delete all tasks in those groups
+        // 3. Delete all comments on those tasks
+        // 4. Delete all commit records for those groups
+        // 5. Delete all peer reviews for the project
         projectRepository.delete(project);
     }
     

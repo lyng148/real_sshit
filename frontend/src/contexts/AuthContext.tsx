@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { authService } from '@/services/authService';
 
-interface User {
+interface User {  
   token: string;
   user: {
     id: number;
@@ -9,6 +9,7 @@ interface User {
     email: string;
     fullName: string;
     roles: string[];
+    avatarUrl?: string;
   }
 }
 

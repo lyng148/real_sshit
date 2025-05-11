@@ -37,7 +37,7 @@ public class CommitRecord extends BaseEntity {
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private Task task;
     

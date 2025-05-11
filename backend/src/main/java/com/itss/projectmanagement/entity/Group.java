@@ -52,4 +52,14 @@ public class Group extends BaseEntity {
     )
     @Builder.Default
     private Set<User> members = new HashSet<>();
+    
+    // Group has many tasks - cascade delete to remove all tasks when group is deleted
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Task> tasks = new HashSet<>();
+    
+    // Group has many commit records - cascade delete to remove all commit records when group is deleted
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<CommitRecord> commitRecords = new HashSet<>();
 }

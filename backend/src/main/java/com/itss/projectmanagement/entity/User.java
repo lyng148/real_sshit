@@ -30,17 +30,20 @@ public class User extends BaseEntity implements UserDetails {
     private String password;
 
     @Column(nullable = false)
-    private String fullName;
-
+    private String fullName;    
+    
     @Column(nullable = false, unique = true)
     private String email;
 
     @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
-    private Set<Role> roles;
-
+    private Set<Role> roles;    
+    
     private LocalDateTime lastLoginAt;
+    
+    @Column
+    private String avatarUrl;
     
     @Builder.Default
     private boolean enabled = true;

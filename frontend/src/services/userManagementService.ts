@@ -2,12 +2,12 @@ import axiosInstance from './axiosInstance';
 
 export interface UserManagementResponse {
   success: boolean;
-  message: string;
   data?: any;
+  message?: string;
 }
 
-const userManagementService = {
-  getAllUsers: async (): Promise<UserManagementResponse> => {
+class UserManagementService {
+  async getAllUsers(): Promise<UserManagementResponse> {
     try {
       const response = await axiosInstance.get('/api/users');
       return response.data;
@@ -15,9 +15,9 @@ const userManagementService = {
       console.error('Error fetching users:', error);
       return { success: false, message: 'Failed to fetch users' };
     }
-  },
+  }
 
-  getUserById: async (id: string): Promise<UserManagementResponse> => {
+  async getUserById(id: string): Promise<UserManagementResponse> {
     try {
       const response = await axiosInstance.get(`/api/users/${id}`);
       return response.data;
@@ -25,9 +25,9 @@ const userManagementService = {
       console.error(`Error fetching user ${id}:`, error);
       return { success: false, message: 'Failed to fetch user details' };
     }
-  },
+  }
 
-  createUser: async (userData: any): Promise<UserManagementResponse> => {
+  async createUser(userData: any): Promise<UserManagementResponse> {
     try {
       const response = await axiosInstance.post('/api/users', userData);
       return response.data;
@@ -35,9 +35,9 @@ const userManagementService = {
       console.error('Error creating user:', error);
       return { success: false, message: 'Failed to create user' };
     }
-  },
+  }
 
-  updateUser: async (id: string, userData: any): Promise<UserManagementResponse> => {
+  async updateUser(id: string, userData: any): Promise<UserManagementResponse> {
     try {
       const response = await axiosInstance.put(`/api/users/${id}`, userData);
       return response.data;
@@ -45,9 +45,9 @@ const userManagementService = {
       console.error(`Error updating user ${id}:`, error);
       return { success: false, message: 'Failed to update user' };
     }
-  },
+  }
 
-  deleteUser: async (id: string): Promise<UserManagementResponse> => {
+  async deleteUser(id: string): Promise<UserManagementResponse> {
     try {
       const response = await axiosInstance.delete(`/api/users/${id}`);
       return response.data;
@@ -56,6 +56,23 @@ const userManagementService = {
       return { success: false, message: 'Failed to delete user' };
     }
   }
-};
 
-export default userManagementService;
+  async enableDisableUser(id: string, enabled: boolean): Promise<UserManagementResponse> {
+    try {
+      const response = await axiosInstance.put(`/api/users/${id}/status`, { enabled });
+      return {
+        success: true,
+        data: response.data,
+        message: `User ${enabled ? 'enabled' : 'disabled'} successfully.`
+      };
+    } catch (error) {
+      console.error('Error enabling/disabling user:', error);
+      return {
+        success: false,
+        message: 'Failed to update user status.'
+      };
+    }
+  }
+}
+
+export default new UserManagementService();

@@ -26,7 +26,7 @@
   - [x] Pressure Score configuration (write default value in form)
 - [x] Build project detail view
 - [x] Create project editing interface
-- [] Implement project deletion with confirmation
+- [x] Implement project deletion with confirmation
 - [x] Add project statistics dashboard
 
 ## 5. Group Management
@@ -108,8 +108,8 @@
 - [ ] Implement data export functionality
 
 ## 13. Comment System
-- [ ] Create comment listing component
-- [ ] Implement comment creation form
+- [x] Create comment listing component
+- [x] Implement comment creation form
 - [ ] Build comment editing functionality
 - [ ] Add comment deletion with confirmation
 

@@ -24,6 +24,7 @@ public class TaskResponse {
     private LocalDate deadline;
     private Long assigneeId;
     private String assigneeName;
+    private String assigneeAvatarUrl;
     private Long groupId;
     private String groupName;
     private TaskStatus status;

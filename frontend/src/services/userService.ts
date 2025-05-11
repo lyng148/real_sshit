@@ -45,10 +45,18 @@ export const userService = {
       throw error;
     }
   },
-  
-  async assignRoles(id: number, roles: string[]) {
+    async assignRoles(id: number, roles: string[]) {
     try {
       const response = await axiosInstance.put(`/api/users/${id}/roles`, { roles });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
+  async updateAvatar(id: number, avatarUrl: string) {
+    try {
+      const response = await axiosInstance.put(`/api/users/${id}`, { avatarUrl });
       return response.data;
     } catch (error) {
       throw error;

@@ -326,4 +326,36 @@ public class GroupService {
         
         return groupRepository.save(group);
     }
+
+    /**
+     * Delete a group and all its related entities (tasks, comments, commit records)
+     * @param groupId the group ID to delete
+     */
+    @Transactional
+    public void deleteGroup(Long groupId) {
+        // Get current user
+        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        
+        // Get the group
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        
+        // Check permissions: only group leader or instructor or admin can delete the group
+        boolean isAdmin = SecurityUtils.hasAnyRole(Role.ADMIN);
+        boolean isInstructor = SecurityUtils.hasAnyRole(Role.INSTRUCTOR);
+        boolean isProjectInstructor = isInstructor && 
+                Objects.equals(group.getProject().getInstructor().getId(), currentUser.getId());
+        boolean isGroupLeader = group.getLeader() != null && 
+                Objects.equals(group.getLeader().getId(), currentUser.getId());
+        
+        if (!isAdmin && !isProjectInstructor && !isGroupLeader) {
+            throw new IllegalStateException("Only group leader, project instructor or admin can delete the group");
+        }
+        
+        // With cascading delete configured in entities, this will automatically:
+        // 1. Delete all tasks in the group
+        // 2. Delete all comments on those tasks
+        // 3. Delete all commit records for this group
+        groupRepository.delete(group);
+    }
 }

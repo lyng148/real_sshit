@@ -24,8 +24,7 @@ public class TaskConverter {
                 .status(TaskStatus.NOT_STARTED)
                 .build();
     }
-    
-    public TaskResponse toResponse(Task task) {
+      public TaskResponse toResponse(Task task) {
         return TaskResponse.builder()
                 .id(task.getId())
                 .title(task.getTitle())
@@ -35,6 +34,7 @@ public class TaskConverter {
                 .deadline(task.getDeadline())
                 .assigneeId(task.getAssignee() != null ? task.getAssignee().getId() : null)
                 .assigneeName(task.getAssignee() != null ? task.getAssignee().getFullName() : null)
+                .assigneeAvatarUrl(task.getAssignee() != null ? task.getAssignee().getAvatarUrl() : null)
                 .groupId(task.getGroup().getId())
                 .groupName(task.getGroup().getName())
                 .status(task.getStatus())

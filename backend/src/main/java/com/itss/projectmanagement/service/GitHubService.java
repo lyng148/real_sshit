@@ -164,11 +164,17 @@ public class GitHubService {
     
     /**
      * Get all commits for a specific group
-     * @param group The group
+     * @param  groupId The group ID
      * @return List of CommitRecord DTOs
      */
-    public List<CommitRecordDTO> getCommitsByGroup(Group group) {
+    public List<CommitRecordDTO> getCommitsByGroup(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
         List<CommitRecord> commitRecords = commitRecordRepository.findByGroup(group);
+        if (commitRecords.isEmpty()) {
+            log.warn("No commits found for group {}", groupId);
+            return List.of();
+        }
         return convertToDto(commitRecords);
     }
     
@@ -182,6 +188,38 @@ public class GitHubService {
                 .filter(commit -> !commit.isValid())
                 .collect(Collectors.toList());
         return convertToDto(commitRecords);
+    }
+    
+    /**
+     * Get all commits for a specific task
+     * @param taskId The task ID
+     * @return List of CommitRecord DTOs
+     */
+    public List<CommitRecordDTO> getCommitsByTask(Long taskId) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Task not found with id: " + taskId));
+                
+        // Find commits directly associated with the task
+        List<CommitRecord> commitRecords = commitRecordRepository.findByTask(task);
+        
+        // Also find commits that mention this task ID in the commit message but might not be linked
+        String taskIdPattern = "TASK-" + taskId;
+        List<CommitRecord> commitsByMessage = commitRecordRepository.findByGroup(task.getGroup()).stream()
+                .filter(commit -> commit.getMessage().contains(taskIdPattern))
+                .collect(Collectors.toList());
+                
+        // Combine both lists and remove duplicates
+        commitRecords.addAll(commitsByMessage);
+        List<CommitRecord> distinctCommits = commitRecords.stream()
+                .distinct()
+                .collect(Collectors.toList());
+                
+        if (distinctCommits.isEmpty()) {
+            log.info("No commits found for task {}", taskId);
+            return List.of();
+        }
+        
+        return convertToDto(distinctCommits);
     }
     
     /**
