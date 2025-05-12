@@ -6,16 +6,25 @@ import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.security.UserPrincipal;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
  * Utility class for security and authorization related operations
  */
+@Component
 public class SecurityUtils {
+    private final UserRepository userRepository;
+
+    @Autowired
+    public SecurityUtils(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     /**
      * Checks if the current authenticated user has admin role
@@ -62,11 +71,10 @@ public class SecurityUtils {
     /**
      * Checks if the current authenticated user is the leader of any group
      * @param groupRepository the group repository
-     * @param userRepository the user repository
      * @return true if the user is a leader of any group, false otherwise
      */
-    public static boolean isAnyGroupLeader(GroupRepository groupRepository, UserRepository userRepository) {
-        User currentUser = getCurrentUser(userRepository);
+    public boolean isAnyGroupLeader(GroupRepository groupRepository) {
+        User currentUser = this.getCurrentUser();
         if (currentUser == null) {
             return false;
         }
@@ -126,18 +134,15 @@ public class SecurityUtils {
     }
     
     /**
-     * Get the current authenticated user entity from the database
-     * @param userRepository the user repository to fetch user data
+     * Get the current authenticated user entity from the SecurityContext (principal)
      * @return the current User entity or throws IllegalStateException if not found
      */
-    public static User getCurrentUser(UserRepository userRepository) {
-        String username = getCurrentUsername();
-        if (username == null) {
+    public static User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
             throw new IllegalStateException("No authenticated user found");
         }
-        
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalStateException("User not found: " + username));
+        return (User) authentication.getPrincipal();
     }
     
     /**

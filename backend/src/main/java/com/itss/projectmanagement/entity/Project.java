@@ -29,6 +29,10 @@ public class Project extends BaseEntity {
     @Column(length = 500)
     private String description;
     
+    @Size(max = 8, min = 8, message = "Access code must be exactly 8 characters")
+    @Column(length = 8, unique = true)
+    private String accessCode;
+    
     @NotNull(message = "Maximum number of members is required")
     @Column(nullable = false)
     private Integer maxMembers;

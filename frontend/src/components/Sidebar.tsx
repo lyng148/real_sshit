@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Home, Settings, User, LogOut, UserCog } from 'lucide-react';
+import { Home, Settings, User, LogOut, UserCog, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProjectList from './ProjectList';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import JoinProject from './project/JoinProject';
 
 export const Sidebar = () => {
   const [searchValue, setSearchValue] = useState('');
@@ -14,13 +15,18 @@ export const Sidebar = () => {
   // Sửa lại việc kiểm tra quyền ADMIN để tránh lỗi khi currentUser là null/undefined 
   const isAdmin = currentUser?.user.roles ? currentUser.user.roles.includes('ADMIN') : false;
   const isInstructor = currentUser?.user.roles ? currentUser.user.roles.includes('INSTRUCTOR') : false;
-
-  // Handle navigation to create project page
+  // Handle navigation to create project page for instructors, or open join dialog for students
   const handleCreateProject = () => {
-    // Only instructors and admins can create projects
+    // Instructors and admins can create projects
     if (isInstructor || isAdmin) {
       navigate('/projects/create');
     }
+  };
+  
+  // Handle join project for students
+  const [joinDialogOpen, setJoinDialogOpen] = useState(false);
+  const openJoinDialog = () => {
+    setJoinDialogOpen(true);
   };
 
   // Handle logout
@@ -78,25 +84,24 @@ export const Sidebar = () => {
       {/* Projects section */}
       <div className="mt-5">
         <div className="flex items-center justify-between px-4 py-1">
-          <span className="text-xs font-medium text-gray-500">PROJECTS</span>
-          <div className="flex">
-            <button className="text-gray-400 hover:text-gray-600">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-            <button 
-              className={cn(
-                "text-gray-400 hover:text-gray-600 ml-1", 
-                (isInstructor || isAdmin) ? "cursor-pointer" : "cursor-not-allowed opacity-50"
-              )}
-              onClick={handleCreateProject}
-              title={(isInstructor || isAdmin) ? "Create Project" : "Only instructors can create projects"}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
+          <span className="text-xs font-medium text-gray-500">PROJECTS</span>          <div className="flex">
+            {isInstructor || isAdmin ? (
+              <button 
+                className="text-gray-400 hover:text-gray-600 ml-1 cursor-pointer"
+                onClick={handleCreateProject}
+                title="Create Project"
+              >
+                <Plus size={16} />
+              </button>
+            ) : (
+              <button 
+                className="text-gray-400 hover:text-gray-600 ml-1 cursor-pointer"
+                onClick={() => setJoinDialogOpen(true)}
+                title="Join a Project"
+              >
+                <Plus size={16} />
+              </button>
+            )}
           </div>
         </div>
         
@@ -121,6 +126,16 @@ export const Sidebar = () => {
           </li>
         </ul>
       </div>
+        {/* Join Project Dialog for students */}
+      <JoinProject 
+        isOpen={joinDialogOpen}
+        onOpenChange={(open) => setJoinDialogOpen(open)}
+        onSuccess={() => {
+          setJoinDialogOpen(false);
+          // Refresh the project list
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };

@@ -11,7 +11,9 @@ import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.utils.SecurityUtils;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +28,8 @@ public class GroupService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final GroupConverter groupConverter;
+    @Autowired
+    private EntityManager entityManager;
 
     /**
      * Create a new group for a project
@@ -35,7 +39,7 @@ public class GroupService {
     @Transactional
     public Group createGroup(GroupCreateRequest request) {
         // Get current user
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         
         // Get the project
         Project project = projectRepository.findById(request.getProjectId())
@@ -69,38 +73,67 @@ public class GroupService {
      * @param groupId the group ID
      * @param projectId the project ID
      * @return the updated group
-     */
+     */      
     @Transactional
     public Group joinGroup(Long groupId, Long projectId) {
-        // Get current user
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = userRepository.findById(SecurityUtils.getCurrentUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
         
-        // Get the project
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
         
-        // Check if user is already in a group for this project
+        String checkQuery = "SELECT COUNT(*) FROM group_members WHERE group_id = ? AND user_id = ?";
+        Object result = entityManager.createNativeQuery(checkQuery)
+                .setParameter(1, groupId)
+                .setParameter(2, currentUser.getId())
+                .getSingleResult();
+                
+        if (((Number) result).intValue() > 0) {
+            Group existingGroup = groupRepository.findById(groupId)
+                    .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+            return existingGroup;
+        }
+        
         if (groupRepository.isUserInAnyGroupForProject(currentUser, project)) {
             throw new IllegalStateException("You are already in a group for this project");
         }
         
-        // Get the group and check if it belongs to the project
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        Group group = entityManager.createQuery(
+                "SELECT g FROM Group g LEFT JOIN FETCH g.members WHERE g.id = :groupId", 
+                Group.class)
+                .setParameter("groupId", groupId)
+                .getSingleResult();
         
         if (!group.getProject().getId().equals(projectId)) {
             throw new IllegalArgumentException("Group does not belong to the specified project");
         }
         
-        // Check if group is full
         if (group.getMembers().size() >= project.getMaxMembers()) {
             throw new IllegalStateException("Group is already full");
         }
         
-        // Add user to the group
-        group.getMembers().add(currentUser);
-        return groupRepository.save(group);
-    }    /**
+        String insertQuery = "INSERT INTO group_members (group_id, user_id) VALUES (?, ?)";
+        try {
+            entityManager.createNativeQuery(insertQuery)
+                    .setParameter(1, groupId)
+                    .setParameter(2, currentUser.getId())
+                    .executeUpdate();
+            
+            entityManager.flush();
+            entityManager.clear();
+            
+            return groupRepository.findById(groupId)
+                    .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        } catch (Exception e) {
+            if (e.getMessage().contains("Duplicate")) {
+                return groupRepository.findById(groupId)
+                        .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+            }
+            throw e;
+        }
+    }
+
+    /**
      * Auto-assign a user to a group in a project
      * @param projectId the project ID
      * @return the assigned group
@@ -108,7 +141,7 @@ public class GroupService {
     @Transactional
     public Group autoAssignGroup(Long projectId) {
         // Get current user
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         
         // Get the project
         Project project = projectRepository.findById(projectId)
@@ -163,7 +196,7 @@ public class GroupService {
         }
         
         // Students can see all groups if they haven't joined any group for this project
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         boolean isUserInAnyGroupForThisProject = groupRepository.isUserInAnyGroupForProject(currentUser, project);
         
         if (!isUserInAnyGroupForThisProject) {
@@ -192,7 +225,7 @@ public class GroupService {
         }
         
         // Students can only view groups they are part of
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         if (group.getMembers().contains(currentUser)) {
             return group;
         }
@@ -205,7 +238,7 @@ public class GroupService {
      * @return list of groups
      */
     public List<Group> getCurrentUserGroups() {
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         return groupRepository.findByMember(currentUser);
     }
 
@@ -238,7 +271,7 @@ public class GroupService {
      */
     @Transactional
     public void leaveGroup(Long groupId) {
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
         
@@ -265,7 +298,7 @@ public class GroupService {
      */
     @Transactional
     public Group transferLeadership(Long groupId, Long newLeaderId) {
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
         
@@ -297,7 +330,7 @@ public class GroupService {
     @Transactional
     public Group updateGroup(Long groupId, GroupUpdateRequest updateRequest) {
         // Get current user
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         
         // Get the group
         Group group = groupRepository.findById(groupId)
@@ -343,7 +376,7 @@ public class GroupService {
     @Transactional
     public void deleteGroup(Long groupId) {
         // Get current user
-        User currentUser = SecurityUtils.getCurrentUser(userRepository);
+        User currentUser = SecurityUtils.getCurrentUser();
         
         // Get the group
         Group group = groupRepository.findById(groupId)
@@ -360,11 +393,7 @@ public class GroupService {
         if (!isAdmin && !isProjectInstructor && !isGroupLeader) {
             throw new IllegalStateException("Only group leader, project instructor or admin can delete the group");
         }
-        
-        // With cascading delete configured in entities, this will automatically:
-        // 1. Delete all tasks in the group
-        // 2. Delete all comments on those tasks
-        // 3. Delete all commit records for this group
+
         groupRepository.delete(group);
     }
 }

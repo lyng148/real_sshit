@@ -184,6 +184,55 @@ class ProjectService {
     }
   }
   
+  // Get project access code
+  async getProjectAccessCode(projectId: number) {
+    try {
+      const response = await axiosInstance.get(`/api/projects/${projectId}/access-code`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  // Get QR code URL for a project (returns the URL to fetch the QR code image)
+  getProjectQRCodeUrl(projectId: number) {
+    return `${axiosInstance.defaults.baseURL}/api/projects/${projectId}/qrcode`;
+  }
+  
+  // Join a project with access code
+  async joinProjectWithAccessCode(accessCode: string) {
+    try {
+      const response = await axiosInstance.post('/api/projects/join', {
+        accessCode: accessCode
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  // Invite students to a project
+  async inviteStudentsToProject(projectId: number, usernames: string[]) {
+    try {
+      const response = await axiosInstance.post(`/api/projects/${projectId}/invite`, {
+        usernames: usernames
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
+  // Remove a student from a project
+  async removeStudentFromProject(projectId: number, studentId: number) {
+    try {
+      const response = await axiosInstance.delete(`/api/projects/${projectId}/students/${studentId}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+  
   // Process task data to extract statistics
   private processTaskStatistics(tasks) {
     // Calculate statistics from task data

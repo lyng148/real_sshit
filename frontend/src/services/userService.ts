@@ -45,7 +45,8 @@ export const userService = {
       throw error;
     }
   },
-    async assignRoles(id: number, roles: string[]) {
+  
+  async assignRoles(id: number, roles: string[]) {
     try {
       const response = await axiosInstance.put(`/api/users/${id}/roles`, { roles });
       return response.data;
@@ -61,7 +62,16 @@ export const userService = {
     } catch (error) {
       throw error;
     }
-  }
+  },
+
+  async getProjectStudents(projectId: number) {
+    try {
+      const response = await axiosInstance.get(`/api/projects/${projectId}/students`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default userService;

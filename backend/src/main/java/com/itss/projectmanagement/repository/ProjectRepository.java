@@ -14,6 +14,20 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     boolean existsByName(String name);
     
     /**
+     * Check if a project exists with the given access code
+     * @param accessCode The access code to check
+     * @return True if a project with this access code exists
+     */
+    boolean existsByAccessCode(String accessCode);
+    
+    /**
+     * Find a project by its access code
+     * @param accessCode The access code to search for
+     * @return The project, if found
+     */
+    Project findByAccessCode(String accessCode);
+    
+    /**
      * Find all active projects (projects that are not finalized)
      * @return List of active projects
      */

@@ -191,34 +191,6 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
         return result;
     }
     
-    @Override
-    public int calculateContributionScore(Long userId, Long projectId) {
-        User user = new User();
-        user.setId(userId);
-        
-        Project project = new Project();
-        project.setId(projectId);
-        
-        // First check if we have an existing score saved
-        Optional<ContributionScore> existingScoreOpt = contributionScoreRepository.findByUserAndProject(user, project);
-        
-        if (existingScoreOpt.isPresent()) {
-            // Use the adjusted score if available, otherwise the calculated score
-            ContributionScore score = existingScoreOpt.get();
-            Double finalScore = score.getAdjustedScore() != null ? score.getAdjustedScore() : score.getCalculatedScore();
-            
-            // Convert to integer scale (0-100)
-            return convertScoreToIntegerScale(finalScore);
-        } else {
-            // No existing score, calculate a new one
-            ContributionScore newScore = calculateScore(user, project);
-            Double finalScore = newScore.getAdjustedScore() != null ? newScore.getAdjustedScore() : newScore.getCalculatedScore();
-            
-            // Convert to integer scale (0-100)
-            return convertScoreToIntegerScale(finalScore);
-        }
-    }
-    
     /**
      * Convert the contribution score to an integer scale (0-100)
      * This normalizes scores that could have different ranges based on project weights

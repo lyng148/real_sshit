@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Sidebar } from '@/components/Sidebar';
@@ -6,11 +5,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import projectService from '@/services/projectService';
+import groupService from '@/services/groupService';
 import { Badge } from '@/components/ui/badge';
+import ProjectAccessCode from '@/components/project/ProjectAccessCode';
+import ManageProjectStudents from '@/components/project/ManageProjectStudents';
+import JoinProject from '@/components/project/JoinProject';
 
 // Define the Project interface
 interface Project {
@@ -40,48 +43,69 @@ const ProjectDetails: React.FC = () => {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [isGroupLeader, setIsGroupLeader] = useState<boolean>(false);
 
   const isAdmin = currentUser?.user.roles?.includes('ADMIN');
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
   const isStudent = currentUser?.user.roles?.includes('STUDENT');
   const canEdit = isAdmin || isInstructor;
-  
-  // For the purpose of this implementation, let's assume we have this check
-  // In a real app, we would fetch this info from an API
-  const isProjectLeader = true; // Placeholder - should be determined from the backend
+
+  const fetchIsGroupLeader = async () => {
+    try {
+      const response = await groupService.getMyLedGroups();
+      if (response.success) {
+        const ledGroups = response.data || [];
+        const isLeader = ledGroups.some(group => group.projectId === Number(projectId));
+        return isLeader;
+      }
+    } catch (error) {
+      console.error("Error fetching led groups:", error);
+    }
+    return false;
+  };
+
+  useEffect(() => {
+    const checkGroupLeaderStatus = async () => {
+      const isLeader = await fetchIsGroupLeader();
+      setIsGroupLeader(isLeader);
+    };
+
+    checkGroupLeaderStatus();
+  }, [projectId]);
+
+  const fetchProject = async () => {
+    try {
+      setLoading(true);
+      const response = await projectService.getProjectById(Number(projectId));
+      
+      if (response.success) {
+        setProject(response.data);
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to load project details",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching project details:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while loading project details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Fetch project details
   useEffect(() => {
-    const fetchProjectDetails = async () => {
-      try {
-        setLoading(true);
-        const response = await projectService.getProjectById(Number(projectId));
-        
-        if (response.success) {
-          setProject(response.data);
-        } else {
-          toast({
-            title: "Error",
-            description: response.message || "Failed to load project details",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("Error fetching project details:", error);
-        toast({
-          title: "Error",
-          description: "An unexpected error occurred while loading project details",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (projectId) {
-      fetchProjectDetails();
+      fetchProject();
     }
   }, [projectId, toast]);
+  
   const handleDeleteProject = async () => {
     try {
       const response = await projectService.deleteProject(Number(projectId));
@@ -260,7 +284,7 @@ const ProjectDetails: React.FC = () => {
               </Card>
               
               {/* Only show Actions section for staff or group leaders */}
-              {(isInstructor || isAdmin || isProjectLeader) && (
+              {(isInstructor || isAdmin || isGroupLeader) && (
                 <div className="mt-8 space-y-4">
                   <h2 className="text-xl font-bold text-gray-800">Actions</h2>
                   
@@ -287,6 +311,30 @@ const ProjectDetails: React.FC = () => {
                   </div>
                 </div>
               )}
+
+              {/* Access Management Section */}
+              <div className="mt-8 space-y-4">
+                {(isAdmin || isInstructor) && (
+                    <h2 className="text-xl font-bold text-gray-800">Access Management</h2>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Show access management for instructors/admins */}
+                  {(isInstructor || isAdmin) && (
+                    <>
+                      <ProjectAccessCode 
+                        projectId={Number(projectId)} 
+                        projectName={project?.name || ""} 
+                      />
+                      
+                      <ManageProjectStudents 
+                        projectId={Number(projectId)} 
+                        projectName={project?.name || ""} 
+                      />
+                    </>
+                  )}
+                </div>
+              </div>
 
               {/* For regular students: show join/create group options */}
               {isStudent && (

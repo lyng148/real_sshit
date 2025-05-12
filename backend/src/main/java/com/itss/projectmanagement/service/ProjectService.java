@@ -4,17 +4,25 @@ import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
+import com.itss.projectmanagement.entity.ProjectStudent;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
+import com.itss.projectmanagement.repository.ProjectStudentRepository;
+import com.itss.projectmanagement.repository.UserRepository;
+import com.itss.projectmanagement.enums.Role;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +31,9 @@ public class ProjectService {
     private final ProjectRepository projectRepository;
     private final UserService userService;
     private final GroupRepository groupRepository;
-    
-    /**
+    private final ProjectStudentRepository projectStudentRepository;
+    private final UserRepository userRepository;
+      /**
      * Create a new project for an instructor
      */
     @Transactional
@@ -36,6 +45,9 @@ public class ProjectService {
         
         // Get the current authenticated user as instructor
         User instructor = getCurrentUser();
+        
+        // Generate a unique access code for this project
+        String accessCode = generateUniqueAccessCode();
         
         Project project = Project.builder()
                 .name(request.getName())
@@ -49,6 +61,7 @@ public class ProjectService {
                 .freeriderThreshold(request.getFreeriderThreshold())
                 .pressureThreshold(request.getPressureThreshold())
                 .instructor(instructor)
+                .accessCode(accessCode)
                 .build();
         
         return projectRepository.save(project);
@@ -182,5 +195,204 @@ public class ProjectService {
      */
     public boolean isValidGithubUrl(String url) {
         return url != null && url.matches("^https://github\\.com/[\\w-]+/[\\w-]+(\\.[\\w-]+)*$");
+    }
+    
+    /**
+     * Generate a unique random access code for a project
+     * @return a unique 8-character alphanumeric access code
+     */
+    private String generateUniqueAccessCode() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder(8);
+        
+        boolean isUnique = false;
+        String code = "";
+        
+        while (!isUnique) {
+            // Generate an 8-character code
+            sb.setLength(0);
+            for (int i = 0; i < 8; i++) {
+                sb.append(chars.charAt(random.nextInt(chars.length())));
+            }
+            
+            code = sb.toString();
+            
+            // Check if the code is already used
+            boolean exists = projectRepository.existsByAccessCode(code);
+            if (!exists) {
+                isUnique = true;
+            }
+        }
+        
+        return code;
+    }
+    
+    /**
+     * Add student to project through direct invitation
+     * @param projectId Project ID
+     * @param usernames List of student usernames to invite
+     * @return List of successfully invited students
+     */
+    @Transactional
+    public List<User> inviteStudentsToProject(Long projectId, List<String> usernames) {
+        // Get the project
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
+        
+        // Verify that current user is either admin or the instructor who created the project
+        User currentUser = getCurrentUser();
+        boolean isAdmin = SecurityUtils.hasAnyRole(Role.ADMIN);
+        boolean isProjectInstructor = project.getInstructor().getId().equals(currentUser.getId());
+        
+        if (!isAdmin && !isProjectInstructor) {
+            throw new IllegalArgumentException("Only project instructor or admin can invite students");
+        }
+        
+        // Find existing users by username
+        List<User> studentsToInvite = userRepository.findByUsernameIn(usernames);
+        
+        // Validate all users have STUDENT role
+        List<User> nonStudentUsers = studentsToInvite.stream()
+                .filter(user -> !user.getRoles().contains(Role.STUDENT))
+                .collect(Collectors.toList());
+        
+        if (!nonStudentUsers.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The following users are not students: " + 
+                    nonStudentUsers.stream().map(User::getUsername).collect(Collectors.joining(", ")));
+        }
+        
+        // Add students to project
+        List<User> invitedStudents = new ArrayList<>();
+        for (User student : studentsToInvite) {
+            // Check if student is already invited
+            boolean alreadyInvited = projectStudentRepository.existsByProjectAndStudent(project, student);
+            if (!alreadyInvited) {
+                ProjectStudent projectStudent = ProjectStudent.builder()
+                        .project(project)
+                        .student(student)
+                        .build();
+                
+                projectStudentRepository.save(projectStudent);
+                invitedStudents.add(student);
+            }
+        }
+        
+        return invitedStudents;
+    }
+    
+    /**
+     * Let a student join a project using access code
+     * @param accessCode Project access code
+     * @return The project the student joined
+     */
+    @Transactional
+    public Project joinProjectByAccessCode(String accessCode) {
+        // Get current user (must be a student)
+        User student = getCurrentUser();
+        if (!SecurityUtils.hasAnyRole(Role.STUDENT)) {
+            throw new IllegalArgumentException("Only students can join projects using access codes");
+        }
+        
+        // Find project by access code
+        Project project = projectRepository.findByAccessCode(accessCode);
+        if (project == null) {
+            throw new IllegalArgumentException("Invalid project access code");
+        }
+        
+        // Check if student is already in the project
+        boolean alreadyInvited = projectStudentRepository.existsByProjectAndStudent(project, student);
+        if (alreadyInvited) {
+            throw new IllegalStateException("You are already invited to this project");
+        }
+        
+        // Add student to project
+        ProjectStudent projectStudent = ProjectStudent.builder()
+                .project(project)
+                .student(student)
+                .build();
+        
+        projectStudentRepository.save(projectStudent);
+        
+        return project;
+    }
+    
+    /**
+     * Get all projects a student has access to
+     * @return List of projects the student has access to
+     */
+    public List<Project> getStudentProjects() {
+        User student = getCurrentUser();
+        if (!SecurityUtils.hasAnyRole(Role.STUDENT)) {
+            throw new IllegalArgumentException("This method is only for students");
+        }
+        
+        List<ProjectStudent> projectStudents = projectStudentRepository.findByStudent(student);
+        return projectStudents.stream()
+                .map(ProjectStudent::getProject)
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * Check if a student can access a project
+     * @param projectId The project ID to check
+     * @param studentId The student ID to check
+     * @return True if the student has access to the project
+     */
+    public boolean canStudentAccessProject(Long projectId, Long studentId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+                
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                
+        return projectStudentRepository.existsByProjectAndStudent(project, student);
+    }
+    
+    /**
+     * Remove a student from a project
+     * @param projectId The project ID
+     * @param studentId The student ID to remove
+     */
+    @Transactional
+    public void removeStudentFromProject(Long projectId, Long studentId) {
+        // Get the project
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+                
+        // Verify that current user is either admin or the instructor who created the project
+        User currentUser = getCurrentUser();
+        boolean isAdmin = SecurityUtils.hasAnyRole(Role.ADMIN);
+        boolean isProjectInstructor = project.getInstructor().getId().equals(currentUser.getId());
+        
+        if (!isAdmin && !isProjectInstructor) {
+            throw new IllegalArgumentException("Only project instructor or admin can remove students");
+        }
+        
+        // Get the student
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
+                
+        // Remove the student from the project
+        ProjectStudent projectStudent = projectStudentRepository.findByProjectAndStudent(project, student)
+                .orElseThrow(() -> new IllegalArgumentException("Student is not invited to this project"));
+                
+        projectStudentRepository.delete(projectStudent);
+    }
+    
+    /**
+     * Get all students in a project
+     * @param projectId The project ID
+     * @return List of students in the project
+     */
+    public List<User> getProjectStudents(Long projectId) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
+        
+        List<ProjectStudent> projectStudents = projectStudentRepository.findByProject(project);
+        return projectStudents.stream()
+                .map(ProjectStudent::getStudent)
+                .collect(Collectors.toList());
     }
 }

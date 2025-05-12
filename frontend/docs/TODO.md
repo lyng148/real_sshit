@@ -31,27 +31,25 @@
 
 ## 5. Group Management
 - [x] Create group listing interface
-- [ ] Implement group creation form
+- [x] Implement group creation form
 - [x] Build group joining mechanism
-- [ ] Develop automatic group assignment feature
+- [x] Develop automatic group assignment feature
 - [x] Create group detail view with member list
 - [x] Implement group leader designation functionality
 
 ## 6. Task Management
-- [ ] Create task board/listing view by group
-- [ ] Implement task creation form with:
-  - [ ] Title and description
-  - [ ] Difficulty level selection (Easy/Medium/Hard)
-  - [ ] Deadline picker
-  - [ ] Assignee selection
-- [ ] Build task detail view with:
-  - [ ] Status updates (Not Started/In Progress/Completed)
-  - [ ] Progress percentage input
-  - [ ] Comments section
-  - [ ] Task history log
+- [x] Create task kanban view in group page
+- [x] Implement task creation form with:
+  - [x] Title and description
+  - [x] Difficulty level selection (Easy/Medium/Hard)
+  - [x] Deadline picker
+  - [x] Assignee selection
+- [x] Build task detail view with:
+  - [x] Status updates (Not Started/In Progress/Completed)
+  - [x] Comments section
+  - [x] Task commit log
 - [ ] Implement task editing functionality
 - [ ] Add task deletion with confirmation
-- [ ] Create task filtering and sorting options
 
 ## 7. GitHub Integration
 - [ ] Implement GitHub API connection configuration
@@ -73,10 +71,10 @@
 ## 9. Peer Review System
 - [ ] Implement weekly peer review trigger mechanism
 - [ ] Create peer review form with:
-  - [ ] Task completion rating (1-5)
-  - [ ] Collaboration rating (1-5)
+  - [ ] Task completion rating (1-5) (vote by click on start)
+  - [ ] Collaboration rating (1-5) (vote by click on start)
   - [ ] Feedback text field
-- [ ] Build peer review reminder system
+- [ ] khi ấn vào group page của mình, màn hình hiển thị trắng xóa, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụngdụng
 - [ ] Implement peer review completion tracking
 - [ ] Create peer review results visualization
 
