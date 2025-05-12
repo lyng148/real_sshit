@@ -6,7 +6,7 @@
 - [x] Set up JWT token storage
 - [x] Create authentication guards for protected routes
 - [x] Implement user session management
-- [] Add logout functionality
+- [x] Add logout functionality
 
 ## 3. User Management (Admin)
 - [x] Create user listing page with filtering options
@@ -30,12 +30,12 @@
 - [x] Add project statistics dashboard
 
 ## 5. Group Management
-- [ ] Create group listing interface
+- [x] Create group listing interface
 - [ ] Implement group creation form
-- [ ] Build group joining mechanism
+- [x] Build group joining mechanism
 - [ ] Develop automatic group assignment feature
-- [ ] Create group detail view with member list
-- [ ] Implement group leader designation functionality
+- [x] Create group detail view with member list
+- [x] Implement group leader designation functionality
 
 ## 6. Task Management
 - [ ] Create task board/listing view by group

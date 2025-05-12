@@ -8,6 +8,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import projectService from '@/services/projectService';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
@@ -17,15 +19,32 @@ interface Project {
   id: number;
   name: string;
   description: string;
-  deadline: string;
-  // Add other fields as needed
+  maxMembers: number;
+  evaluationCriteria: string;
+  weightW1: number;
+  weightW2: number;
+  weightW3: number;
+  weightW4: number;
+  freeriderThreshold: number;
+  pressureThreshold: number;
+  createdAt?: string;
+  updatedAt?: string;
+  creatorId?: number;
+  creatorName?: string;
 }
 
 interface ProjectUpdateRequest {
+  id: number;
   name: string;
   description: string;
-  deadline: string;
-  // Add other fields as needed
+  maxMembers: number;
+  evaluationCriteria: string;
+  weightW1: number;
+  weightW2: number;
+  weightW3: number;
+  weightW4: number;
+  freeriderThreshold: number;
+  pressureThreshold: number;
 }
 
 const ProjectEdit = () => {
@@ -99,26 +118,25 @@ const ProjectEdit = () => {
       [name]: type === 'number' ? Number(value) : value
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
       console.log("Submitting form data:", formData);
-      // Ensure all required fields are provided
+      // Prepare the project update data
       const projectData: ProjectUpdateRequest = {
         id: Number(projectId),
-        name: formData.name || project!.name, // Ensure name is always provided
-        description: formData.description || project!.description, // Ensure description is always provided
-        maxMembers: formData.maxMembers || project!.maxMembers, // Ensure maxMembers is always provided
-        evaluationCriteria: formData.evaluationCriteria || project!.evaluationCriteria, // Ensure evaluationCriteria is always provided
-        weightW1: formData.weightW1 || project!.weightW1,
-        weightW2: formData.weightW2 || project!.weightW2,
-        weightW3: formData.weightW3 || project!.weightW3,
-        weightW4: formData.weightW4 || project!.weightW4,
-        freeriderThreshold: formData.freeriderThreshold || project!.freeriderThreshold,
-        pressureThreshold: formData.pressureThreshold || project!.pressureThreshold,
+        name: formData.name,
+        description: formData.description,
+        maxMembers: formData.maxMembers,
+        evaluationCriteria: formData.evaluationCriteria,
+        weightW1: formData.weightW1,
+        weightW2: formData.weightW2,
+        weightW3: formData.weightW3,
+        weightW4: formData.weightW4,
+        freeriderThreshold: formData.freeriderThreshold,
+        pressureThreshold: formData.pressureThreshold,
       };
 
       const response = await projectService.updateProject(Number(projectId), projectData);

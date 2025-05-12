@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
@@ -139,26 +138,32 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
   }, [toast]);
 
   const handleAutoJoin = useCallback(async () => {
-    if (groups.length > 0) {
-      // Find a group with available spots
-      const availableGroup = groups.find(group => group.memberCount < group.maxMembers);
-      if (availableGroup) {
-        await handleAutoJoinGroup(availableGroup.id);
+    if (!projectId) return;
+    try {
+      const response = await groupService.autoJoinGroup(Number(projectId));
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "You have been auto-assigned to a group!",
+        });
+        // Refetch groups to update UI
+        await fetchGroups();
       } else {
         toast({
-          title: "No Available Groups",
-          description: "There are no groups with available spots.",
+          title: "Error",
+          description: response.message || "Failed to auto join group",
           variant: "destructive",
         });
       }
-    } else {
+    } catch (error) {
+      console.error("Error auto joining group:", error);
       toast({
-        title: "No Groups",
-        description: "There are no groups available to join.",
+        title: "Error",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     }
-  }, [groups, handleAutoJoinGroup, toast]);
+  }, [projectId, fetchGroups, toast]);
 
   useEffect(() => {
     // Reset state when projectId changes

@@ -7,6 +7,30 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import projectService from '@/services/projectService';
+import { HelpCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// Helper component for field labels with tooltips
+const LabelWithTooltip = ({ htmlFor, label, tooltipText }) => (
+  <div className="flex items-center gap-1">
+    <Label htmlFor={htmlFor}>{label}</Label>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p className="text-sm">{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  </div>
+);
 
 const ProjectCreate = () => {
   const navigate = useNavigate();
@@ -140,10 +164,17 @@ const ProjectCreate = () => {
                 min="1"
                 max="10"
               />
+            </div>            
+            <div className="mt-8 mb-2" style={{ fontSize: '2.25rem', fontWeight: 'bold' }}>
+              <LabelWithTooltip 
+                htmlFor="weightFactors"
+                label="Weight Factor Setting"
+                tooltipText="Contribution score = W1*Task Completion + W2*Peer Review Score + W3*Commit Count - W4*Late Task Count"
+              />
             </div>
-
+            
             <div>
-              <Label htmlFor="weightW1">Weight Factor W1</Label>
+              <Label htmlFor="weightW1">Weight Factor W1 (Task Completion)</Label>
               <Input
                 type="number"
                 id="weightW1"
@@ -157,7 +188,7 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="weightW2">Weight Factor W2</Label>
+              <Label htmlFor="weightW2">Weight Factor W2 (Peer Review)</Label>
               <Input
                 type="number"
                 id="weightW2"
@@ -171,7 +202,7 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="weightW3">Weight Factor W3</Label>
+              <Label htmlFor="weightW3">Weight Factor W3 (Commit Count)</Label>
               <Input
                 type="number"
                 id="weightW3"
@@ -182,10 +213,8 @@ const ProjectCreate = () => {
                 min="0"
                 max="100"
               />
-            </div>
-
-            <div>
-              <Label htmlFor="weightW4">Weight Factor W4</Label>
+            </div>            <div>
+              <Label htmlFor="weightW4">Weight Factor W4 (Late Task Penalty)</Label>
               <Input
                 type="number"
                 id="weightW4"
@@ -199,7 +228,11 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="freeriderThreshold">Free Rider Detection Threshold</Label>
+              <LabelWithTooltip
+                htmlFor="freeriderThreshold" 
+                label="Free Rider Detection Threshold"
+                tooltipText="A contribution score below this threshold*average contribution score of team will flag a member as a potential free-rider."
+              />
               <Input
                 type="number"
                 id="freeriderThreshold"
@@ -213,7 +246,11 @@ const ProjectCreate = () => {
             </div>
 
             <div>
-              <Label htmlFor="pressureThreshold">Pressure Score Threshold</Label>
+              <LabelWithTooltip
+                htmlFor="pressureThreshold"
+                label="Pressure Score Threshold"
+                tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload. The system monitors task assignments and deadlines to calculate pressure scores."
+              />
               <Input
                 type="number"
                 id="pressureThreshold"

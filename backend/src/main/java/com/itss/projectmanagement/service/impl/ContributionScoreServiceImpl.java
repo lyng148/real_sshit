@@ -98,11 +98,10 @@ public class ContributionScoreServiceImpl implements ContributionScoreService {
     @Override
     @Transactional
     public void calculateScoresForProject(Project project) {
-        List<ContributionScore> scores = new ArrayList<>();
         List<User> projectUsers = getAllProjectUsers(project);
-        
+
         for (User user : projectUsers) {
-            scores.add(calculateScore(user, project));
+            calculateScore(user, project);
         }
     }
     

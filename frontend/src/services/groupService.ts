@@ -1,4 +1,3 @@
-
 import axiosInstance from './axiosInstance';
 
 export interface Member {
@@ -130,6 +129,15 @@ export const groupService = {
       const response = await axiosInstance.post(`/api/groups/${groupId}/transfer-leadership`, {
         newLeaderId
       });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async autoJoinGroup(projectId: number) {
+    try {
+      const response = await axiosInstance.post(`/api/groups/auto-assign`, { projectId });
       return response.data;
     } catch (error) {
       throw error;

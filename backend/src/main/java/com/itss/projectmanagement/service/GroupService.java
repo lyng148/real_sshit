@@ -100,9 +100,7 @@ public class GroupService {
         // Add user to the group
         group.getMembers().add(currentUser);
         return groupRepository.save(group);
-    }
-
-    /**
+    }    /**
      * Auto-assign a user to a group in a project
      * @param projectId the project ID
      * @return the assigned group
@@ -132,8 +130,19 @@ public class GroupService {
         // Sort groups by member count to balance distribution
         availableGroups.sort(Comparator.comparing(group -> group.getMembers().size()));
         
-        // Add user to the group with the fewest members
-        Group selectedGroup = availableGroups.get(0);
+        // Get the group with the fewest members
+        Long selectedGroupId = availableGroups.get(0).getId();
+        
+        // Get a fresh instance of the group to avoid any stale data issues
+        Group selectedGroup = groupRepository.findById(selectedGroupId)
+                .orElseThrow(() -> new IllegalStateException("Selected group no longer exists"));
+        
+        // Check if the user is already a member (additional safeguard)
+        if (selectedGroup.getMembers().stream().anyMatch(member -> member.getId().equals(currentUser.getId()))) {
+            throw new IllegalStateException("You are already a member of this group");
+        }
+        
+        // Add user to the group
         selectedGroup.getMembers().add(currentUser);
         
         return groupRepository.save(selectedGroup);
