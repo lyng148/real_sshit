@@ -151,15 +151,13 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
       } else {
         toast({
           title: "Error",
-          description: response.message || "Failed to auto join group",
+          description: response.data.message || "Failed to auto join group",
           variant: "destructive",
         });
-      }
-    } catch (error) {
-      console.error("Error auto joining group:", error);
+      }    } catch (error) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: error.message || (error.response?.data?.message ? error.response.data.message : "An unexpected error occurred"),
         variant: "destructive",
       });
     }

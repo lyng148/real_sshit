@@ -8,11 +8,7 @@ import com.itss.projectmanagement.dto.request.group.GroupJoinRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
-import com.itss.projectmanagement.entity.User;
-import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.GroupService;
-import com.itss.projectmanagement.utils.SecurityUtils;
+import com.itss.projectmanagement.service.IGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,7 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,15 +29,13 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/groups")
-@RequiredArgsConstructor
 @Tag(name = "Group Management", description = "APIs for managing project groups")
 public class GroupController {
-    
-    private final GroupService groupService;
-    private final GroupConverter groupConverter;
-    private final GroupRepository groupRepository;
-    private final UserRepository userRepository;
-    
+    @Autowired
+    private IGroupService groupService;
+    @Autowired
+    private GroupConverter groupConverter;
+
     @Operation(summary = "Create a new group", description = "Creates a new group for a project and assigns the creator as leader")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "Group created successfully",

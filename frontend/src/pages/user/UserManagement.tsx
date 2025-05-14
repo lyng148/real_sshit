@@ -72,12 +72,12 @@ const UserManagement = () => {
           description: response.message || "Failed to load users",
           variant: "destructive",
         });
-      }
-    } catch (error) {
+      }    
+    } catch (error: any) {
       console.error("Could not fetch users:", error);
       toast({
         title: "Error",
-        description: "Failed to load users",
+        description: error.message || error.response?.data?.message || "Failed to load users",
         variant: "destructive",
       });
     } finally {
@@ -95,12 +95,12 @@ const UserManagement = () => {
       toast({
         title: "Success",
         description: `User ${enable ? 'enabled' : 'disabled'} successfully.`,
-      });
-    } catch (error) {
+      });    
+    } catch (error: any) {
       console.error("Could not enable/disable user:", error);
       toast({
         title: "Error",
-        description: `Failed to ${enable ? 'enable' : 'disable'} user.`,
+        description: error.message || error.response?.data?.message || `Failed to ${enable ? 'enable' : 'disable'} user.`,
         variant: "destructive",
       });
     }
@@ -114,12 +114,12 @@ const UserManagement = () => {
       toast({
         title: "Success",
         description: "User deleted successfully.",
-      });
-    } catch (error) {
+      });    
+    } catch (error: any) {
       console.error("Could not delete user:", error);
       toast({
         title: "Error",
-        description: "Failed to delete user.",
+        description: error.message || error.response?.data?.message || "Failed to delete user.",
         variant: "destructive",
       });
     }

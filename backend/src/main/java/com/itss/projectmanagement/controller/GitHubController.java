@@ -62,7 +62,7 @@ public class GitHubController {    private final GitHubService gitHubService;
     }
 
     @GetMapping("/commits/project/{projectId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR')")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN')")
     @Operation(summary = "Get all commits for a project", 
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<CommitRecordDTO>> getCommitsByProject(@PathVariable Long projectId) {
@@ -72,7 +72,7 @@ public class GitHubController {    private final GitHubService gitHubService;
     }
     
     @GetMapping("/commits/group/{groupId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @securityService.isGroupMember(authentication.principal.id, #groupId)")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @securityService.isGroupMember(authentication.principal.id, #groupId)")
     @Operation(summary = "Get all commits for a group", 
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<CommitRecordDTO>> getCommitsByGroup(@PathVariable Long groupId) {
@@ -96,7 +96,7 @@ public class GitHubController {    private final GitHubService gitHubService;
     }
     
     @GetMapping("/commits/invalid/group/{groupId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @securityService.isProjectGroupLeader(authentication.principal.id, #groupId)")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @securityService.isProjectGroupLeader(authentication.principal.id, #groupId)")
     @Operation(summary = "Get all invalid commits for a group", 
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<CommitRecordDTO>> getInvalidCommitsByGroup(@PathVariable Long groupId) {

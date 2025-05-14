@@ -52,19 +52,15 @@
 - [ ] Add task deletion with confirmation
 
 ## 7. GitHub Integration
-- [ ] Implement GitHub API connection configuration
-- [ ] Create commit history display by project/group
-- [ ] Build commit visualization by task (with TASK-ID detection)
-- [ ] Implement commit statistics by user
 - [ ] Add error handling for GitHub connection issues
 
 ## 8. Contribution Score System
-- [ ] Create contribution score calculation visualization
-- [ ] Implement detailed score breakdown view:
-  - [ ] Task completion weighted score
-  - [ ] Peer review average score
-  - [ ] Commit count contribution
-  - [ ] Late task penalties
+- [x] Create contribution score calculation visualization
+- [x] Implement detailed score breakdown view:
+  - [x] Task completion weighted score
+  - [x] Peer review average score
+  - [x] Commit count contribution
+  - [x] Late task penalties
 - [ ] Build instructor score adjustment interface
 - [ ] Create final evaluation recording system
 

@@ -40,11 +40,11 @@ const Login = () => {
           description: response.message || "Invalid credentials",
           variant: "destructive",
         });
-      }
+      }    
     } catch (error: any) {
       toast({
         title: "Login error",
-        description: error.response?.data?.message || "An error occurred during login",
+        description: error.message || error.response?.data?.message || "An error occurred during login",
         variant: "destructive",
       });
     } finally {

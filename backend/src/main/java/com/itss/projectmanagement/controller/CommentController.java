@@ -41,7 +41,7 @@ public class CommentController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Task not found")
     })
     @PostMapping
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR','STUDENT')")
     public ResponseEntity<ApiResponse<CommentDTO>> createComment(
             @Valid @RequestBody CommentRequest request) {
         try {
@@ -71,7 +71,7 @@ public class CommentController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Comment not found")
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR','STUDENT')")
     public ResponseEntity<ApiResponse<CommentDTO>> updateComment(
             @Parameter(description = "ID of the comment to update") @PathVariable Long id,
             @Valid @RequestBody CommentRequest request) {
@@ -148,7 +148,7 @@ public class CommentController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Comment not found")
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR','STUDENT','ADMIN')")
     public ResponseEntity<ApiResponse<CommentDTO>> getComment(
             @Parameter(description = "ID of the comment to retrieve") @PathVariable Long id) {
         try {
@@ -176,7 +176,7 @@ public class CommentController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Task not found")
     })
     @GetMapping("/task/{taskId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR','STUDENT','ADMIN')")
     public ResponseEntity<ApiResponse<List<CommentDTO>>> getCommentsForTask(
             @Parameter(description = "ID of the task") @PathVariable Long taskId) {
         try {

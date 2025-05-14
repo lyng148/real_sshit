@@ -7,53 +7,63 @@ export interface UserManagementResponse {
 }
 
 class UserManagementService {
-  async getAllUsers(): Promise<UserManagementResponse> {
-    try {
+  async getAllUsers(): Promise<UserManagementResponse> {    try {
       const response = await axiosInstance.get('/api/users');
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching users:', error);
-      return { success: false, message: 'Failed to fetch users' };
+      return { 
+        success: false, 
+        message: error.message || error.response?.data?.message || 'Failed to fetch users' 
+      };
     }
   }
 
-  async getUserById(id: string): Promise<UserManagementResponse> {
-    try {
+  async getUserById(id: string): Promise<UserManagementResponse> {    try {
       const response = await axiosInstance.get(`/api/users/${id}`);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error fetching user ${id}:`, error);
-      return { success: false, message: 'Failed to fetch user details' };
+      return { 
+        success: false, 
+        message: error.message || error.response?.data?.message || 'Failed to fetch user details' 
+      };
     }
   }
 
-  async createUser(userData: any): Promise<UserManagementResponse> {
-    try {
+  async createUser(userData: any): Promise<UserManagementResponse> {    try {
       const response = await axiosInstance.post('/api/users', userData);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating user:', error);
-      return { success: false, message: 'Failed to create user' };
+      return { 
+        success: false, 
+        message: error.message || error.response?.data?.message || 'Failed to create user' 
+      };
     }
   }
 
-  async updateUser(id: string, userData: any): Promise<UserManagementResponse> {
-    try {
+  async updateUser(id: string, userData: any): Promise<UserManagementResponse> {    try {
       const response = await axiosInstance.put(`/api/users/${id}`, userData);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error updating user ${id}:`, error);
-      return { success: false, message: 'Failed to update user' };
+      return { 
+        success: false, 
+        message: error.message || error.response?.data?.message || 'Failed to update user' 
+      };
     }
   }
 
-  async deleteUser(id: string): Promise<UserManagementResponse> {
-    try {
+  async deleteUser(id: string): Promise<UserManagementResponse> {    try {
       const response = await axiosInstance.delete(`/api/users/${id}`);
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error deleting user ${id}:`, error);
-      return { success: false, message: 'Failed to delete user' };
+      return { 
+        success: false, 
+        message: error.message || error.response?.data?.message || 'Failed to delete user' 
+      };
     }
   }
 
@@ -64,12 +74,11 @@ class UserManagementService {
         success: true,
         data: response.data,
         message: `User ${enabled ? 'enabled' : 'disabled'} successfully.`
-      };
-    } catch (error) {
+      };    } catch (error: any) {
       console.error('Error enabling/disabling user:', error);
       return {
         success: false,
-        message: 'Failed to update user status.'
+        message: error.message || error.response?.data?.message || 'Failed to update user status.'
       };
     }
   }

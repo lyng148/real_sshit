@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import taskService, { Task as ApiTask } from '@/services/taskService';
 import axiosInstance from '@/services/axiosInstance';
+import { useToast } from '@/hooks/use-toast';
 
 // Task interface for the frontend
 interface Task {
@@ -20,6 +21,7 @@ interface Task {
 
 const TasksPage = () => {
   const { projectId } = useParams();
+  const { toast } = useToast();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -84,10 +86,10 @@ const TasksPage = () => {
           originalTask: apiTask
         }));
         
-        setTasks(uiTasks);
-      } catch (err) {
+        setTasks(uiTasks);      
+      } catch (err: any) {
         console.error("Error fetching tasks:", err);
-        setError('Failed to load tasks. Please try again later.');
+        setError(err.message || err.response?.data?.message || 'Failed to load tasks. Please try again later.');
       } finally {
         setIsLoading(false);
       }
@@ -143,12 +145,16 @@ const TasksPage = () => {
             return task;
           })
         );
-      }
-    } catch (error) {
+      }    
+    } catch (error: any) {
       console.error("Failed to update task status:", error);
       // Revert to original status on error
       setTasks(prevState => [...prevState]);
-      // Could show an error toast here
+      toast({
+        title: "Error",
+        description: error.message || error.response?.data?.message || "Failed to update task status",
+        variant: "destructive",
+      });
     }
   };// Move task to next column
   const moveTaskForward = async (taskId: string) => {

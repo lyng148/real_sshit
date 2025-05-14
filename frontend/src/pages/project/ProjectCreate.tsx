@@ -89,22 +89,14 @@ const ProjectCreate = () => {
           description: response.message || "Failed to create project",
           variant: "destructive",
         });
-      }
-    } catch (error) {
-      if (error.response.status === 403) {
-        toast({
-          title: "Error",
-          description: "You do not have permission to create a project",
-          variant: "destructive",
-        });
-      } else {
-          console.error("Error creating project:", error);
-          toast({
-            title: "Error",
-            description: "An unexpected error occurred",
-            variant: "destructive",
-          });
-      }
+      }    
+    } catch (error: any) {
+      console.error("Error creating project:", error);
+      toast({
+        title: "Error",
+        description: error.message || error.response?.data?.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

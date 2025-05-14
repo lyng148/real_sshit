@@ -24,37 +24,28 @@ import java.util.stream.Collectors;
 public class StatisticsService {
 
     private final ProjectService projectService;
-    private final GroupService groupService;
     private final TaskRepository taskRepository;
     private final GroupRepository groupRepository;
-    private final UserRepository userRepository;
     private final ContributionScoreService contributionScoreService;
     private final PressureScoreService pressureScoreService;
     private final PeerReviewService peerReviewService;
-    private final FreeRiderDetectionService freeRiderDetectionService;
     private final GitHubService gitHubService;
 
     @Autowired
     public StatisticsService(
             ProjectService projectService,
-            GroupService groupService,
             TaskRepository taskRepository,
             GroupRepository groupRepository,
-            UserRepository userRepository,
             ContributionScoreService contributionScoreService,
             PressureScoreService pressureScoreService,
             PeerReviewService peerReviewService,
-            FreeRiderDetectionService freeRiderDetectionService,
             GitHubService gitHubService) {
         this.projectService = projectService;
-        this.groupService = groupService;
         this.taskRepository = taskRepository;
         this.groupRepository = groupRepository;
-        this.userRepository = userRepository;
         this.contributionScoreService = contributionScoreService;
         this.pressureScoreService = pressureScoreService;
         this.peerReviewService = peerReviewService;
-        this.freeRiderDetectionService = freeRiderDetectionService;
         this.gitHubService = gitHubService;
     }
 

@@ -95,12 +95,12 @@ const ProjectEdit = () => {
             description: response.message || "Failed to load project",
             variant: "destructive",
           });
-        }
-      } catch (error) {
+        }      
+      } catch (error: any) {
         console.error("Error fetching project:", error);
         toast({
           title: "Error",
-          description: "An unexpected error occurred",
+          description: error.message || error.response?.data?.message || "An unexpected error occurred",
           variant: "destructive",
         });
       } finally {
@@ -152,12 +152,12 @@ const ProjectEdit = () => {
           description: response.message || "Failed to update project",
           variant: "destructive",
         });
-      }
-    } catch (error) {
+      }    
+    } catch (error: any) {
       console.error("Error updating project:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: error.message || error.response?.data?.message || "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {

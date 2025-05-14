@@ -25,12 +25,11 @@ const Profile = () => {
         // Here you would fetch the user's groups
         // For now, we'll just simulate some data
         setMyGroups([]);
-        setIsLoading(false);
-      } catch (error) {
+        setIsLoading(false);      } catch (error: any) {
         console.error('Error fetching groups:', error);
         toast({
           title: "Error",
-          description: "Failed to load your groups",
+          description: error.message || error.response?.data?.message || "Failed to load your groups",
           variant: "destructive",
         });
         setIsLoading(false);

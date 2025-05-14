@@ -82,8 +82,8 @@ const GroupAnalyzePage: React.FC = () => {
             description: response.message || "Failed to load group statistics",
             variant: "destructive",
           });
-        }
-      } catch (error) {
+        }      
+      } catch (error: any) {
         setAnalyzing(false);
         setProgress(100);
         if (interval) clearInterval(interval);
@@ -91,7 +91,7 @@ const GroupAnalyzePage: React.FC = () => {
         console.error("Error fetching group statistics:", error);
         toast({
           title: "Error",
-          description: "An unexpected error occurred while loading statistics",
+          description: error.message || error.response?.data?.message || "An unexpected error occurred while loading statistics",
           variant: "destructive",
         });
       } finally {

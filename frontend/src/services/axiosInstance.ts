@@ -30,12 +30,24 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Handle common errors like 401 Unauthorized
-    if (error.response && error.response.status === 401) {
-      // Clear local storage and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    // Handle common errors with appropriate messages
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          // Clear local storage and redirect to login
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+          break;
+        case 403:
+          error.message = "You don't have permission to perform this action";
+          break;
+        default:
+          // Use server error message if available
+          if (error.response.data && error.response.data.message) {
+            error.message = error.response.data.message;
+          }
+      }
     }
     return Promise.reject(error);
   }

@@ -65,11 +65,11 @@ const Signup = () => {
           description: response.message || "Could not create account",
           variant: "destructive",
         });
-      }
+      }    
     } catch (error: any) {
       toast({
         title: "Registration error",
-        description: error.response?.data?.message || "An error occurred during registration",
+        description: error.message || error.response?.data?.message || "An error occurred during registration",
         variant: "destructive",
       });
     } finally {

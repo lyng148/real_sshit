@@ -57,9 +57,14 @@ const ProjectDetails: React.FC = () => {
         const ledGroups = response.data || [];
         const isLeader = ledGroups.some(group => group.projectId === Number(projectId));
         return isLeader;
-      }
-    } catch (error) {
+      }    
+    } catch (error: any) {
       console.error("Error fetching led groups:", error);
+      toast({
+        title: "Error",
+        description: error.message || error.response?.data?.message || "Failed to check project leadership status.",
+        variant: "destructive",
+      });
     }
     return false;
   };
@@ -86,12 +91,12 @@ const ProjectDetails: React.FC = () => {
           description: response.message || "Failed to load project details",
           variant: "destructive",
         });
-      }
-    } catch (error) {
+      }    
+    } catch (error: any) {
       console.error("Error fetching project details:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while loading project details",
+        description: error.message || error.response?.data?.message || "An unexpected error occurred while loading project details",
         variant: "destructive",
       });
     } finally {
@@ -122,12 +127,11 @@ const ProjectDetails: React.FC = () => {
           description: response.message || "Failed to delete project",
           variant: "destructive",
         });
-      }
-    } catch (error) {
+      }    } catch (error: any) {
       console.error("Error deleting project:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while deleting the project",
+        description: error.message || error.response?.data?.message || "An unexpected error occurred while deleting the project",
         variant: "destructive",
       });
     } finally {

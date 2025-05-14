@@ -44,11 +44,11 @@ const UserEdit = () => {
           description: response.message || 'Failed to load user.',
           variant: 'destructive',
         });
-      }
-    } catch (error) {
+      }    
+    } catch (error: any) {
       toast({
         title: 'Error',
-        description: 'Failed to load user.',
+        description: error.message || error.response?.data?.message || 'Failed to load user.',
         variant: 'destructive',
       });
     } finally {

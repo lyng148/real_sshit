@@ -50,9 +50,13 @@ const CreateGroupPage = () => {
         navigate(`/projects/${projectId}/groups`);
       } else {
         toast({ title: 'Error', description: response.message || 'Failed to create group', variant: 'destructive' });
-      }
-    } catch (error) {
-      toast({ title: 'Error', description: 'An unexpected error occurred', variant: 'destructive' });
+      }    
+    } catch (error: any) {
+      toast({ 
+        title: 'Error', 
+        description: error.message || error.response?.data?.message || 'An unexpected error occurred', 
+        variant: 'destructive' 
+      });
     } finally {
       setIsSubmitting(false);
     }
