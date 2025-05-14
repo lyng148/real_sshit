@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.service;
+package com.itss.projectmanagement.service.impl;
 
 import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
 import com.itss.projectmanagement.entity.CommitRecord;
@@ -7,12 +7,13 @@ import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.repository.CommitRecordRepository;
 import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import com.itss.projectmanagement.service.IGitHubService;
+import com.itss.projectmanagement.service.INotificationService;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.github.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,17 +26,21 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class GitHubService {
+public class GitHubServiceImpl implements IGitHubService {
+    @Autowired
+    private GitHub gitHub;
+    @Autowired
+    private CommitRecordRepository commitRecordRepository;
+    @Autowired
+    private TaskRepository taskRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private GroupRepository groupRepository;
+    @Autowired
+    private INotificationService notificationService;
 
-    private final GitHub gitHub;
-    private final CommitRecordRepository commitRecordRepository;
-    private final TaskRepository taskRepository;
-    private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
-    private final NotificationService notificationService;
-    
     // Pattern to match TASK-ID in commit messages: [TASK-123]
     private static final Pattern TASK_ID_PATTERN = Pattern.compile("\\[TASK-(\\d+)\\]");
 
@@ -49,17 +54,17 @@ public class GitHubService {
             log.warn("Group {} has no GitHub repository URL configured", group.getId());
             return 0;
         }
-        
+
         String repoName = extractRepoFullName(group.getRepositoryUrl());
         if (repoName == null) {
             log.error("Invalid GitHub repository URL for group {}: {}", group.getId(), group.getRepositoryUrl());
             return 0;
         }
-        
+
         try {
             GHRepository repository = gitHub.getRepository(repoName);
             int newCommitCount = 0;
-            
+
             // Get commits from the repository
             PagedIterable<GHCommit> commits = repository.listCommits();
             for (GHCommit commit : commits) {
@@ -67,11 +72,11 @@ public class GitHubService {
                 if (commitRecordRepository.findByCommitId(commit.getSHA1()).isPresent()) {
                     continue;
                 }
-                
+
                 processCommit(commit, group);
                 newCommitCount++;
             }
-            
+
             log.info("Processed {} new commits for group {}", newCommitCount, group.getId());
             return newCommitCount;
         } catch (IOException e) {
@@ -79,7 +84,7 @@ public class GitHubService {
             return 0;
         }
     }
-    
+
     /**
      * Fetches commits from GitHub repositories for all groups in a project
      * @param project The project
@@ -88,14 +93,14 @@ public class GitHubService {
     public int fetchAndProcessCommitsForProject(Project project) {
         List<Group> groups = groupRepository.findByProject(project);
         int totalNewCommits = 0;
-        
+
         for (Group group : groups) {
             totalNewCommits += fetchAndProcessCommits(group);
         }
-        
+
         return totalNewCommits;
     }
-    
+
     /**
      * Process a single GitHub commit
      * @param commit The GitHub commit
@@ -104,11 +109,11 @@ public class GitHubService {
     private void processCommit(GHCommit commit, Group group) throws IOException {
         GHCommit.ShortInfo info = commit.getCommitShortInfo();
         String message = info.getMessage();
-        
+
         // Extract task ID from commit message
         String taskId = extractTaskId(message);
         boolean isValid = taskId != null;
-        
+
         // Find the matching task if taskId is present
         Task task = null;
         if (isValid) {
@@ -118,7 +123,7 @@ public class GitHubService {
                 isValid = false;
             }
         }
-        
+
         // Create commit record
         CommitRecord commitRecord = CommitRecord.builder()
                 .commitId(commit.getSHA1())
@@ -131,15 +136,15 @@ public class GitHubService {
                 .task(task)
                 .isValid(isValid)
                 .build();
-        
+
         commitRecordRepository.save(commitRecord);
-        
+
         // Notify leader about invalid commits
         if (!isValid && task == null && taskId != null) {
             notifyLeaderAboutInvalidCommit(group, commitRecord);
         }
     }
-    
+
     /**
      * Get all commits for a specific project
      * @param project The project
@@ -149,7 +154,7 @@ public class GitHubService {
         List<CommitRecord> commitRecords = commitRecordRepository.findByProjectId(project.getId());
         return convertToDto(commitRecords);
     }
-    
+
     /**
      * Get all invalid commits for a specific project
      * @param project The project
@@ -161,7 +166,7 @@ public class GitHubService {
                 .collect(Collectors.toList());
         return convertToDto(commitRecords);
     }
-    
+
     /**
      * Get all commits for a specific group
      * @param  groupId The group ID
@@ -177,7 +182,7 @@ public class GitHubService {
         }
         return convertToDto(commitRecords);
     }
-    
+
     /**
      * Get all invalid commits for a specific group
      * @param group The group
@@ -189,7 +194,7 @@ public class GitHubService {
                 .collect(Collectors.toList());
         return convertToDto(commitRecords);
     }
-    
+
     /**
      * Get all commits for a specific task
      * @param taskId The task ID
@@ -198,30 +203,30 @@ public class GitHubService {
     public List<CommitRecordDTO> getCommitsByTask(Long taskId) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new IllegalArgumentException("Task not found with id: " + taskId));
-                
+
         // Find commits directly associated with the task
         List<CommitRecord> commitRecords = commitRecordRepository.findByTask(task);
-        
+
         // Also find commits that mention this task ID in the commit message but might not be linked
         String taskIdPattern = "TASK-" + taskId;
         List<CommitRecord> commitsByMessage = commitRecordRepository.findByGroup(task.getGroup()).stream()
                 .filter(commit -> commit.getMessage().contains(taskIdPattern))
                 .collect(Collectors.toList());
-                
+
         // Combine both lists and remove duplicates
         commitRecords.addAll(commitsByMessage);
         List<CommitRecord> distinctCommits = commitRecords.stream()
                 .distinct()
                 .collect(Collectors.toList());
-                
+
         if (distinctCommits.isEmpty()) {
             log.info("No commits found for task {}", taskId);
             return List.of();
         }
-        
+
         return convertToDto(distinctCommits);
     }
-    
+
     /**
      * Convert CommitRecord entities to DTOs
      * @param commitRecords List of CommitRecord entities
@@ -232,7 +237,7 @@ public class GitHubService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * Convert a single CommitRecord entity to DTO
      * @param commitRecord CommitRecord entity
@@ -249,32 +254,32 @@ public class GitHubService {
         dto.setTimestamp(commitRecord.getTimestamp());
         dto.setValid(commitRecord.isValid());
         dto.setCreatedAt(commitRecord.getCreatedAt());
-        
+
         // Set user ID and name if we can find a matching user by email
         userRepository.findByEmail(commitRecord.getAuthorEmail()).ifPresent(user -> {
             dto.setUserId(user.getId());
             dto.setUsername(user.getUsername());
         });
-        
+
         // Set project information from group
         if (commitRecord.getGroup() != null && commitRecord.getGroup().getProject() != null) {
             Project project = commitRecord.getGroup().getProject();
             dto.setProjectId(project.getId());
             dto.setProjectName(project.getName());
-            
+
             // Set group information
             dto.setGroupId(commitRecord.getGroup().getId());
             dto.setGroupName(commitRecord.getGroup().getName());
         }
-        
+
         if (commitRecord.getTask() != null) {
             dto.setTaskIdLong(commitRecord.getTask().getId());
             dto.setTaskName(commitRecord.getTask().getTitle());
         }
-        
+
         return dto;
     }
-    
+
     /**
      * Extract the TASK-ID from a commit message
      * @param message Commit message
@@ -287,7 +292,7 @@ public class GitHubService {
         }
         return null;
     }
-    
+
     /**
      * Extract the repository full name from a GitHub URL
      * @param url GitHub repository URL
@@ -295,29 +300,29 @@ public class GitHubService {
      */
     private String extractRepoFullName(String url) {
         if (url == null) return null;
-        
+
         // Handle different GitHub URL formats
         // https://github.com/owner/repo
         // https://github.com/owner/repo.git
         // git@github.com:owner/repo.git
-        
+
         // For HTTPS URLs
         Pattern httpsPattern = Pattern.compile("https://github\\.com/([\\w-]+/[\\w-]+)(\\.git)?$");
         Matcher httpsMatcher = httpsPattern.matcher(url);
         if (httpsMatcher.find()) {
             return httpsMatcher.group(1);
         }
-        
+
         // For SSH URLs
         Pattern sshPattern = Pattern.compile("git@github\\.com:([\\w-]+/[\\w-]+)(\\.git)?$");
         Matcher sshMatcher = sshPattern.matcher(url);
         if (sshMatcher.find()) {
             return sshMatcher.group(1);
         }
-        
+
         return null;
     }
-    
+
     /**
      * Convert Date to LocalDateTime
      */
@@ -326,7 +331,7 @@ public class GitHubService {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
     }
-    
+
     /**
      * Notify group leader about invalid commit
      */
@@ -335,17 +340,17 @@ public class GitHubService {
             log.warn("Cannot notify about invalid commit: Group {} has no leader", group.getId());
             return;
         }
-        
+
         String message = String.format(
                 "Invalid commit detected in group %s. Commit: %s by %s. " +
-                "Message: %s. Invalid TASK-ID: %s",
+                        "Message: %s. Invalid TASK-ID: %s",
                 group.getName(),
                 commitRecord.getCommitId().substring(0, 7),
                 commitRecord.getAuthorName(),
                 commitRecord.getMessage(),
                 commitRecord.getTaskId()
         );
-        
+
         notificationService.notifyUser(group.getLeader(), "Invalid commit detected", message);
     }
 

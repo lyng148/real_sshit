@@ -10,8 +10,8 @@ import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.PressureScoreService;
-import com.itss.projectmanagement.service.ProjectService;
+import com.itss.projectmanagement.service.IPressureScoreService;
+import com.itss.projectmanagement.service.IProjectService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,11 +36,11 @@ import java.util.Set;
 @Tag(name = "Pressure Score", description = "APIs for managing pressure scores in the system")
 public class PressureScoreController {
 
-    private final PressureScoreService pressureScoreService;
+    private final IPressureScoreService pressureScoreService;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
-    private final ProjectService projectService;
+    private final IProjectService projectService;
 
     @GetMapping("/users/{userId}")
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @groupSecurityService.isLeaderOfUserGroup(authentication.principal, #userId) or authentication.principal.id == #userId")

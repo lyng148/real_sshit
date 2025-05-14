@@ -2,10 +2,9 @@ package com.itss.projectmanagement.scheduler;
 
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.service.GitHubService;
+import com.itss.projectmanagement.service.IGitHubService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +15,7 @@ import java.util.List;
 @Slf4j
 public class GitHubCommitScheduler {
 
-    private final GitHubService gitHubService;
+    private final IGitHubService gitHubService;
     private final GroupRepository groupRepository;
 
     /**

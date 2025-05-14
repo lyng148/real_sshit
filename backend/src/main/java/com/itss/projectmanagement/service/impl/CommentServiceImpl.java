@@ -15,7 +15,7 @@ import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.CommentService;
+import com.itss.projectmanagement.service.ICommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class CommentServiceImpl implements CommentService {
+public class CommentServiceImpl implements ICommentService {
 
     private final CommentRepository commentRepository;
     private final TaskRepository taskRepository;

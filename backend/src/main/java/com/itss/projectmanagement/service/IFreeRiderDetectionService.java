@@ -5,7 +5,7 @@ import com.itss.projectmanagement.entity.User;
 import java.util.List;
 import java.util.Map;
 
-public interface FreeRiderDetectionService {
+public interface IFreeRiderDetectionService {
     
     /**
      * Detect free riders in a project based on contribution scores and peer reviews

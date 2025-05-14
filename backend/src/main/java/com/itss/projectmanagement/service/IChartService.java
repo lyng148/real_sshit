@@ -4,7 +4,7 @@ import com.itss.projectmanagement.dto.response.chart.CommitCountChartDTO;
 import com.itss.projectmanagement.dto.response.chart.ProgressTimelineChartDTO;
 import com.itss.projectmanagement.dto.response.chart.ContributionPieChartDTO;
 
-public interface ChartService {
+public interface IChartService {
     CommitCountChartDTO getCommitCountChart(Long projectId, String rangeType);
     ProgressTimelineChartDTO getProgressTimelineChart(Long projectId, String rangeType);
     ContributionPieChartDTO getContributionPieChart(Long projectId, String rangeType);

@@ -5,7 +5,7 @@ import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.security.TaskSecurityService;
-import com.itss.projectmanagement.service.GitHubService;
+import com.itss.projectmanagement.service.IGitHubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +22,7 @@ import java.util.Map;
 @RequestMapping("/api/github")
 @RequiredArgsConstructor
 @Tag(name = "GitHub Integration", description = "Endpoints for GitHub integration and commit management")
-public class GitHubController {    private final GitHubService gitHubService;
+public class GitHubController {    private final IGitHubService gitHubService;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
     private final TaskSecurityService taskSecurityService;

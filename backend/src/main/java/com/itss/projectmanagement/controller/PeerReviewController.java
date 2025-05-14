@@ -7,8 +7,8 @@ import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.security.CurrentUser;
 import com.itss.projectmanagement.security.UserPrincipal;
 import com.itss.projectmanagement.utils.SecurityUtils;
-import com.itss.projectmanagement.service.FreeRiderDetectionService;
-import com.itss.projectmanagement.service.PeerReviewService;
+import com.itss.projectmanagement.service.IFreeRiderDetectionService;
+import com.itss.projectmanagement.service.IPeerReviewService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,8 +28,8 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class PeerReviewController {
 
-    private final PeerReviewService peerReviewService;
-    private final FreeRiderDetectionService freeRiderDetectionService;
+    private final IPeerReviewService peerReviewService;
+    private final IFreeRiderDetectionService freeRiderDetectionService;
 
     @PostMapping
     @Operation(summary = "Submit a peer review")

@@ -10,7 +10,7 @@ import com.itss.projectmanagement.repository.ContributionScoreRepository;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.PeerReviewRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
-import com.itss.projectmanagement.service.ContributionScoreService;
+import com.itss.projectmanagement.service.IContributionScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ContributionScoreServiceImpl implements ContributionScoreService {
+public class ContributionScoreServiceImpl implements IContributionScoreService {
     
     private final ContributionScoreRepository contributionScoreRepository;
     private final TaskRepository taskRepository;

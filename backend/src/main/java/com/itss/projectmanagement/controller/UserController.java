@@ -6,7 +6,7 @@ import com.itss.projectmanagement.dto.request.user.RoleAssignmentRequest;
 import com.itss.projectmanagement.dto.response.user.RoleAssignmentResponse;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.User;
-import com.itss.projectmanagement.service.UserService;
+import com.itss.projectmanagement.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,7 +30,7 @@ import java.util.Map;
 @Tag(name = "User Management", description = "APIs for managing users")
 public class UserController {
 
-    private final UserService userService;
+    private final IUserService userService;
     private final UserConverter userConverter;
 
     @Operation(summary = "Get all users", description = "Retrieves a list of all users")

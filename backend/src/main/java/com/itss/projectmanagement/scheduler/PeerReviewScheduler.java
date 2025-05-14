@@ -1,17 +1,14 @@
 package com.itss.projectmanagement.scheduler;
 
 import com.itss.projectmanagement.entity.PeerReview;
-import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.repository.PeerReviewRepository;
-import com.itss.projectmanagement.repository.ProjectRepository;
-import com.itss.projectmanagement.service.PeerReviewService;
+import com.itss.projectmanagement.service.IPeerReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,7 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PeerReviewScheduler {
 
-    private final PeerReviewService peerReviewService;
+    private final IPeerReviewService peerReviewService;
     private final PeerReviewRepository peerReviewRepository;
 
     /**

@@ -7,7 +7,7 @@ import com.itss.projectmanagement.entity.User;
 
 import java.util.List;
 
-public interface ContributionScoreService {
+public interface IContributionScoreService {
     /**
      * Calculate contribution score for a user in a project
      * @param user The user

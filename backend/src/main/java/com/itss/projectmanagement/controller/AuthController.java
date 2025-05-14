@@ -6,14 +6,14 @@ import com.itss.projectmanagement.dto.response.auth.AuthResponse;
 import com.itss.projectmanagement.dto.response.auth.RegisterResponse;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.security.JwtTokenProvider;
-import com.itss.projectmanagement.service.UserService;
+import com.itss.projectmanagement.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -27,13 +27,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 @Tag(name = "Authentication", description = "APIs for user authentication")
 public class AuthController {
-
-    private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final UserService userService;
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private JwtTokenProvider jwtTokenProvider;
+    @Autowired
+    private IUserService userService;
 
     @Operation(summary = "Authenticate user", description = "Login with username and password to get JWT token")
     @ApiResponses(value = {

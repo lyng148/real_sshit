@@ -7,11 +7,10 @@ import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.exception.NotFoundException;
 import com.itss.projectmanagement.repository.ContributionScoreRepository;
 import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.repository.PeerReviewRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.FreeRiderDetectionService;
-import com.itss.projectmanagement.service.NotificationService;
+import com.itss.projectmanagement.service.IFreeRiderDetectionService;
+import com.itss.projectmanagement.service.INotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,13 +20,13 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FreeRiderDetectionServiceImpl implements FreeRiderDetectionService {
+public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService {
 
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final ContributionScoreRepository contributionScoreRepository;
     private final GroupRepository groupRepository;
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
     
     @Override
     public List<User> detectFreeRiders(Long projectId) {

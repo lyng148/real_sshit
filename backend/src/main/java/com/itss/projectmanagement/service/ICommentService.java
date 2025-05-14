@@ -5,7 +5,7 @@ import com.itss.projectmanagement.dto.request.comment.CommentRequest;
 
 import java.util.List;
 
-public interface CommentService {
+public interface ICommentService {
     CommentDTO createComment(CommentRequest request, Long authorId);
     CommentDTO updateComment(Long id, CommentRequest request, Long authorId);
     void deleteComment(Long id, Long userId);

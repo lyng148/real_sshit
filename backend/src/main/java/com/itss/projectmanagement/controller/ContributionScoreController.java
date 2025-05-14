@@ -12,7 +12,7 @@ import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.ContributionScoreService;
+import com.itss.projectmanagement.service.IContributionScoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +32,7 @@ import java.util.Map;
 @Tag(name = "Contribution Score", description = "Endpoints for managing user contribution scores")
 public class ContributionScoreController {
 
-    private final ContributionScoreService contributionScoreService;
+    private final IContributionScoreService contributionScoreService;
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;

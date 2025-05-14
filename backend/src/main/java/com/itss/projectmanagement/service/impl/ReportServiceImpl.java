@@ -15,7 +15,7 @@ import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.PeerReviewRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
-import com.itss.projectmanagement.service.ReportService;
+import com.itss.projectmanagement.service.IReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-public class ReportServiceImpl implements ReportService {
+public class ReportServiceImpl implements IReportService {
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
     private final TaskRepository taskRepository;

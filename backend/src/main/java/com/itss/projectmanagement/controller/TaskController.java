@@ -3,9 +3,8 @@ package com.itss.projectmanagement.controller;
 import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.request.task.TaskCreateRequest;
 import com.itss.projectmanagement.dto.response.task.TaskResponse;
-import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.enums.TaskStatus;
-import com.itss.projectmanagement.service.TaskService;
+import com.itss.projectmanagement.service.ITaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -29,7 +28,7 @@ import java.util.Map;
 @Tag(name = "Task Management", description = "APIs for managing tasks")
 public class TaskController {
 
-    private final TaskService taskService;
+    private final ITaskService taskService;
 
     @Operation(summary = "Create a new task", description = "Creates a new task for a group")
     @ApiResponses(value = {

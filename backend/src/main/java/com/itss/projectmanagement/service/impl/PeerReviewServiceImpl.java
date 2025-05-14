@@ -13,8 +13,8 @@ import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.PeerReviewRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.NotificationService;
-import com.itss.projectmanagement.service.PeerReviewService;
+import com.itss.projectmanagement.service.INotificationService;
+import com.itss.projectmanagement.service.IPeerReviewService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -31,14 +31,14 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PeerReviewServiceImpl implements PeerReviewService {
+public class PeerReviewServiceImpl implements IPeerReviewService {
 
     private final PeerReviewRepository peerReviewRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
     private final PeerReviewConverter peerReviewConverter;
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
 
     @Override
     public PeerReviewResponse submitReview(PeerReviewRequest request, Long reviewerId) {

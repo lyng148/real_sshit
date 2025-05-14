@@ -14,8 +14,8 @@ import com.itss.projectmanagement.repository.PressureScoreHistoryRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.NotificationService;
-import com.itss.projectmanagement.service.PressureScoreService;
+import com.itss.projectmanagement.service.INotificationService;
+import com.itss.projectmanagement.service.IPressureScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,13 +33,13 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PressureScoreServiceImpl implements PressureScoreService {
+public class PressureScoreServiceImpl implements IPressureScoreService {
 
     private final UserRepository userRepository;
     private final TaskRepository taskRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
     private final PressureScoreHistoryRepository pressureScoreHistoryRepository;
     
     private static final double RISK_THRESHOLD_PERCENTAGE = 0.7; // 70%

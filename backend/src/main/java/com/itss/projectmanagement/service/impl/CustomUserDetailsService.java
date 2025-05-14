@@ -1,4 +1,4 @@
-package com.itss.projectmanagement.service;
+package com.itss.projectmanagement.service.impl;
 
 import com.itss.projectmanagement.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

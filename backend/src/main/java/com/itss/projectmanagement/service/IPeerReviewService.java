@@ -7,7 +7,7 @@ import com.itss.projectmanagement.entity.User;
 
 import java.util.List;
 
-public interface PeerReviewService {
+public interface IPeerReviewService {
     
     /**
      * Submit a peer review

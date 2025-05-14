@@ -2,7 +2,7 @@ package com.itss.projectmanagement.scheduler;
 
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.repository.ProjectRepository;
-import com.itss.projectmanagement.service.ContributionScoreService;
+import com.itss.projectmanagement.service.IContributionScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ContributionScoreScheduler {
 
-    private final ContributionScoreService contributionScoreService;
+    private final IContributionScoreService contributionScoreService;
     private final ProjectRepository projectRepository;
 
     /**

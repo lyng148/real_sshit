@@ -1,6 +1,6 @@
 package com.itss.projectmanagement.scheduler;
 
-import com.itss.projectmanagement.service.PressureScoreService;
+import com.itss.projectmanagement.service.IPressureScoreService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PressureScoreScheduler {
 
-    private final PressureScoreService pressureScoreService;
+    private final IPressureScoreService pressureScoreService;
 
     /**
      * Updates pressure scores for all users in all active projects daily at midnight.

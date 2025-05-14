@@ -16,10 +16,10 @@ import com.itss.projectmanagement.dto.response.project.ProjectStatisticsDTO;
 import com.itss.projectmanagement.dto.response.report.ProjectReportDTO;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
-import com.itss.projectmanagement.service.ChartService;
-import com.itss.projectmanagement.service.ProjectService;
-import com.itss.projectmanagement.service.ReportService;
-import com.itss.projectmanagement.service.StatisticsService;
+import com.itss.projectmanagement.service.IChartService;
+import com.itss.projectmanagement.service.IProjectService;
+import com.itss.projectmanagement.service.IReportService;
+import com.itss.projectmanagement.service.IStatisticsService;
 import com.itss.projectmanagement.utils.QRCodeGenerator;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,12 +46,12 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Tag(name = "Project Management", description = "APIs for managing projects")
 public class ProjectController {
-    private final ProjectService projectService;
+    private final IProjectService projectService;
     private final ProjectConverter projectConverter;
     private final UserConverter userConverter;
-    private final ChartService chartService;
-    private final ReportService reportService;
-    private final StatisticsService statisticsService;
+    private final IChartService chartService;
+    private final IReportService reportService;
+    private final IStatisticsService statisticsService;
     private final QRCodeGenerator qrCodeGenerator;
 
     @Operation(summary = "Create a new project", description = "Creates a new project for the current instructor")

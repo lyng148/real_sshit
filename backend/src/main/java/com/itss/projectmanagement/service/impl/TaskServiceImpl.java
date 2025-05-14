@@ -12,8 +12,8 @@ import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.service.NotificationService;
-import com.itss.projectmanagement.service.TaskService;
+import com.itss.projectmanagement.service.INotificationService;
+import com.itss.projectmanagement.service.ITaskService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class TaskServiceImpl implements TaskService {
+public class TaskServiceImpl implements ITaskService {
 
     private final TaskRepository taskRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
     private final TaskConverter taskConverter;
-    private final NotificationService notificationService;
+    private final INotificationService notificationService;
 
     @Override
     @Transactional

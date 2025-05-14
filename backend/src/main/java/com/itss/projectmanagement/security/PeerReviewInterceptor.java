@@ -1,7 +1,7 @@
 package com.itss.projectmanagement.security;
 
 import com.itss.projectmanagement.entity.User;
-import com.itss.projectmanagement.service.PeerReviewService;
+import com.itss.projectmanagement.service.IPeerReviewService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 public class PeerReviewInterceptor implements HandlerInterceptor {
 
-    private final PeerReviewService peerReviewService;
+    private final IPeerReviewService peerReviewService;
     
     // List of endpoints that are always accessible, even if peer reviews are pending
     private final List<String> allowedEndpoints = Arrays.asList(

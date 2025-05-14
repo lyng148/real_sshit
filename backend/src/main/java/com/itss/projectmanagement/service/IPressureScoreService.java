@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-public interface PressureScoreService {
+public interface IPressureScoreService {
     
     /**
      * Calculate Time Urgency Factor (TUF) for a task based on days remaining until deadline

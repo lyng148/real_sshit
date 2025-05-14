@@ -3,8 +3,7 @@ package com.itss.projectmanagement.controller;
 import com.itss.projectmanagement.dto.request.comment.CommentRequest;
 import com.itss.projectmanagement.dto.response.comment.CommentDTO;
 import com.itss.projectmanagement.dto.common.ApiResponse;
-import com.itss.projectmanagement.security.CurrentUser;
-import com.itss.projectmanagement.service.CommentService;
+import com.itss.projectmanagement.service.ICommentService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,10 +13,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -26,11 +25,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/comments")
-@RequiredArgsConstructor
 @Tag(name = "Comment Management", description = "APIs for managing comments")
 public class CommentController {
-
-    private final CommentService commentService;
+    @Autowired
+    private ICommentService commentService;
 
     @Operation(summary = "Create a new comment", description = "Creates a new comment for a task")
     @ApiResponses(value = {

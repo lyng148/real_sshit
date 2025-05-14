@@ -15,7 +15,7 @@ import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.ContributionScoreRepository;
-import com.itss.projectmanagement.service.ChartService;
+import com.itss.projectmanagement.service.IChartService;
 import com.itss.projectmanagement.exception.ResourceNotFoundException;
 
 import lombok.RequiredArgsConstructor;
@@ -23,12 +23,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.*;
 
 @Service
 @RequiredArgsConstructor
-public class ChartServiceImpl implements ChartService {
+public class ChartServiceImpl implements IChartService {
     private final CommitRecordRepository commitRecordRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;

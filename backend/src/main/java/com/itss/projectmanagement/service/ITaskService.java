@@ -2,12 +2,11 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.request.task.TaskCreateRequest;
 import com.itss.projectmanagement.dto.response.task.TaskResponse;
-import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.enums.TaskStatus;
 
 import java.util.List;
 
-public interface TaskService {
+public interface ITaskService {
     
     TaskResponse createTask(TaskCreateRequest request);
     
