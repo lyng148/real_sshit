@@ -9,6 +9,20 @@ import java.util.List;
 
 public interface IGitHubService {
     /**
+     * Gets the configured GitHub token for API authentication
+     * @return The GitHub token or null if not configured
+     */
+    String getGitHubToken();
+    
+    /**
+     * Check if a GitHub repository exists and is accessible
+     * @param owner Repository owner/organization
+     * @param repo Repository name
+     * @return true if repository exists and is accessible, false otherwise
+     */
+    boolean checkRepositoryExists(String owner, String repo);
+    
+    /**
      * Fetches commits from a GitHub repository and processes them for a specific group
      * @param group The group containing the GitHub repository URL
      * @return Number of new commits processed

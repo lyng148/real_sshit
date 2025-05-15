@@ -30,7 +30,7 @@ public class Group extends BaseEntity {
     @Column(length = 500, columnDefinition = "varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String description;
     
-    @Pattern(regexp = "^(https://github\\.com/[\\w-]+/[\\w-]+|git@github\\.com:[\\w-]+/[\\w-]+(\\.git)?)$", 
+    @Pattern(regexp = "^(https://github\\.com/[\\w-]+/[\\w\\.-_]+|git@github\\.com:[\\w-]+/[\\w\\.-_]+(\\.git)?)$", 
             message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository or git@github.com:username/repository.git")
     @Column(name = "repository_url", columnDefinition = "varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String repositoryUrl;

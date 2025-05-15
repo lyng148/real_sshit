@@ -56,6 +56,11 @@ public class GroupServiceImpl implements IGroupService {
             throw new IllegalArgumentException("Group name already exists in this project");
         }
 
+        // check if repo url have already been used
+        if (groupRepository.findByRepositoryUrlAndProject(request.getRepositoryUrl(), project).isPresent()) {
+            throw new IllegalArgumentException("Repository URL already exists in this project");
+        }
+
         // Create the group
         Group group = Group.builder()
                 .name(request.getName())

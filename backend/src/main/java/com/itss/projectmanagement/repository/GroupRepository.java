@@ -84,4 +84,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     List<Group> findByMembersContainingOrLeader(User user, User user1);
 
     List<Group> findByMembersContainingAndProject(User user, Project project);
+
+    Optional<Object> findByRepositoryUrlAndProject(String repositoryUrl, Project project);
 }

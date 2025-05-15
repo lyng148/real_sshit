@@ -40,9 +40,38 @@ public class GitHubServiceImpl implements IGitHubService {
     private GroupRepository groupRepository;
     @Autowired
     private INotificationService notificationService;
-
-    // Pattern to match TASK-ID in commit messages: [TASK-123]
+    
+    @org.springframework.beans.factory.annotation.Value("${github.token}")
+    private String gitHubToken;    // Pattern to match TASK-ID in commit messages: [TASK-123]
     private static final Pattern TASK_ID_PATTERN = Pattern.compile("\\[TASK-(\\d+)\\]");
+    
+    /**
+     * Gets the configured GitHub token for API authentication
+     * @return The GitHub token or null if not configured
+     */
+    @Override
+    public String getGitHubToken() {
+        return gitHubToken;
+    }
+    
+    /**
+     * Check if a GitHub repository exists and is accessible
+     * @param owner Repository owner/organization
+     * @param repo Repository name
+     * @return true if repository exists and is accessible, false otherwise
+     */
+    @Override
+    public boolean checkRepositoryExists(String owner, String repo) {
+        try {
+            // Try to get repository info using GitHub API
+            GHRepository repository = gitHub.getRepository(owner + "/" + repo);
+            // If we get here without exception, the repository exists and is accessible
+            return repository != null;
+        } catch (IOException e) {
+            log.error("Error checking GitHub repository: {}/{}", owner, repo, e);
+            return false;
+        }
+    }
 
     /**
      * Fetches commits from a GitHub repository and processes them for a specific group

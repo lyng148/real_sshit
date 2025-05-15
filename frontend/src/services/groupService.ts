@@ -142,6 +142,74 @@ export const groupService = {
     } catch (error) {
       throw error;
     }
+  },
+    async checkRepositoryConnection(repoUrl: string) {    try {
+      // Extract owner and repo name from GitHub URL
+      // Updated pattern to support repo names with periods, underscores, and other valid GitHub characters
+      const urlPattern = /github\.com\/([\w-]+)\/([\w\.-_]+)/;
+      const matches = repoUrl.match(urlPattern);
+      
+      if (!matches || matches.length < 3) {
+        return {
+          success: false,
+          message: 'Invalid GitHub repository URL format'
+        };
+      }
+        const owner = matches[1];
+      const repo = matches[2];
+      
+      // Get GitHub token from backend to avoid exposing it in frontend code
+      const tokenResponse = await axiosInstance.get('/api/github/token');
+      const token = tokenResponse.data?.token;
+      
+      // Prepare headers with authentication if token is available
+      const headers: HeadersInit = {
+        'Accept': 'application/vnd.github.v3+json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `token ${token}`;
+      }
+      
+      // Make authenticated request to GitHub API
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+        method: 'GET',
+        headers
+      });
+      
+      if (response.status === 200) {
+        return {
+          success: true,
+          message: 'Repository connection successful'
+        };
+      } else if (response.status === 404) {
+        return {
+          success: false,
+          message: 'Repository not found. Please check the URL or access permissions.'
+        };      } else {
+        // Handle rate limit or other issues
+        const data = await response.json();
+        console.error('GitHub API error:', data);
+        
+        // Check for rate limiting specifically
+        if (response.status === 403 && data.message && data.message.includes('rate limit')) {
+          return {
+            success: false,
+            message: 'GitHub API rate limit exceeded. Please try again later.'
+          };
+        }
+        
+        return {
+          success: false,
+          message: data.message || 'Failed to verify repository. GitHub API error.'
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to connect to repository'
+      };
+    }
   }
 };
 

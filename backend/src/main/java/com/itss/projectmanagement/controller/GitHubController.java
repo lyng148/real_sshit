@@ -43,7 +43,58 @@ public class GitHubController {    private final IGitHubService gitHubService;
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
-
+    @GetMapping("/token")
+    @Operation(summary = "Get GitHub API token for frontend authenticated requests", 
+               description = "Returns a token to use when making GitHub API requests from frontend",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> getGitHubToken() {
+        // Get GitHub token from environment or properties
+        String token = gitHubService.getGitHubToken();
+        if (token == null || token.isEmpty()) {
+            // If no token is configured, return an empty response
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "No GitHub token configured"
+            ));
+        }
+        
+        // Return token for frontend use
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "GitHub token retrieved successfully",
+                "token", token
+        ));
+    }
+    
+    @PostMapping("/check-repo")
+    @Operation(summary = "Check if a GitHub repository exists and is accessible", 
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> checkRepository(@RequestBody Map<String, String> requestBody) {
+        String owner = requestBody.get("owner");
+        String repo = requestBody.get("repo");
+        String repoUrl = requestBody.get("repoUrl");
+        
+        if (owner == null || repo == null || repoUrl == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Owner, repo name, and repository URL are required"
+            ));
+        }
+        
+        boolean exists = gitHubService.checkRepositoryExists(owner, repo);
+        if (exists) {
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", "Repository connection successful"
+            ));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "success", false,
+                    "message", "Repository not found or not accessible"
+            ));
+        }
+    }
+    
     @PostMapping("/fetch-commits/group/{groupId}")
     @PreAuthorize("hasAuthority('INSTRUCTOR') or @securityService.isProjectGroupLeader(authentication.principal.id, #groupId)")
     @Operation(summary = "Manually fetch commits for a specific group", 

@@ -65,14 +65,14 @@
 - [ ] Create final evaluation recording system
 
 ## 9. Peer Review System
-- [ ] Implement weekly peer review trigger mechanism
-- [ ] Create peer review form with:
-  - [ ] Task completion rating (1-5) (vote by click on start)
-  - [ ] Collaboration rating (1-5) (vote by click on start)
-  - [ ] Feedback text field
-- [ ] khi ấn vào group page của mình, màn hình hiển thị trắng xóa và hiển thị tất cả form đánh giá của group đó theo thứ tự lần lượt, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụng wweb
-- [ ] Implement peer review completion tracking
-- [ ] Create peer review results visualization
+- [x] Implement weekly peer review trigger mechanism
+- [x] Create peer review form with:
+  - [x] Task completion rating (1-5) (vote by click on start)
+  - [x] Collaboration rating (1-5) (vote by click on start)
+  - [x] Feedback text field
+- [x] khi ấn vào group page của mình, màn hình hiển thị trắng xóa và hiển thị tất cả form đánh giá của group đó theo thứ tự lần lượt, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụng wweb
+- [x] Implement peer review completion tracking
+- [x] Create peer review results visualization
 
 ## 10. Pressure Score System
 - [ ] Create pressure score visualization by user
