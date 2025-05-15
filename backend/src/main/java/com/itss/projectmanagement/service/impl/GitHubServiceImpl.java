@@ -169,7 +169,7 @@ public class GitHubServiceImpl implements IGitHubService {
         commitRecordRepository.save(commitRecord);
 
         // Notify leader about invalid commits
-        if (!isValid && task == null && taskId != null) {
+        if (!isValid && taskId != null) {
             notifyLeaderAboutInvalidCommit(group, commitRecord);
         }
     }
@@ -240,7 +240,7 @@ public class GitHubServiceImpl implements IGitHubService {
         String taskIdPattern = "TASK-" + taskId;
         List<CommitRecord> commitsByMessage = commitRecordRepository.findByGroup(task.getGroup()).stream()
                 .filter(commit -> commit.getMessage().contains(taskIdPattern))
-                .collect(Collectors.toList());
+                .toList();  
 
         // Combine both lists and remove duplicates
         commitRecords.addAll(commitsByMessage);

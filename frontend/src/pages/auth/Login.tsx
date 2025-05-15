@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -53,13 +54,23 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col">
+    <div className="min-h-screen bg-black text-white flex flex-col relative overflow-hidden">
+      {/* Background with gradient overlay */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src="/wallpaper.png" 
+          alt="Background" 
+          className="w-full h-full object-cover opacity-50"
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/80 to-black/50"></div>
+      </div>
+
       {/* Header with Logo */}
-      <header className="container mx-auto px-6 py-6">
+      <header className="container mx-auto px-6 py-6 relative z-10">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold">MindTask</Link>
+          <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">MindTask</Link>
           <Link to="/signup">
-            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-black">
+            <Button variant="outline" className="border-blue-400 text-blue-400 hover:bg-blue-400/10">
               Sign Up
             </Button>
           </Link>
@@ -67,40 +78,42 @@ const Login = () => {
       </header>
 
       {/* Login Form */}
-      <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex-1 flex items-center justify-center px-4 relative z-10">
         <div className="w-full max-w-md relative">
-          {/* Blue gradient background effect */}
-          <div className="absolute -z-10 w-full h-full max-w-[30rem] max-h-[30rem] blur-3xl rounded-full bg-gradient-to-br from-blue-600 to-blue-400 opacity-30"></div>
+          {/* Animated gradient effect */}
+          <div className="absolute -z-10 w-full h-full max-w-[30rem] max-h-[30rem] blur-3xl rounded-full bg-gradient-to-br from-blue-600 to-purple-800 opacity-20 animate-pulse"></div>
           
-          <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-sm rounded-lg">
-            <CardHeader>
-              <CardTitle className="text-2xl text-center font-semibold">Welcome back</CardTitle>
-              <CardDescription className="text-gray-400 text-center">
+          <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-md rounded-xl shadow-xl">
+            <CardHeader className="space-y-1">
+              <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">Welcome back</CardTitle>
+              <CardDescription className="text-gray-300 text-center">
                 Sign in to your MindTask account
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleLogin}>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input 
-                    id="username" 
-                    type="text" 
-                    placeholder="your_username" 
-                    className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 rounded-lg p-3 text-white"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
+                  <Label htmlFor="username" className="text-gray-200">Username</Label>
+                  <div className="relative">
+                    <Input 
+                      id="username" 
+                      type="text" 
+                      placeholder="your_username" 
+                      className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 rounded-lg p-3 text-white"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password" className="text-gray-200">Password</Label>
                   <div className="relative">
                     <Input 
                       id="password" 
                       type={showPassword ? "text" : "password"} 
                       placeholder="••••••••" 
-                      className="bg-gray-800 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500 pr-10 rounded-lg p-3 text-white"
+                      className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 pr-10 rounded-lg p-3 text-white"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
@@ -119,7 +132,7 @@ const Login = () => {
                     <input 
                       type="checkbox" 
                       id="remember" 
-                      className="rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500" 
+                      className="rounded bg-gray-800/70 border-gray-700 text-blue-500 focus:ring-blue-500" 
                     />
                     <Label htmlFor="remember" className="text-sm text-gray-300">Remember me</Label>
                   </div>
@@ -129,12 +142,16 @@ const Login = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col">
-                <Button className="w-full mb-4 bg-blue-500 hover:bg-blue-400" type="submit" disabled={loading}>
+                <Button 
+                  className="w-full mb-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium py-2 shadow-lg shadow-blue-700/30 transition-all duration-300" 
+                  type="submit" 
+                  disabled={loading}
+                >
                   {loading ? "Signing in..." : "Sign in"}
                 </Button>
                 <p className="text-center text-gray-400 text-sm">
                   Don't have an account?{' '}
-                  <Link to="/signup" className="text-blue-400 hover:text-blue-300">
+                  <Link to="/signup" className="text-blue-400 hover:text-blue-300 font-medium">
                     Sign up
                   </Link>
                 </p>

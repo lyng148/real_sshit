@@ -24,7 +24,6 @@ const CreateGroupPage = () => {
       ...prev,
       [name]: value
     }));
-      // Reset repo connection status when URL changes
     if (name === 'repositoryUrl') {
       setRepoConnectionValid(null);
       setConnectionMessage('');
@@ -34,9 +33,8 @@ const CreateGroupPage = () => {
     if (!formData.repositoryUrl) {
       toast({ title: 'Error', description: 'Please enter a repository URL first', variant: 'destructive' });
       return;
-    }
-      // Validate GitHub URL format before making API call
-    const githubUrlPattern = /^(https:\/\/github\.com\/[\w-]+\/[\w\.-_]+|git@github\.com:[\w-]+\/[\w\.-_]+(?:\.git)?)$/;
+    }    
+    const githubUrlPattern = /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/;
     if (!githubUrlPattern.test(formData.repositoryUrl)) {
       setRepoConnectionValid(false);
       setConnectionMessage('Invalid GitHub repository URL format. Must be like: https://github.com/username/repository');
@@ -198,7 +196,8 @@ const CreateGroupPage = () => {
                     'Check Connection'
                   )}
                 </button>
-              </div>              {repoConnectionValid === true && (
+              </div>              
+              {repoConnectionValid === true && (
                 <div className="mt-1 text-sm text-green-600 flex items-center">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

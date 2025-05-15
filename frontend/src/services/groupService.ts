@@ -123,7 +123,6 @@ export const groupService = {
     }
   },
   
-  // This method would be implemented in a real API
   async transferLeadership(groupId: number, newLeaderId: number) {
     try {
       const response = await axiosInstance.post(`/api/groups/${groupId}/transfer-leadership`, {
@@ -144,9 +143,7 @@ export const groupService = {
     }
   },
     async checkRepositoryConnection(repoUrl: string) {    try {
-      // Extract owner and repo name from GitHub URL
-      // Updated pattern to support repo names with periods, underscores, and other valid GitHub characters
-      const urlPattern = /github\.com\/([\w-]+)\/([\w\.-_]+)/;
+      const urlPattern = /github\.com\/([^\/]+)\/([^\/]+)/;
       const matches = repoUrl.match(urlPattern);
       
       if (!matches || matches.length < 3) {
