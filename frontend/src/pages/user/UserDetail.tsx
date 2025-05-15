@@ -35,7 +35,7 @@ const UserDetail = () => {
       console.error("Error fetching user:", error);
       toast({
         title: "Error",
-        description: error.message || error.response?.data?.message || "Failed to fetch user details. Please try again.",
+        description: error.response?.data?.message || error.message || "Failed to fetch user details. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -65,11 +65,12 @@ const UserDetail = () => {
         title: "Success",
         description: `User ${user.enabled ? 'disabled' : 'enabled'} successfully.`,
       });
-      fetchUser(); // Refresh user data    } catch (error: any) {
+      fetchUser(); // Refresh user data    
+    } catch (error: any) {
       console.error("Error enabling/disabling user:", error);
       toast({
         title: "Error",
-        description: error.message || error.response?.data?.message || "Failed to update user status. Please try again.",
+        description: error.response?.data?.message || error.message|| "Failed to update user status. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -92,7 +93,7 @@ const UserDetail = () => {
       console.error("Error deleting user:", error);
       toast({
         title: "Error",
-        description: error.message || error.response?.data?.message || "Failed to delete user. Please try again.",
+        description: error.response?.data?.message || error.message ||"Failed to delete user. Please try again.",
         variant: "destructive",
       });
     } finally {

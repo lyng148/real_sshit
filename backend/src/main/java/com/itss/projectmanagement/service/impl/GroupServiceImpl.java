@@ -187,6 +187,11 @@ public class GroupServiceImpl implements IGroupService {
 
         // Students can only view groups they are part of
         User currentUser = SecurityUtils.getCurrentUser();
+
+        if (Objects.equals(group.getLeader().getId(), currentUser.getId())) {
+            return group;
+        }
+
         if (group.getMembers().contains(currentUser)) {
             return group;
         }

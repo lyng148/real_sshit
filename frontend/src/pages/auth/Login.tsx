@@ -44,7 +44,7 @@ const Login = () => {
     } catch (error: any) {
       toast({
         title: "Login error",
-        description: error.message || error.response?.data?.message || "An error occurred during login",
+        description: "Check your credentials and try again.",
         variant: "destructive",
       });
     } finally {

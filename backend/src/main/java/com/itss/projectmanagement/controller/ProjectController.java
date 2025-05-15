@@ -405,7 +405,7 @@ public class ProjectController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
     })
     @GetMapping("/{id}/statistics")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<ProjectStatisticsDTO>> getProjectStatistics(
             @Parameter(description = "ID of the project") @PathVariable Long id) {
         try {

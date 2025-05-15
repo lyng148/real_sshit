@@ -294,15 +294,16 @@ const ProjectDetails: React.FC = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* For instructors and admins: show analyze options */}
-                    {(isInstructor || isAdmin) && (
-                      <>
-                        <Button 
-                          variant="default" 
-                          className="w-full" 
-                          onClick={() => navigate(`/projects/${projectId}/project-analyze`)}
-                        >
-                          <BarChart className="h-5 w-5 mr-2" /> Project Analysis
-                        </Button>
+                      <> 
+                        {(isInstructor || isAdmin) && (
+                          <Button 
+                            variant="default" 
+                            className="w-full" 
+                            onClick={() => navigate(`/projects/${projectId}/project-analyze`)}
+                          >
+                            <BarChart className="h-5 w-5 mr-2" /> Project Analysis
+                          </Button>
+                        )}
                         <Button 
                           variant="default" 
                           className="w-full" 
@@ -311,7 +312,6 @@ const ProjectDetails: React.FC = () => {
                           <ChartBar className="h-5 w-5 mr-2" /> Group Management
                         </Button>
                       </>
-                    )}
                   </div>
                 </div>
               )}

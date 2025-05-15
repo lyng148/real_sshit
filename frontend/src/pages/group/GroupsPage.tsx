@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Plus, Users } from 'lucide-react';
@@ -7,6 +6,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Group } from '@/services/groupService';
+import { peerReviewService } from '@/services/peerReviewService';
+import PeerReviewModal from '@/components/peer-review/PeerReviewModal';
+import { getInitials } from '@/lib/utils';
 
 // Import custom components
 import GroupsList from '@/components/groups/GroupsList';
@@ -29,9 +31,31 @@ const GroupsPage = () => {
   // State for member dialog
   const [viewMembersDialogOpen, setViewMembersDialogOpen] = useState<boolean>(false);
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<any[]>([]);
-  const [selectedGroupName, setSelectedGroupName] = useState<string>("");
-  const [currentView, setCurrentView] = useState<'kanban' | 'analytics' | 'timeline' | 'calendar'>('kanban');
+  const [selectedGroupName, setSelectedGroupName] = useState<string>("");  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar' | 'peer-reviews'>('kanban');
+  const [showPeerReviewModal, setShowPeerReviewModal] = useState<boolean>(false);
   
+  // Check for pending peer reviews when component mounts or projectId changes
+  useEffect(() => {
+    const checkPendingReviews = async () => {
+      if (!projectId) return;
+      
+      try {
+        const projectIdNumber = parseInt(projectId, 10);
+        // Check if there are pending peer reviews
+        const response = await peerReviewService.getMembersToReview(projectIdNumber);
+        
+        // If there are members to review, show the modal automatically
+        if (response.success && response.data && response.data.length > 0) {
+          setShowPeerReviewModal(true);
+        }
+      } catch (error) {
+        console.error("Error checking pending reviews:", error);
+      }
+    };
+    
+    checkPendingReviews();
+  }, [projectId]);
+
   // Use custom hooks
   const { 
     groups, 
@@ -109,8 +133,7 @@ const GroupsPage = () => {
     const group = groupParam || userGroup;
     if (!group) return null;
     
-    return (
-      <div>
+    return (      <div>
         <GroupDetail
           group={group}
           projectId={projectId}
@@ -121,10 +144,7 @@ const GroupsPage = () => {
           setCurrentView={setCurrentView}
           getInitials={getInitials}
           onViewMembers={handleViewMembers}
-        />
-        
-        <div className="mt-4">
-          {currentView === 'kanban' && (
+          renderKanban={
             <KanbanBoard
               tasks={tasks}
               tasksLoading={tasksLoading}
@@ -140,9 +160,8 @@ const GroupsPage = () => {
               onMoveTaskForward={moveTaskForward}
               onMoveTaskBackward={moveTaskBackward}
             />
-          )}
-          
-          {currentView === 'timeline' && (
+          }
+          renderTimeline={
             <TaskTimeline
               tasks={tasks}
               tasksLoading={tasksLoading}
@@ -151,9 +170,8 @@ const GroupsPage = () => {
               onAddTask={handleAddTask}
               onTaskClick={handleTaskClick}
             />
-          )}
-          
-          {currentView === 'calendar' && (
+          }
+          renderCalendar={
             <TaskCalendar
               tasks={tasks}
               tasksLoading={tasksLoading}
@@ -162,8 +180,9 @@ const GroupsPage = () => {
               onAddTask={handleAddTask}
               onTaskClick={handleTaskClick}
             />
-          )}
-        </div>
+          }
+        />
+          {/* We no longer need the portal logic since we're passing the components directly as props */}
       </div>
     );
   };
@@ -298,6 +317,18 @@ const GroupsPage = () => {
             </DialogClose>
           </DialogContent>
         </Dialog>
+        
+        {/* Peer Review Modal - Will be automatically shown when there are pending reviews */}
+        {projectId && (
+          <PeerReviewModal
+            projectId={parseInt(projectId, 10)}
+            open={showPeerReviewModal}
+            onOpenChange={(open) => {
+              // Only allow closing if all reviews are complete
+              setShowPeerReviewModal(open);
+            }}
+          />
+        )}
 
         {/* Task Detail Dialog */}
         <TaskDetailDialog

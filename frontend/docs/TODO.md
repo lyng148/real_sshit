@@ -70,7 +70,7 @@
   - [ ] Task completion rating (1-5) (vote by click on start)
   - [ ] Collaboration rating (1-5) (vote by click on start)
   - [ ] Feedback text field
-- [ ] khi ấn vào group page của mình, màn hình hiển thị trắng xóa, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụngdụng
+- [ ] khi ấn vào group page của mình, màn hình hiển thị trắng xóa và hiển thị tất cả form đánh giá của group đó theo thứ tự lần lượt, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụng wweb
 - [ ] Implement peer review completion tracking
 - [ ] Create peer review results visualization
 

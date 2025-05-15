@@ -54,7 +54,7 @@ const CreateGroupPage = () => {
     } catch (error: any) {
       toast({ 
         title: 'Error', 
-        description: error.message || error.response?.data?.message || 'An unexpected error occurred', 
+        description: error.response?.data?.message || error.message || 'An unexpected error occurred', 
         variant: 'destructive' 
       });
     } finally {

@@ -128,7 +128,7 @@ const TaskTimeline: React.FC<TaskTimelineProps> = ({
                       className="relative bg-white p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => onTaskClick(task)}
                     >
-                      <div className="absolute -left-8 top-4 bg-white rounded-full p-1">
+                      <div className="absolute -left-9 top-4 bg-white rounded-full p-1">
                         {getStatusIcon(task.status)}
                       </div>
                       

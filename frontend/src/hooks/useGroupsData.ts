@@ -149,15 +149,18 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
         // Refetch groups to update UI
         await fetchGroups();
       } else {
+        console.error("Error auto-joining group:", response);
         toast({
           title: "Error",
           description: response.data.message || "Failed to auto join group",
           variant: "destructive",
         });
-      }    } catch (error) {
+      }    
+    } catch (error) {
+      console.log(error.response.data.message);
       toast({
         title: "Error",
-        description: error.message || (error.response?.data?.message ? error.response.data.message : "An unexpected error occurred"),
+        description: (error.response?.data?.message ? error.response.data.message : "An unexpected error occurred") ||error.message,
         variant: "destructive",
       });
     }

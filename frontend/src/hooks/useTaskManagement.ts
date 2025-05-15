@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from "@/components/ui/use-toast";
 import taskService from '@/services/taskService';
@@ -51,26 +50,31 @@ export const useTaskManagement = ({ tasks, setTasks, mapUIStatusToApiStatus }: U
       // Call API to update task status
       const response = await taskService.updateTaskStatus(parseInt(draggableId), newApiStatus);
       
-      // If we get a successful response with updated task data, update the originalTask reference
-      if (response && response.data) {
-        setTasks(prevTasks => 
-          prevTasks.map(task => {
-            if (task.id === draggableId) {
-              return { ...task, originalTask: response.data };
-            }
-            return task;
-          })
-        );
+      // Success case
+      if (response.success) {
+        // Task updated successfully
       }
     } catch (error) {
       console.error("Failed to update task status:", error);
       // Revert to original status on error
       setTasks(prevState => [...prevState]);
-      toast({
-        title: "Error",
-        description: "Failed to update task status. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Try to parse the error message if it's our structured error
+      try {
+        const errorData = JSON.parse(error.message);
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to update task status. Please try again.",
+          variant: "destructive",
+        });
+      } catch {
+        // If we can't parse it, it's an unexpected error
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   }, [tasks, setTasks, mapUIStatusToApiStatus, toast]);
 
@@ -101,26 +105,31 @@ export const useTaskManagement = ({ tasks, setTasks, mapUIStatusToApiStatus }: U
       // Call API to update task status
       const response = await taskService.updateTaskStatus(parseInt(taskId), newApiStatus);
       
-      // If we get a successful response with updated task data, update the originalTask reference
-      if (response && response.data) {
-        setTasks(prevTasks => 
-          prevTasks.map(task => {
-            if (task.id === taskId) {
-              return { ...task, originalTask: response.data };
-            }
-            return task;
-          })
-        );
+      // Success case
+      if (response.success) {
+        // Task updated successfully
       }
     } catch (error) {
       console.error("Failed to update task status:", error);
       // Revert on error
       setTasks(prevState => [...prevState]); 
-      toast({
-        title: "Error",
-        description: "Failed to update task status. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Try to parse the error message if it's our structured error
+      try {
+        const errorData = JSON.parse(error.message);
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to update task status. Please try again.",
+          variant: "destructive",
+        });
+      } catch {
+        // If we can't parse it, it's an unexpected error
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   }, [tasks, setTasks, mapUIStatusToApiStatus, toast]);
 
@@ -151,26 +160,31 @@ export const useTaskManagement = ({ tasks, setTasks, mapUIStatusToApiStatus }: U
       // Call API to update task status
       const response = await taskService.updateTaskStatus(parseInt(taskId), newApiStatus);
       
-      // If we get a successful response with updated task data, update the originalTask reference
-      if (response && response.data) {
-        setTasks(prevTasks => 
-          prevTasks.map(task => {
-            if (task.id === taskId) {
-              return { ...task, originalTask: response.data };
-            }
-            return task;
-          })
-        );
+      // Success case
+      if (response.success) {
+        // Task updated successfully
       }
     } catch (error) {
       console.error("Failed to update task status:", error);
       // Revert on error
       setTasks(prevState => [...prevState]); 
-      toast({
-        title: "Error",
-        description: "Failed to update task status. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Try to parse the error message if it's our structured error
+      try {
+        const errorData = JSON.parse(error.message);
+        toast({
+          title: "Error",
+          description: errorData.message || "Failed to update task status. Please try again.",
+          variant: "destructive",
+        });
+      } catch {
+        // If we can't parse it, it's an unexpected error
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   }, [tasks, setTasks, mapUIStatusToApiStatus, toast]);
 

@@ -201,7 +201,7 @@ export const ProjectList: React.FC = () => {
               <span className="truncate">{project.name}</span>
             </div>
             {selectedProject === project.id && (
-              <div className="ml-9 border-l border-gray-200">
+              <div className="ml-6 border-l border-gray-200">
                 <div>
                   {/* Project Info option - available for all users */}
                   <div

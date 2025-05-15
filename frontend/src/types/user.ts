@@ -11,6 +11,14 @@ export interface User {
   updatedAt?: string;
 }
 
+export interface UserSummary {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  avatarUrl?: string;
+}
+
 export interface UserResponse {
   success: boolean;
   message: string;

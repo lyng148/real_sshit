@@ -131,10 +131,8 @@ const TasksPage = () => {
         return task;
       });
       setTasks(updatedTasks);
-
       // Call API to update task status
       const response = await taskService.updateTaskStatus(parseInt(draggableId), newApiStatus);
-      
       // If we get a successful response with updated task data, update the originalTask reference
       if (response && response.data) {
         setTasks(prevTasks => 
@@ -146,6 +144,11 @@ const TasksPage = () => {
           })
         );
       }    
+      // toast success message
+      toast({
+        title: "Success",
+        description: "Task status updated successfully",
+      });
     } catch (error: any) {
       console.error("Failed to update task status:", error);
       // Revert to original status on error
@@ -180,10 +183,8 @@ const TasksPage = () => {
           return task;
         })
       );
-      
       // Call API to update task status
       const response = await taskService.updateTaskStatus(parseInt(taskId), newApiStatus);
-      
       // If we get a successful response with updated task data, update the originalTask reference
       if (response && response.data) {
         setTasks(prevTasks => 
@@ -195,11 +196,20 @@ const TasksPage = () => {
           })
         );
       }
+      toast({
+        title: "Success",
+        description: "Task status updated successfully",
+      });
     } catch (error) {
       console.error("Failed to update task status:", error);
       // Revert on error
       setTasks(prevState => [...prevState]); 
       // Could show an error toast here
+      toast({
+        title: "Error",
+        description: error.message || error.response?.data?.message || "Failed to update task status",
+        variant: "destructive",
+      });
     }
   };
   // Move task to previous column
@@ -226,10 +236,8 @@ const TasksPage = () => {
           return task;
         })
       );
-      
       // Call API to update task status
       const response = await taskService.updateTaskStatus(parseInt(taskId), newApiStatus);
-      
       // If we get a successful response with updated task data, update the originalTask reference
       if (response && response.data) {
         setTasks(prevTasks => 
@@ -241,11 +249,21 @@ const TasksPage = () => {
           })
         );
       }
+
+      toast({
+        title: "Success",
+        description: "Task status updated successfully",
+      });
     } catch (error) {
       console.error("Failed to update task status:", error);
       // Revert on error
       setTasks(prevState => [...prevState]); 
       // Could show an error toast here
+      toast({
+        title: "Error",
+        description: error.message || error.response?.data?.message || "Failed to update task status",
+        variant: "destructive",
+      });
     }
   };
   // Filter tasks by status

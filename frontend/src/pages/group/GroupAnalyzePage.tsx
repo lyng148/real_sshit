@@ -91,7 +91,7 @@ const GroupAnalyzePage: React.FC = () => {
         console.error("Error fetching group statistics:", error);
         toast({
           title: "Error",
-          description: error.message || error.response?.data?.message || "An unexpected error occurred while loading statistics",
+          description: error.response?.data?.message || error.message || "An unexpected error occurred while loading statistics",
           variant: "destructive",
         });
       } finally {
