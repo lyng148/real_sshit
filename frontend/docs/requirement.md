@@ -279,3 +279,10 @@ Hệ thống phải triển khai đầy đủ các luồng chức năng theo sơ
 ## BỐI CẢNH
 
 Hệ thống phục vụ môi trường học thuật, đặc biệt là các môn học như chương trình Phát triển phần mềm theo chuẩn ITSS của ĐHBK HN, tập trung vào quy trình, cộng tác và đánh giá công bằng. Tính năng theo dõi tự động qua GitHub và phát hiện free-rider là điểm nhấn cần ưu tiên.
+
+
+Không hiển thị users có active case (như trước)
+Không hiển thị users được resolve trong tháng hiện tại cho đến khi:
+Đã qua ít nhất 7 ngày kể từ khi resolve
+VÀ đã sang tuần mới (sử dụng week number calculation)
+Cho phép hiển thị lại users được resolve ở các tháng trước ngay lập tức nếu họ thỏa mãn tiêu chí free-rider

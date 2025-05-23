@@ -1,10 +1,10 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import Index from "./pages/Index";
 import Settings from "./pages/settings/Settings";
 import Profile from "./pages/user/Profile";
@@ -28,15 +28,18 @@ import ProjectDetails from "./pages/project/ProjectDetails";
 import ProjectEdit from "./pages/project/ProjectEdit";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ProjectAnalyzePage from "./pages/project/ProjectAnalyzePage";
+import FreeRiderDetectionPage from "./pages/project/FreeRiderDetectionPage";
+import FreeRiderEvidenceDetailPage from "./pages/project/FreeRiderEvidenceDetailPage";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />        <BrowserRouter>
+      <NotificationProvider>        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
           <Routes>
             <Route path="/dashboard" element={
               <ProtectedRoute>
@@ -124,24 +127,37 @@ const App = () => (
               <ProtectedRoute>
                 <GroupAnalyzePage />
               </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/project-analyze" element={
+            } />            <Route path="/projects/:projectId/project-analyze" element={
               <ProtectedRoute>
                 <ProjectAnalyzePage />
               </ProtectedRoute>
             } />
-            <Route path="/projects/:projectId/admin-analyze" element={
+            <Route path="/projects/:projectId/free-rider-detection" element={
+              <ProtectedRoute roles={["ADMIN", "INSTRUCTOR", "STUDENT"]}>
+                <FreeRiderDetectionPage />
+              </ProtectedRoute>
+            } />            <Route path="/projects/:projectId/admin-analyze" element={
               <ProtectedRoute roles={["ADMIN", "INSTRUCTOR"]}>
                 <AdminAnalyzePage />
+              </ProtectedRoute>
+            } />
+            {/* Global Free-Rider Detection Route */}            <Route path="/freerider-detection" element={
+              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                <FreeRiderDetectionPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/freerider-detection/evidence/:projectId/:userId" element={
+              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                <FreeRiderEvidenceDetailPage />
               </ProtectedRoute>
             } />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/" element={<Landing />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Route path="*" element={<NotFound />} />          </Routes>
         </BrowserRouter>
       </TooltipProvider>
+      </NotificationProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

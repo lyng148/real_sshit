@@ -56,13 +56,12 @@ const ProjectCreate = () => {
       [name]: value
     }));
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
     try {
-      // Ensure maxMembers is always provided
+      // Ensure maxMembers is always provided and convert freeriderThreshold from percentage to decimal
       const projectData = {
         name: formData.name,
         description: formData.description,
@@ -72,7 +71,7 @@ const ProjectCreate = () => {
         weightW2: formData.weightW2,
         weightW3: formData.weightW3,
         weightW4: formData.weightW4,
-        freeriderThreshold: formData.freeriderThreshold,
+        freeriderThreshold: formData.freeriderThreshold / 100, // Convert from percentage (0-100) to decimal (0-1)
         pressureThreshold: formData.pressureThreshold
       };
       
@@ -205,7 +204,8 @@ const ProjectCreate = () => {
                 min="0"
                 max="100"
               />
-            </div>            <div>
+            </div>            
+            <div>
               <Label htmlFor="weightW4">Weight Factor W4 (Late Task Penalty)</Label>
               <Input
                 type="number"
@@ -217,13 +217,12 @@ const ProjectCreate = () => {
                 min="0"
                 max="100"
               />
-            </div>
-
+            </div>            
             <div>
               <LabelWithTooltip
                 htmlFor="freeriderThreshold" 
-                label="Free Rider Detection Threshold"
-                tooltipText="A contribution score below this threshold*average contribution score of team will flag a member as a potential free-rider."
+                label="Free Rider Detection Threshold (%)"
+                tooltipText="A contribution score below this percentage of the average contribution score of the team will flag a member as a potential free-rider. Value should be between 0-100%."
               />
               <Input
                 type="number"

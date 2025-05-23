@@ -53,12 +53,12 @@ public class UserConverter {
         if (user == null) {
             return null;
         }
-        
         UserSummaryDTO dto = new UserSummaryDTO();
         dto.setId(user.getId());
         dto.setUsername(user.getUsername());
         dto.setFullName(user.getFullName());
         dto.setEmail(user.getEmail());
+        dto.setAvatarUrl(user.getAvatarUrl());
         
         return dto;
     }

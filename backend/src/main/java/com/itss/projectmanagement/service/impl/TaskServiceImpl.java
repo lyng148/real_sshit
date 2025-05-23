@@ -14,6 +14,7 @@ import com.itss.projectmanagement.repository.TaskRepository;
 import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.service.INotificationService;
 import com.itss.projectmanagement.service.ITaskService;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,8 +38,8 @@ public class TaskServiceImpl implements ITaskService {
     @Transactional
     public TaskResponse createTask(TaskCreateRequest request) {
         Group group = groupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + request.getGroupId()));
-        
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+
         User assignee = null;
         String pressureWarning = null;
         
@@ -80,9 +81,9 @@ public class TaskServiceImpl implements ITaskService {
     public TaskResponse updateTask(Long taskId, TaskCreateRequest request) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
-        
+
         Group group = groupRepository.findById(request.getGroupId())
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + request.getGroupId()));
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
         
         User assignee = null;
         String pressureWarning = null;
@@ -141,7 +142,7 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public List<TaskResponse> getTasksByGroup(Long groupId) {
         Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
         
         return taskRepository.findByGroup(group).stream()
                 .map(taskConverter::toResponse)
@@ -211,7 +212,13 @@ public class TaskServiceImpl implements ITaskService {
     public TaskResponse updateTaskStatus(Long taskId, TaskStatus status) {
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
-        
+
+        // check if current user is not the assignee or group leader
+        User user = SecurityUtils.getCurrentUser();
+        if (!task.getAssignee().getId().equals(user.getId()) && !task.getGroup().getLeader().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("You do not have permission to update this task's status");
+        }
+
         TaskStatus oldStatus = task.getStatus();
         task.setStatus(status);
         

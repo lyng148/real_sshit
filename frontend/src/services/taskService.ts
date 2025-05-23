@@ -4,7 +4,7 @@ export interface Task {
   id: number;
   title: string;
   description: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD' | 'VERY_HARD';
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   deadline: string;
   assigneeId: number | null;
@@ -22,7 +22,7 @@ export interface Task {
 export interface TaskCreateRequest {
   title: string;
   description: string;
-  difficulty: 'EASY' | 'MEDIUM' | 'HARD' | 'VERY_HARD';
+  difficulty: 'EASY' | 'MEDIUM' | 'HARD';
   priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
   deadline: string;
   assigneeId?: number | undefined;

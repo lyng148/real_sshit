@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Task } from '@/services/taskService';
 import axiosInstance from '@/services/axiosInstance';
 import { Member } from '@/services/groupService';
-import { Loader2, Send } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Loader2, Send } from 'lucide-react';
 import commentService, { Comment as ApiComment } from '@/services/commentService';
 import taskService from '@/services/taskService';
 
@@ -58,7 +58,20 @@ const TaskDetailDialog = ({
   const [isAssigning, setIsAssigning] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTask, setEditedTask] = useState(task);
+  const commentsContainerRef = useRef<HTMLDivElement>(null);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);  
+  
+  // States for pressure warning popup
+  const [showPressureWarning, setShowPressureWarning] = useState(false);
+  const [warningMember, setWarningMember] = useState<string>('');
+  const [pendingAssignment, setPendingAssignment] = useState<string | null>(null);
+  
+  // Scroll to the latest comment when a new comment is added
+  useEffect(() => {
+    if (comments.length > 0 && commentsContainerRef.current) {
+      commentsContainerRef.current.scrollTop = commentsContainerRef.current.scrollHeight;
+    }
+  }, [comments.length]);
 
   // Fetch commits and comments when task is opened
   useEffect(() => {
@@ -103,13 +116,12 @@ const TaskDetailDialog = ({
     }
   };
 
-  // Get color based on difficulty
+  // Get color based on difficulty  
   const getDifficultyColor = (difficulty: string) => {
     switch(difficulty) {
       case 'EASY': return 'bg-green-100 text-green-800';
       case 'MEDIUM': return 'bg-blue-100 text-blue-800';
       case 'HARD': return 'bg-purple-100 text-purple-800';
-      case 'VERY_HARD': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
@@ -124,12 +136,18 @@ const TaskDetailDialog = ({
     }
   };
 
-  // Handle assigning task to a member
-  const handleAssignTask = async (memberId: string) => {
-    if (!task) return;
+  // Function to complete task assignment after warning confirmation
+  const completeAssignment = async () => {
+    if (!pendingAssignment || !task) return;
     
     try {
       setIsAssigning(true);
+      const memberId = pendingAssignment;
+      
+      // Clear the pending assignment
+      setPendingAssignment(null);
+      setShowPressureWarning(false);
+      
       const response = await axiosInstance.put(`/api/tasks/${task.id}/assign/${memberId}`);
       
       if (response.status === 200) {
@@ -137,7 +155,58 @@ const TaskDetailDialog = ({
           title: "Success",
           description: "Task assigned successfully",
         });
+        
         // Call onTaskUpdated to update the task data
+        if (onTaskUpdated) {
+          onTaskUpdated();
+        }
+      }
+    } catch (error) {
+      console.error("Error assigning task:", error);
+      toast({
+        title: "Error",
+        description: "Failed to assign task. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+  
+  // Handle assigning task to a member
+  const handleAssignTask = async (memberId: string) => {
+    if (!task) return;
+    
+    try {
+      setIsAssigning(true);
+      // Gọi API để kiểm tra cảnh báo áp lực
+      const response = await axiosInstance.put(`/api/tasks/${task.id}/assign/${memberId}`);
+      
+      if (response.status === 200) {
+        const updatedTask = response.data.data;
+        
+        // Kiểm tra nếu có cảnh báo áp lực
+        if (updatedTask.pressureWarning != null) {
+          // Tìm thông tin thành viên cho dialog cảnh báo
+          const member = groupMembers.find(m => m.id.toString() === memberId);
+          setWarningMember(member?.fullName || 'Thành viên này');
+          
+          // Lưu ID thành viên để gán nhiệm vụ sau khi xác nhận
+          setPendingAssignment(memberId);
+          
+          // Hiển thị dialog cảnh báo
+          setShowPressureWarning(true);
+          setIsAssigning(false);
+          return;
+        }
+        
+        // Không có cảnh báo, hiển thị thông báo thành công
+        toast({
+          title: "Thành công",
+          description: "Nhiệm vụ đã được gán thành công",
+        });
+        
+        // Gọi onTaskUpdated để cập nhật dữ liệu nhiệm vụ
         if (onTaskUpdated) {
           onTaskUpdated();
         }
@@ -205,13 +274,15 @@ const TaskDetailDialog = ({
     } finally {
       setIsCommentsLoading(false);
     }
-  };
+  };  // Track newly added comments for animation effects
+  const [newCommentIds, setNewCommentIds] = useState<Set<number>>(new Set());
   
-  // Handle submitting a new comment
+  // Handle submitting a new comment with optimistic UI update
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newCommentContent.trim()) {
+    const content = newCommentContent.trim();
+    if (!content) {
       toast({
         title: "Error",
         description: "Comment content cannot be empty.",
@@ -220,30 +291,77 @@ const TaskDetailDialog = ({
       return;
     }
     
-    if (!task || !task.id) {
-      console.error("Cannot submit comment: Task or task ID is missing", task);
+    if (!task || !task.id || !currentUser) {
+      console.error("Cannot submit comment: Missing task, task ID, or user", { task, currentUser });
       return;
     }
     
+    // Clear the input field immediately for better UX
+    setNewCommentContent('');
+    
+    // Create an optimistic comment to add to the UI immediately
+    const optimisticComment: Comment = {
+      id: Date.now(), // Temporary ID that will be replaced with the real one
+      content: content,
+      authorId: currentUser.user.id,
+      authorName: currentUser.user.fullName,
+      authorAvatarUrl: currentUser.user.avatarUrl,
+      taskId: task.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Add the optimistic comment to the UI and mark it as new for animation
+    setNewCommentIds(prev => new Set(prev).add(optimisticComment.id));
+    setComments(prevComments => [...prevComments, optimisticComment]);
+    
     try {
+      // Send to server in the background without blocking the UI
       setIsCommentSubmitting(true);
-      await commentService.createComment({
-        content: newCommentContent.trim(),
+      const savedComment = await commentService.createComment({
+        content: content,
         taskId: task.id,
       });
       
-      // Clear the input field
-      setNewCommentContent('');
+      // Replace the optimistic comment with the real one from the server
+      setComments(prevComments => 
+        prevComments.map(comment => 
+          comment.id === optimisticComment.id ? savedComment : comment
+        )
+      );
       
-      // Refetch comments to show the newly added comment
-      fetchComments();
-      
-      toast({
-        title: "Success",
-        description: "Comment added successfully.",
+      // Update the new comment id set
+      setNewCommentIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(optimisticComment.id);
+        updated.add(savedComment.id);
+        
+        // Clear the highlight after 2 seconds
+        setTimeout(() => {
+          setNewCommentIds(current => {
+            const next = new Set(current);
+            next.delete(savedComment.id);
+            return next;
+          });
+        }, 2000);
+        
+        return updated;
       });
     } catch (error) {
       console.error("Error submitting comment:", error);
+      
+      // Remove the optimistic comment if the request failed
+      setComments(prevComments => 
+        prevComments.filter(comment => comment.id !== optimisticComment.id)
+      );
+      
+      // Remove from new comments
+      setNewCommentIds(prev => {
+        const updated = new Set(prev);
+        updated.delete(optimisticComment.id);
+        return updated;
+      });
+      
       toast({
         title: "Error",
         description: "Failed to add comment. Please try again.",
@@ -369,10 +487,10 @@ const TaskDetailDialog = ({
                   </div>
                   <div>
                     <p className="text-sm text-gray-500">Difficulty</p>
-                    {isEditing ? (
+                    {isEditing ? (                      
                       <Select 
                         value={editedTask.difficulty}
-                        onValueChange={(value: 'EASY' | 'MEDIUM' | 'HARD' | 'VERY_HARD') => setEditedTask({ ...editedTask, difficulty: value })}
+                        onValueChange={(value: 'EASY' | 'MEDIUM' | 'HARD') => setEditedTask({ ...editedTask, difficulty: value })}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select difficulty" />
@@ -381,7 +499,6 @@ const TaskDetailDialog = ({
                           <SelectItem value="EASY">EASY</SelectItem>
                           <SelectItem value="MEDIUM">MEDIUM</SelectItem>
                           <SelectItem value="HARD">HARD</SelectItem>
-                          <SelectItem value="VERY_HARD">VERY HARD</SelectItem>
                         </SelectContent>
                       </Select>
                     ) : (
@@ -448,6 +565,20 @@ const TaskDetailDialog = ({
                       <p className="text-sm text-gray-500 italic">Unassigned</p>
                     )}
                   </div>
+                  
+                  {/* Display pressure warning if present */}
+                  {task.pressureWarning && (
+                    <div className="col-span-2 mt-2">
+                      <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
+                        <p className="text-amber-700 text-sm flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Warning: Assignee has a high pressure score and may be overloaded
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 
                 {isGroupLeader && (
@@ -538,15 +669,16 @@ const TaskDetailDialog = ({
                   <div className="flex justify-center items-center p-8">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     <p>Loading comments...</p>
-                  </div>
-                ) : comments.length === 0 ? (
+                  </div>                ) : comments.length === 0 ? (
                   <div className="text-center p-6 bg-gray-50 rounded-md">
                     <p className="text-gray-500">No comments yet.</p>
                   </div>
-                ) : (
-                  <div className="mb-4 max-h-80 overflow-y-auto">
+                ) : (                  <div ref={commentsContainerRef} className="mb-4 max-h-80 overflow-y-auto">
                     {comments.map(comment => (
-                      <div key={comment.id} className="mb-3 pb-3 border-b last:border-b-0">
+                      <div 
+                        key={comment.id} 
+                        className={`mb-3 pb-3 border-b last:border-b-0 ${newCommentIds.has(comment.id) ? 'animate-pulse bg-blue-50' : ''} transition-colors duration-300 rounded-md p-2`}
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex items-center">
                             <Avatar className="h-6 w-6 mr-2">
@@ -562,15 +694,21 @@ const TaskDetailDialog = ({
                     ))}
                   </div>
                 )}
-                
-                {/* Comment form */}
+                  {/* Comment form */}
                 <div className="mt-4">
                   <form onSubmit={handleSubmitComment} className="relative">
                     <textarea
                       ref={commentInputRef}
                       value={newCommentContent}
                       onChange={(e) => setNewCommentContent(e.target.value)}
-                      placeholder="Add a comment..."
+                      onKeyDown={(e) => {
+                        // Submit form on Ctrl+Enter or Command+Enter
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                          e.preventDefault();
+                          handleSubmitComment(e);
+                        }
+                      }}
+                      placeholder="Add a comment... (Ctrl+Enter to send)"
                       className="w-full border rounded-md py-2 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[60px] pr-10"
                       disabled={isCommentSubmitting}
                     />
@@ -591,7 +729,8 @@ const TaskDetailDialog = ({
                   </form>
                 </div>
               </div>
-            </div>          </div>
+            </div>          
+            </div>
         </div>
         
         <DialogFooter>
@@ -599,6 +738,37 @@ const TaskDetailDialog = ({
             <Button variant="outline">Close</Button>
           </DialogClose>
         </DialogFooter>
+        
+        {/* Pressure warning dialog */}
+        <Dialog open={showPressureWarning} onOpenChange={setShowPressureWarning}>
+          <DialogContent className="max-w-md">            
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-amber-700">
+                <AlertTriangle className="h-5 w-5" />
+                Consider Assigning to Another Member
+              </DialogTitle>
+            </DialogHeader>
+            <div className="p-4 bg-amber-50 rounded-md border border-amber-200">              
+              <p className="text-sm text-gray-700">
+                The member <span className="font-semibold">{warningMember}</span> has a high pressure score and may be overloaded with tasks.
+              </p>
+              <p className="text-sm text-gray-700 mt-2">
+                Consider redistributing work to other team members if possible.
+              </p>
+            </div>
+            <DialogFooter className="flex justify-center mt-4">
+              <Button 
+                variant="default" 
+                onClick={() => {
+                  setShowPressureWarning(false);
+                  completeAssignment();
+                }}
+              >
+                I understand, proceed with assignment
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </DialogContent>
     </Dialog>
   );

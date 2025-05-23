@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
 import PeerReviewForm from './PeerReviewForm';
 import { UserSummary } from '@/types/user';
-import { peerReviewService } from '@/services/peerReviewService';
+import  peerReviewService  from '@/services/peerReviewService';
 import { useToast } from '@/hooks/use-toast';
 
 interface PeerReviewModalProps {

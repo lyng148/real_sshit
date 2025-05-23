@@ -22,6 +22,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import ContributionTab from '@/components/project/ContributionTab';
 
 const ProjectAnalyzePage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -30,56 +31,57 @@ const ProjectAnalyzePage: React.FC = () => {
   const [statistics, setStatistics] = useState<ProjectStatisticsResponse | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [analyzing, setAnalyzing] = useState<boolean>(false);
-
   // Fetch project statistics
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    let timeout: NodeJS.Timeout | null = null;
     const fetchStatistics = async () => {
       try {
         setLoading(true);
-        setProgress(0);
+        setProgress(25); // Start with 25% to indicate request is being made
         setAnalyzing(true);
-        let fakeProgress = 0;
-        interval = setInterval(() => {
-          fakeProgress += Math.random() * 5 + 1;
-          if (fakeProgress < 90) {
-            setProgress(Math.floor(fakeProgress));
-          } else {
-            setProgress(90);
-            clearInterval(interval!);
-          }
-        }, 300);
-        timeout = setTimeout(() => {
-          setAnalyzing(false);
-          setLoading(false);
+        
+        // Set a timeout for the API call
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, 30000); // 30s timeout
+        
+        try {
+          // Increase progress to show request is in progress
+          setProgress(50);
+          
+          // Make the API call with abort signal
+          const response = await projectService.getProjectStatistics(Number(projectId));
+          
+          // API call successful, update progress
           setProgress(100);
-          clearInterval(interval!);
-          toast({
-            title: "Timeout",
-            description: "Phân tích quá lâu, vui lòng thử lại sau.",
-            variant: "destructive",
-          });
-        }, 30000);
-        const response = await projectService.getProjectStatistics(Number(projectId));
-        if (timeout) clearTimeout(timeout);
-        if (interval) clearInterval(interval);
-        setProgress(100);
-        setAnalyzing(false);
-        if (response.success) {
-          setStatistics(response.data);
-        } else {
-          toast({
-            title: "Error",
-            description: response.message || "Failed to load project statistics",
-            variant: "destructive",
-          });
+          setAnalyzing(false);
+          
+          if (response.success) {
+            setStatistics(response.data);
+          } else {
+            toast({
+              title: "Error",
+              description: response.message || "Failed to load project statistics",
+              variant: "destructive",
+            });
+          }
+          
+          // Clear the timeout since the API call is complete
+          clearTimeout(timeoutId);
+        } catch (apiError) {
+          if (apiError.name === 'AbortError') {
+            toast({
+              title: "Timeout",
+              description: "Phân tích quá lâu, vui lòng thử lại sau.",
+              variant: "destructive",
+            });
+          } else {
+            throw apiError; // Re-throw for the outer catch block
+          }
         }
       } catch (error) {
         setAnalyzing(false);
         setProgress(100);
-        if (interval) clearInterval(interval);
-        if (timeout) clearTimeout(timeout);
         console.error("Error fetching project statistics:", error);
         toast({
           title: "Error",
@@ -91,10 +93,6 @@ const ProjectAnalyzePage: React.FC = () => {
       }
     };
     fetchStatistics();
-    return () => {
-      if (interval) clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
-    };
   }, [projectId, toast]);
 
   const taskStatusData = statistics?.taskStatistics ? [
@@ -319,8 +317,7 @@ const ProjectAnalyzePage: React.FC = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
-              <TabsContent value="contributions" className="space-y-6">
+                <TabsContent value="contributions" className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <Card>
                     <CardHeader className="pb-2">
@@ -350,6 +347,9 @@ const ProjectAnalyzePage: React.FC = () => {
                     </CardContent>
                   </Card>
                 </div>
+                
+                {/* Import and use the Contribution Tab component */}
+                {projectId && <ContributionTab projectId={Number(projectId)} />}
                 
                 <Card>
                   <CardHeader>

@@ -12,8 +12,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import projectService from '@/services/projectService';
 import { format } from 'date-fns';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface Project {
   id: number;
@@ -32,6 +38,23 @@ interface Project {
   creatorId?: number;
   creatorName?: string;
 }
+
+// Helper component for field labels with tooltips
+const LabelWithTooltip = ({ htmlFor, label, tooltipText }) => (
+  <div className="flex items-center gap-1">
+    <Label htmlFor={htmlFor}>{label}</Label>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p className="text-sm">{tooltipText}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  </div>
+);
 
 interface ProjectUpdateRequest {
   id: number;
@@ -76,7 +99,7 @@ const ProjectEdit = () => {
         const response = await projectService.getProjectById(Number(projectId));
         if (response.success) {
           console.log("Project data:", response.data);
-          setProject(response.data);
+          setProject(response.data);          
           setFormData({
             name: response.data.name,
             description: response.data.description,
@@ -86,7 +109,7 @@ const ProjectEdit = () => {
             weightW2: response.data.weightW2,
             weightW3: response.data.weightW3,
             weightW4: response.data.weightW4,
-            freeriderThreshold: response.data.freeriderThreshold,
+            freeriderThreshold: response.data.freeriderThreshold * 100, // Convert from decimal (0-1) to percentage (0-100)
             pressureThreshold: response.data.pressureThreshold,
           });
         } else {
@@ -123,8 +146,7 @@ const ProjectEdit = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("Submitting form data:", formData);
-      // Prepare the project update data
+      console.log("Submitting form data:", formData);      // Prepare the project update data
       const projectData: ProjectUpdateRequest = {
         id: Number(projectId),
         name: formData.name,
@@ -135,7 +157,7 @@ const ProjectEdit = () => {
         weightW2: formData.weightW2,
         weightW3: formData.weightW3,
         weightW4: formData.weightW4,
-        freeriderThreshold: formData.freeriderThreshold,
+        freeriderThreshold: formData.freeriderThreshold / 100, // Convert from percentage (0-100) to decimal (0-1)
         pressureThreshold: formData.pressureThreshold,
       };
 
@@ -289,13 +311,19 @@ const ProjectEdit = () => {
                     <Label htmlFor="weightW4">Weight Factor W4</Label>
                     <Input type="number" id="weightW4" name="weightW4" value={formData.weightW4} onChange={handleChange} step="0.01" required />
                   </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="freeriderThreshold">Free Rider Detection Threshold</Label>
-                  <Input type="number" id="freeriderThreshold" name="freeriderThreshold" value={formData.freeriderThreshold} onChange={handleChange} step="0.01" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="pressureThreshold">Pressure Score Threshold</Label>
+                </div>                <div className="space-y-2">
+                  <LabelWithTooltip 
+                    htmlFor="freeriderThreshold" 
+                    label="Free Rider Detection Threshold (%)"
+                    tooltipText="A contribution score below this percentage of the average contribution score of the team will flag a member as a potential free-rider. Value should be between 0-100%."
+                  />
+                  <Input type="number" id="freeriderThreshold" name="freeriderThreshold" value={formData.freeriderThreshold} onChange={handleChange} step="1" min="0" max="100" required />
+                </div>                <div className="space-y-2">
+                  <LabelWithTooltip
+                    htmlFor="pressureThreshold"
+                    label="Pressure Score Threshold"
+                    tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload. The system monitors task assignments and deadlines to calculate pressure scores."
+                  />
                   <Input type="number" id="pressureThreshold" name="pressureThreshold" value={formData.pressureThreshold} onChange={handleChange} required />
                 </div>
                 <Button type="submit" disabled={isSubmitting}>

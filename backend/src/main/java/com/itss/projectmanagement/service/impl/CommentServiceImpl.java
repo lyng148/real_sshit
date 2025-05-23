@@ -110,7 +110,8 @@ public class CommentServiceImpl implements ICommentService {
      * @return true if the user is the leader of the specified group
      */
     private boolean isGroupLeader(Long userId, Long groupId) {
-        Optional<Group> groupOptional = groupRepository.findById(groupId);
+        Optional<Group> groupOptional = Optional.ofNullable(groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found")));
         if (groupOptional.isPresent()) {
             Group group = groupOptional.get();
             User leader = group.getLeader();

@@ -5,6 +5,7 @@ export interface Member {
   username: string;
   fullName: string;
   email: string;
+  avatarUrl?: string;
 }
 
 export interface GroupLeader {
@@ -12,6 +13,7 @@ export interface GroupLeader {
   username: string;
   fullName: string;
   email: string;
+  avatarUrl?: string;
 }
 
 export interface Group {

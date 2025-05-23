@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ import java.util.Set;
 @Entity
 @Table(name = "projects")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -79,10 +81,12 @@ public class Project extends BaseEntity {
     // Project has many groups - cascade delete to remove all groups when project is deleted
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<Group> groups = new HashSet<>();
-    
-    // Project has many peer reviews - cascade delete to remove all peer reviews when project is deleted
+    private Set<Group> groups = new HashSet<>();    // Project has many peer reviews - cascade delete to remove all peer reviews when project is deleted
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<PeerReview> peerReviews = new HashSet<>();
+    
+    @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<FreeRiderCase> freeRiderCases = new HashSet<>();
 }

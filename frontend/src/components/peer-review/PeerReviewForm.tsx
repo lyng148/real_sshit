@@ -15,7 +15,7 @@ import StarRating from './StarRating';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { peerReviewService } from '@/services/peerReviewService';
+import  peerReviewService  from '@/services/peerReviewService';
 import { UserSummary } from '@/types/user';
 import { getInitials } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';

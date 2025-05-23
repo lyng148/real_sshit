@@ -16,6 +16,7 @@ public class CommentDTO {
     private String content;
     private Long authorId;
     private String authorName;
+    private String authorAvatarUrl;
     private Long taskId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

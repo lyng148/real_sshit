@@ -160,17 +160,12 @@ const GroupManagePage: React.FC = () => {
       });
     }
   };
-
   // Transfer leadership functionality
   const handleTransferLeadership = async () => {
     if (!groupId || !selectedNewLeader) return;
     
     try {
-      // Mock API call - would be implemented in groupService
-      // const response = await groupService.transferLeadership(Number(groupId), selectedNewLeader.id);
-      
-      // For now, we'll simulate this with a mock success response
-      const response = { success: true };
+      const response = await groupService.transferLeadership(Number(groupId), selectedNewLeader.id);
       
       if (response.success) {
         // Update local state
@@ -480,15 +475,43 @@ const GroupManagePage: React.FC = () => {
                                 >
                                   <Crown className="mr-2 h-4 w-4 text-amber-500" />
                                   Make Leader
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
+                                </DropdownMenuItem>                                <DropdownMenuItem
                                   className="text-red-600"
                                   onClick={() => {
-                                    // Mock function for removing a member
-                                    toast({
-                                      title: "Feature Not Implemented",
-                                      description: "Removing members is not yet implemented.",
-                                    });
+                                    if (member.id === currentUser?.id) {
+                                      toast({
+                                        title: "Cannot Remove Yourself",
+                                        description: "You cannot remove yourself from the group. Use the 'Leave Group' button instead.",
+                                        variant: "destructive",
+                                      });
+                                      return;
+                                    }
+                                    groupService.removeMember(group.id, member.id)
+                                      .then(response => {
+                                        if (response.success) {
+                                          // Update members list
+                                          setGroup(prev => {
+                                            if (!prev) return prev;
+                                            return {
+                                              ...prev,
+                                              members: prev.members.filter(m => m.id !== member.id),
+                                              memberCount: prev.memberCount - 1
+                                            };
+                                          });
+                                          toast({
+                                            title: "Member Removed",
+                                            description: `${member.fullName} has been removed from the group.`
+                                          });
+                                        }
+                                      })
+                                      .catch(error => {
+                                        console.error("Error removing member:", error);
+                                        toast({
+                                          title: "Error",
+                                          description: "Failed to remove member. Please try again.",
+                                          variant: "destructive",
+                                        });
+                                      });
                                   }}
                                 >
                                   <Trash className="mr-2 h-4 w-4" />

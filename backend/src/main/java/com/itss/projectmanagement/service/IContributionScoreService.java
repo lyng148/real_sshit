@@ -1,24 +1,22 @@
 package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.response.contribution.ContributionScoreResponse;
-import com.itss.projectmanagement.entity.ContributionScore;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
 
 import java.util.List;
 
 public interface IContributionScoreService {
+
     /**
      * Calculate contribution score for a user in a project
-     * @param user The user
+     * @param user    The user
      * @param project The project
-     * @return The calculated contribution score
      */
-    ContributionScore calculateScore(User user, Project project);
+    void calculateScore(User user, Project project);
     
     /**
      * Calculate contribution scores for all users in a project
-     *
      * @param project The project
      */
     void calculateScoresForProject(Project project);

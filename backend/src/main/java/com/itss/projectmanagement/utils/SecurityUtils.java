@@ -19,12 +19,8 @@ import java.util.List;
  */
 @Component
 public class SecurityUtils {
-    private final UserRepository userRepository;
-
     @Autowired
-    public SecurityUtils(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+    private UserRepository userRepository;
 
     /**
      * Checks if the current authenticated user has admin role
@@ -163,5 +159,10 @@ public class SecurityUtils {
         }
         
         return null;
+    }
+
+    public static boolean isCurrentUser(Long userId) {
+        Long currentUserId = getCurrentUserId();
+        return currentUserId != null && currentUserId.equals(userId);
     }
 }

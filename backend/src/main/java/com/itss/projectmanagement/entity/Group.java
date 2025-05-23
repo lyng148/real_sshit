@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import java.util.Set;
 @Entity
 @Table(name = "groups")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -30,7 +32,7 @@ public class Group extends BaseEntity {
     @Column(length = 500, columnDefinition = "varchar(500) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String description;
     
-    @Pattern(regexp = "^(https://github\\.com/[\\w-]+/[\\w\\.-_]+|git@github\\.com:[\\w-]+/[\\w\\.-_]+(\\.git)?)$", 
+    @Pattern(regexp = "^(https://github\\.com/[\\w-]+/[\\w.-_]+|git@github\\.com:[\\w-]+/[\\w.-_]+(\\.git)?)$",
             message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository or git@github.com:username/repository.git")
     @Column(name = "repository_url", columnDefinition = "varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci")
     private String repositoryUrl;
@@ -53,13 +55,15 @@ public class Group extends BaseEntity {
     @Builder.Default
     private Set<User> members = new HashSet<>();
     
-    // Group has many tasks - cascade delete to remove all tasks when group is deleted
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<Task> tasks = new HashSet<>();
-    
-    // Group has many commit records - cascade delete to remove all commit records when group is deleted
+
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<CommitRecord> commitRecords = new HashSet<>();
+    
+    @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<FreeRiderCase> freeRiderCases = new HashSet<>();
 }

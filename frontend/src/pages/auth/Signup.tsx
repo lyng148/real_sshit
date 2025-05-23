@@ -79,22 +79,22 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col relative overflow-hidden">
+    <div className="min-h-screen bg-[#050A14] text-white flex flex-col relative overflow-hidden">
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 z-0">
         <img 
           src="/wallpaper.png" 
           alt="Background" 
-          className="w-full h-full object-cover opacity-50"
+          className="w-full h-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/80 to-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/90 to-black/40"></div>
       </div>
 
       {/* Header with Logo */}
       <header className="container mx-auto px-6 py-6 relative z-10">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">MindTask</Link>
-          <Link to="/login">
+          <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent animate-fade-in">MindTask</Link>
+          <Link to="/login" className="animate-fade-in">
             <Button variant="outline" className="border-blue-400 text-blue-400 hover:bg-blue-400/10">
               Login
             </Button>
@@ -104,20 +104,24 @@ const Signup = () => {
 
       {/* Signup Form */}
       <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
-        <div className="w-full max-w-md relative">
+        <div className="w-full max-w-md relative animate-fade-in-up">
           {/* Animated gradient background effect */}
           <div className="absolute -z-10 w-full h-full max-w-[30rem] max-h-[30rem] blur-3xl rounded-full bg-gradient-to-br from-blue-600 to-purple-800 opacity-20 animate-pulse"></div>
           
           <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-md rounded-xl shadow-xl">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">Create an account</CardTitle>
-              <CardDescription className="text-gray-300 text-center">
-                Get started with MindTask
-              </CardDescription>
+              <div className="text-reveal-container">
+                <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent text-reveal-item animate text-reveal-delay-1 text-white">Create an account</CardTitle>
+              </div>
+              <div className="text-reveal-container text-white">
+                <CardDescription className="text-gray-300 text-center text-reveal-item animate text-reveal-delay-2">
+                  Get started with MindTask
+                </CardDescription>
+              </div>
             </CardHeader>
             <form onSubmit={handleSignup}>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
+                <div className="space-y-2 animate-fade-in-up">
                   <Label htmlFor="username" className="text-gray-200">Username</Label>
                   <Input 
                     id="username" 
@@ -128,7 +132,7 @@ const Signup = () => {
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
                   <div className="space-y-2">
                     <Label htmlFor="first-name" className="text-gray-200">First name</Label>
                     <Input 
@@ -152,7 +156,7 @@ const Signup = () => {
                     />
                   </div>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
                   <Label htmlFor="email" className="text-gray-200">Email</Label>
                   <Input 
                     id="email" 
@@ -164,7 +168,7 @@ const Signup = () => {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
                   <Label htmlFor="password" className="text-gray-200">Password</Label>
                   <div className="relative">
                     <Input 
@@ -187,7 +191,7 @@ const Signup = () => {
                   </div>
                   <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters</p>
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
                   <Label htmlFor="confirmPassword" className="text-gray-200">Confirm Password</Label>
                   <Input 
                     id="confirmPassword" 
@@ -199,7 +203,7 @@ const Signup = () => {
                     required
                   />
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 animate-fade-in-up" style={{animationDelay: '0.5s'}}>
                   <input 
                     type="checkbox" 
                     id="terms"
@@ -222,13 +226,14 @@ const Signup = () => {
               </CardContent>
               <CardFooter className="flex flex-col">
                 <Button 
-                  className="w-full mb-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium py-2 shadow-lg shadow-blue-700/30 transition-all duration-300" 
+                  className="w-full mb-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium py-2 shadow-lg shadow-blue-700/30 transition-all duration-300 animate-fade-in-up" 
                   type="submit" 
                   disabled={loading}
+                  style={{animationDelay: '0.6s'}}
                 >
                   {loading ? "Creating account..." : "Create account"}
                 </Button>
-                <p className="text-center text-gray-400 text-sm">
+                <p className="text-center text-gray-400 text-sm animate-fade-in-up" style={{animationDelay: '0.7s'}}>
                   Already have an account?{' '}
                   <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium">
                     Sign in

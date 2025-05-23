@@ -14,12 +14,12 @@ public class CommentConverter {
         if (comment == null) {
             return null;
         }
-        
-        return CommentDTO.builder()
+          return CommentDTO.builder()
                 .id(comment.getId())
                 .content(comment.getContent())
                 .authorId(comment.getAuthor().getId())
-                .authorName(comment.getAuthor().getUsername())
+                .authorName(comment.getAuthor().getFullName())
+                .authorAvatarUrl(comment.getAuthor().getAvatarUrl())
                 .taskId(comment.getTask().getId())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())

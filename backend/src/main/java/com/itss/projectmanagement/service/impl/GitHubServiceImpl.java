@@ -240,7 +240,7 @@ public class GitHubServiceImpl implements IGitHubService {
         String taskIdPattern = "TASK-" + taskId;
         List<CommitRecord> commitsByMessage = commitRecordRepository.findByGroup(task.getGroup()).stream()
                 .filter(commit -> commit.getMessage().contains(taskIdPattern))
-                .toList();  
+                .toList();
 
         // Combine both lists and remove duplicates
         commitRecords.addAll(commitsByMessage);
@@ -323,34 +323,38 @@ public class GitHubServiceImpl implements IGitHubService {
     }
 
     /**
-     * Extract the repository full name from a GitHub URL
-     * @param url GitHub repository URL
-     * @return Repository full name (owner/repo) or null if invalid
+     * Trích owner/repo từ URL GitHub.
+     * Hỗ trợ:
+     *   <a href="https://github.com/owner/repo">...</a>[.git]
+     *   git@github.com:owner/repo[.git]
+     * Trả về null nếu không khớp.
      */
-    private String extractRepoFullName(String url) {
+    private static String extractRepoFullName(String url) {
         if (url == null) return null;
 
-        // Handle different GitHub URL formats
-        // https://github.com/owner/repo
-        // https://github.com/owner/repo.git
-        // git@github.com:owner/repo.git
+        // Mỗi phần tử là một tiền tố hợp lệ của URL GitHub
+        final String[] PREFIXES = {
+                "https://github.com/",
+                "git@github.com:"
+        };
 
-        // For HTTPS URLs
-        Pattern httpsPattern = Pattern.compile("https://github\\.com/([\\w-]+/[\\w-]+)(\\.git)?$");
-        Matcher httpsMatcher = httpsPattern.matcher(url);
-        if (httpsMatcher.find()) {
-            return httpsMatcher.group(1);
+        for (String prefix : PREFIXES) {
+            if (url.startsWith(prefix)) {
+                // Cắt tiền tố
+                String path = url.substring(prefix.length());
+
+                // Cắt đuôi .git (nếu có)
+                if (path.endsWith(".git")) {
+                    path = path.substring(0, path.length() - 4);
+                }
+
+                // Trả về nếu còn đúng định dạng owner/repo
+                return path.contains("/") ? path : null;
+            }
         }
-
-        // For SSH URLs
-        Pattern sshPattern = Pattern.compile("git@github\\.com:([\\w-]+/[\\w-]+)(\\.git)?$");
-        Matcher sshMatcher = sshPattern.matcher(url);
-        if (sshMatcher.find()) {
-            return sshMatcher.group(1);
-        }
-
-        return null;
+        return null; // Không khớp bất kỳ tiền tố nào
     }
+
 
     /**
      * Convert Date to LocalDateTime

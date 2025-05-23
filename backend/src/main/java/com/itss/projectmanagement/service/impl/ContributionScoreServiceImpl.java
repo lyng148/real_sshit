@@ -37,7 +37,7 @@ public class ContributionScoreServiceImpl implements IContributionScoreService {
     
     @Override
     @Transactional
-    public ContributionScore calculateScore(User user, Project project) {
+    public void calculateScore(User user, Project project) {
         // 1. Calculate WeightedTaskCompletionScore
         Double weightedTaskCompletionScore = calculateWeightedTaskCompletionScore(user, project);
         
@@ -69,16 +69,12 @@ public class ContributionScoreServiceImpl implements IContributionScoreService {
             contributionScore = existingScoreOpt.get();
             contributionScore.setTaskCompletionScore(weightedTaskCompletionScore);
             contributionScore.setPeerReviewScore(peerReviewScore);
-            contributionScore.setCommitCount(commitCount);
+            contributionScore.setCommitCount(commitCount);            
             contributionScore.setLateTaskCount(lateTaskCount);
             contributionScore.setCalculatedScore(calculatedScore);
-            // Keep adjusted score if present
-            if (contributionScore.getAdjustedScore() == null) {
-                contributionScore.setAdjustedScore(calculatedScore);
-            }
             log.info("Updating existing contribution score for user {} in project {}",
                     user.getUsername(), project.getName());
-        } else {
+        } else {            
             contributionScore = ContributionScore.builder()
                     .user(user)
                     .project(project)
@@ -87,12 +83,11 @@ public class ContributionScoreServiceImpl implements IContributionScoreService {
                     .commitCount(commitCount)
                     .lateTaskCount(lateTaskCount)
                     .calculatedScore(calculatedScore)
-                    .adjustedScore(calculatedScore) // Default adjusted = calculated
                     .isFinal(false)
                     .build();
         }
-        
-        return contributionScoreRepository.save(contributionScore);
+
+        contributionScoreRepository.save(contributionScore);
     }
     
     @Override
@@ -328,7 +323,7 @@ public class ContributionScoreServiceImpl implements IContributionScoreService {
     
     /**
      * Calculate final score using the formula from UC007:
-     * Điểm = (W1 * WeightedTaskCompletionScore) + (W2 * Điểm_ĐánhGiáChéo_TrungBình) 
+     * Scores = (W1 * WeightedTaskCompletionScore) + (W2 * Điểm_ĐánhGiáChéo_TrungBình)
      *        + (W3 * Số_Commit_LiênQuan) - (W4 * Số_Task_TrễHạn)
      */
     private Double calculateFinalScore(

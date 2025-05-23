@@ -6,6 +6,7 @@ import com.itss.projectmanagement.dto.request.user.RoleAssignmentRequest;
 import com.itss.projectmanagement.dto.response.user.RoleAssignmentResponse;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import com.itss.projectmanagement.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -14,7 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,12 +27,13 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
-@RequiredArgsConstructor
 @Tag(name = "User Management", description = "APIs for managing users")
 public class UserController {
 
-    private final IUserService userService;
-    private final UserConverter userConverter;
+    @Autowired
+    private IUserService userService;
+    @Autowired
+    private UserConverter userConverter;
 
     @Operation(summary = "Get all users", description = "Retrieves a list of all users")
     @ApiResponses(value = {
@@ -64,9 +66,18 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
     @GetMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR') or @userService.isCurrentUser(#id)")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
     public ResponseEntity<ApiResponse<UserDTO>> getUserById(
             @Parameter(description = "ID of the user to retrieve") @PathVariable Long id) {
+        // Check if the user is the current user
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isCurrentUser(id) && !SecurityUtils.isInstructor()) {
+            ApiResponse<UserDTO> response = ApiResponse.error(
+                    "Access denied",
+                    HttpStatus.FORBIDDEN
+            );
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+
         return userService.getUserById(id)
                 .map(user -> {
                     UserDTO userDTO = userConverter.toDTO(user);
@@ -136,10 +147,19 @@ public class UserController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
     })
     @PutMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN') or @userService.isCurrentUser(#id)")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'INSTRUCTOR', 'STUDENT')")
     public ResponseEntity<ApiResponse<UserDTO>> updateUser(
             @Parameter(description = "ID of the user to update") @PathVariable Long id,
             @RequestBody User userRequest) {
+        // Check if the user is the current user
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isCurrentUser(id)) {
+            ApiResponse<UserDTO> response = ApiResponse.error(
+                    "Access denied",
+                    HttpStatus.FORBIDDEN
+            );
+            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+        }
+
         return userService.getUserById(id)
                 .map(existingUser -> {
                     // Only update fields that are provided in the request

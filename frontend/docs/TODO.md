@@ -48,11 +48,11 @@
   - [x] Status updates (Not Started/In Progress/Completed)
   - [x] Comments section
   - [x] Task commit log
-- [ ] Implement task editing functionality
-- [ ] Add task deletion with confirmation
+- [x] Implement task editing functionality
+- [x] Add task deletion with confirmation
 
 ## 7. GitHub Integration
-- [ ] Add error handling for GitHub connection issues
+- [x] Add error handling for GitHub connection issues
 
 ## 8. Contribution Score System
 - [x] Create contribution score calculation visualization
@@ -61,7 +61,7 @@
   - [x] Peer review average score
   - [x] Commit count contribution
   - [x] Late task penalties
-- [ ] Build instructor score adjustment interface
+- [x] Build instructor score adjustment interface
 - [ ] Create final evaluation recording system
 
 ## 9. Peer Review System
@@ -70,27 +70,27 @@
   - [x] Task completion rating (1-5) (vote by click on start)
   - [x] Collaboration rating (1-5) (vote by click on start)
   - [x] Feedback text field
-- [x] khi ấn vào group page của mình, màn hình hiển thị trắng xóa và hiển thị tất cả form đánh giá của group đó theo thứ tự lần lượt, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụng wweb
+- [x] khi ấn vào group page của mình, màn hình hiển thị trắng xóa và hiển thị tất cả form đánh giá của group đó theo thứ tự lần lượt, user bắt buộc hoàn thành tất cả form đánh giá để tiếp tục sử dụng web
 - [x] Implement peer review completion tracking
 - [x] Create peer review results visualization
 
 ## 10. Pressure Score System
-- [ ] Create pressure score visualization by user
-- [ ] Implement pressure warning display:
-  - [ ] Safe zone indicator
-  - [ ] Risk zone indicator
-  - [ ] Overload warning indicator
+- [x] Create pressure score visualization in group analyze
+- [x] Implement pressure warning display:
+  - [x] Safe zone indicator
+  - [x] Risk zone indicator
+  - [x] Overload warning indicator
 - [ ] Build task pressure calculation display
 - [ ] Create pressure score filtering by time period
 
 ## 11. Free-Rider Detection
-- [ ] Implement free-rider detection visualization
-- [ ] Create evidence collection display
-  - [ ] Commit history evidence
-  - [ ] Task completion evidence
-  - [ ] Peer review evidence
-- [ ] Build instructor notification system
-- [ ] Implement free-rider case management interface
+- [x] Implement free-rider detection visualization
+- [x] Create evidence collection display
+  - [x] Commit history evidence
+  - [x] Task completion evidence
+  - [x] Peer review evidence
+- [x] Build instructor notification system
+- [x] Implement free-rider case management interface
 
 ## 12. Performance Dashboard
 - [ ] Create group leader dashboard with:

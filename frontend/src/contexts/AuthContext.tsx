@@ -25,22 +25,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
+  const [loading, setLoading] = useState(true);  useEffect(() => {
     const user = authService.getCurrentUser();
     if (user) {
       setCurrentUser(user);
     }
     setLoading(false);
-  }, []);
-
-  const login = async (username: string, password: string) => {
+  }, []);  const login = async (username: string, password: string) => {
     const response = await authService.login(username, password);
     setCurrentUser(response.data);
     return response;
   };
-
   const logout = () => {
     authService.logout();
     setCurrentUser(null);

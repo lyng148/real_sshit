@@ -18,7 +18,7 @@ public class PressureScoreResponse {
     private PressureStatus status;
     private Integer taskCount;
     private Integer threshold;
-    private Double thresholdPercentage; // What percentage of the threshold this score represents
+    private Double thresholdPercentage; 
     private String statusDescription;
     private Long projectId;
     private String projectName;

@@ -56,14 +56,6 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     Optional<Group> findByNameAndProject(String name, Project project);
     
     /**
-     * Count number of members in a group
-     * @param groupId the group ID
-     * @return the number of members
-     */
-    @Query("SELECT COUNT(m) FROM Group g JOIN g.members m WHERE g.id = :groupId")
-    int countMembersByGroupId(Long groupId);
-    
-    /**
      * Find groups in a project that still have space for more members
      * @param project the project
      * @param maxMembers the maximum number of members per group
@@ -86,4 +78,16 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
     List<Group> findByMembersContainingAndProject(User user, Project project);
 
     Optional<Object> findByRepositoryUrlAndProject(String repositoryUrl, Project project);
+
+    Group findByProjectAndMembersContains(Project project, User user);    
+    
+    /**
+     * Get all members of a group including the leader
+     * @param groupId the group id
+     * @return list of users in the group
+     */
+    @Query("SELECT DISTINCT u FROM Group g JOIN g.members u WHERE g.id = :groupId " +
+           "UNION " +
+           "SELECT g.leader FROM Group g WHERE g.id = :groupId AND g.leader IS NOT NULL")
+    List<User> getGroupMembers(@Param("groupId") Long groupId);
 }

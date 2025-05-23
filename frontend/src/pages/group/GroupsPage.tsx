@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Group } from '@/services/groupService';
-import { peerReviewService } from '@/services/peerReviewService';
+import peerReviewService from '@/services/peerReviewService';
 import PeerReviewModal from '@/components/peer-review/PeerReviewModal';
 import { getInitials } from '@/lib/utils';
 
@@ -31,13 +31,32 @@ const GroupsPage = () => {
   // State for member dialog
   const [viewMembersDialogOpen, setViewMembersDialogOpen] = useState<boolean>(false);
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<any[]>([]);
-  const [selectedGroupName, setSelectedGroupName] = useState<string>("");  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar' | 'peer-reviews'>('kanban');
+  const [selectedGroupName, setSelectedGroupName] = useState<string>("");  
+  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar' | 'peer-reviews'>('kanban');
   const [showPeerReviewModal, setShowPeerReviewModal] = useState<boolean>(false);
   
+  // Use custom hooks
+  const { 
+    groups, 
+    loading, 
+    userGroup,
+    viewedGroup, 
+    setViewedGroup,
+    isAdmin, 
+    isInstructor, 
+    isGroupLeader,
+    handleJoinGroup,
+    handleAutoJoin
+  } = useGroupsData({ projectId });
+
+  // Check if user is regular student (not admin or instructor)
+  const isRegularStudent = !isAdmin && !isInstructor;
+
   // Check for pending peer reviews when component mounts or projectId changes
+  // Only check for regular students
   useEffect(() => {
     const checkPendingReviews = async () => {
-      if (!projectId) return;
+      if (!projectId || !isRegularStudent) return;
       
       try {
         const projectIdNumber = parseInt(projectId, 10);
@@ -54,21 +73,7 @@ const GroupsPage = () => {
     };
     
     checkPendingReviews();
-  }, [projectId]);
-
-  // Use custom hooks
-  const { 
-    groups, 
-    loading, 
-    userGroup,
-    viewedGroup, 
-    setViewedGroup,
-    isAdmin, 
-    isInstructor, 
-    isGroupLeader,
-    handleJoinGroup,
-    handleAutoJoin
-  } = useGroupsData({ projectId });
+  }, [projectId, isRegularStudent]);
 
   const {
     tasks,
@@ -319,7 +324,7 @@ const GroupsPage = () => {
         </Dialog>
         
         {/* Peer Review Modal - Will be automatically shown when there are pending reviews */}
-        {projectId && (
+        {projectId && isRegularStudent && (
           <PeerReviewModal
             projectId={parseInt(projectId, 10)}
             open={showPeerReviewModal}

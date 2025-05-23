@@ -3,6 +3,7 @@ package com.itss.projectmanagement.controller;
 import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.request.peer.PeerReviewRequest;
 import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
+import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.security.CurrentUser;
 import com.itss.projectmanagement.security.UserPrincipal;
@@ -157,9 +158,9 @@ public class PeerReviewController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
     })
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<List<User>>> detectFreeRiders(
+    public ResponseEntity<ApiResponse<List<UserDTO>>> detectFreeRiders(
             @RequestParam Long projectId) {
-        List<User> freeRiders = freeRiderDetectionService.detectFreeRiders(projectId);
+        List<UserDTO> freeRiders = freeRiderDetectionService.detectFreeRiders(projectId);
         return ResponseEntity.ok(ApiResponse.success(freeRiders, "Detected free riders successfully"));
     }
 

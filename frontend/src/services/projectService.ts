@@ -1,5 +1,4 @@
 import axiosInstance from './axiosInstance';
-import mockStatisticsService from './mockStatisticsService';
 
 interface ProjectCreateRequest {
   name: string;
@@ -63,17 +62,10 @@ class ProjectService {
       throw error;
     }
   }
-
   async getProjectStatistics(id: number) {
     try {
-      // Try to get real statistics from the API
-      try {
-        const response = await axiosInstance.get(`/api/projects/${id}/statistics`);
-        return response.data;
-      } catch (apiError) {
-        console.warn("Failed to fetch real statistics, falling back to mock data:", apiError);
-        throw apiError;
-      }
+      const response = await axiosInstance.get(`/api/projects/${id}/statistics`);
+      return response.data;
     } catch (error) {
       console.error("Error in getProjectStatistics:", error);
       throw error;

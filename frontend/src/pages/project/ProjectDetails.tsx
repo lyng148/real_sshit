@@ -294,14 +294,23 @@ const ProjectDetails: React.FC = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* For instructors and admins: show analyze options */}
-                      <> 
-                        {(isInstructor || isAdmin) && (
+                      <>                        
+                      {(isInstructor || isAdmin) && (
                           <Button 
                             variant="default" 
                             className="w-full" 
                             onClick={() => navigate(`/projects/${projectId}/project-analyze`)}
                           >
                             <BarChart className="h-5 w-5 mr-2" /> Project Analysis
+                          </Button>
+                        )}
+                        {(isInstructor || isAdmin) && (
+                          <Button 
+                            variant="default" 
+                            className="w-full" 
+                            onClick={() => navigate(`/projects/${projectId}/free-rider-detection`)}
+                          >
+                            <AlertTriangle className="h-5 w-5 mr-2" /> Free-Rider Detection
                           </Button>
                         )}
                         <Button 

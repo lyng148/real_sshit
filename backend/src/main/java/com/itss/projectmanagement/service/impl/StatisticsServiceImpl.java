@@ -139,12 +139,15 @@ public class StatisticsServiceImpl implements IStatisticsService {
         List<Group> projectGroups = groupRepository.findByProject(project);
 
         // Get contribution scores for all students in the project
-        Map<String, Double> studentScores = new HashMap<>();
-
+        Map<String, Double> studentScores = new HashMap<>();        
         for (Group group : projectGroups) {
             for (User student : group.getMembers()) {
                 ContributionScoreResponse score = contributionScoreService.getScoreByUserAndProject(student, project);
-                studentScores.put(student.getUsername(), score.getAdjustedScore());
+                // Use adjustedScore if it exists, otherwise use calculatedScore
+                Double contributionScore = score.getAdjustedScore() != null && score.getAdjustedScore() > 0 
+                    ? score.getAdjustedScore() 
+                    : score.getCalculatedScore();
+                studentScores.put(student.getUsername(), contributionScore);
             }
         }
 

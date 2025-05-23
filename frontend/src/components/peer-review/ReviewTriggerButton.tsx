@@ -11,7 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { peerReviewService } from '@/services/peerReviewService';
+import  peerReviewService  from '@/services/peerReviewService';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReviewTriggerButtonProps {

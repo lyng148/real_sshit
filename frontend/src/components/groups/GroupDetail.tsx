@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import ReviewTriggerButton from '../peer-review/ReviewTriggerButton';
 import PeerReviewModal from '../peer-review/PeerReviewModal';
 import PeerReviewResults from '../peer-review/PeerReviewResults';
-import { peerReviewService } from '@/services/peerReviewService';
+import  peerReviewService  from '@/services/peerReviewService';
 
 
 interface GroupDetailProps {
@@ -45,8 +45,18 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
   const navigate = useNavigate();
   const [showPeerReviewModal, setShowPeerReviewModal] = useState(false);
   const projectIdNumber = projectId ? parseInt(projectId, 10) : 0;
-    // We handle peer review checks at the page level instead of component level
+  // We handle peer review checks at the page level instead of component level
   // to avoid duplicate modals
+  
+  // If current view is peer-reviews but user is admin/instructor, redirect to kanban
+  useEffect(() => {
+    if ((isAdmin || isInstructor) && currentView === 'peer-reviews') {
+      setCurrentView('kanban');
+    }
+  }, [isAdmin, isInstructor, currentView, setCurrentView]);
+
+  // Check if user is a regular student (not admin or instructor)
+  const isRegularStudent = !isAdmin && !isInstructor;
   
   return (    <div className="mb-6">
       <div className="flex justify-between items-center mb-6">
@@ -70,11 +80,13 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
             Members
           </Button>
 
-          <ReviewTriggerButton 
-            groupId={group.id}
-            projectId={projectIdNumber} 
-            isGroupLeader={isGroupLeader(group.projectId)}
-          />
+          {isRegularStudent && (
+            <ReviewTriggerButton 
+              groupId={group.id}
+              projectId={projectIdNumber} 
+              isGroupLeader={isGroupLeader(group.projectId)}
+            />
+          )}
         </div>
       </div>
       
@@ -104,10 +116,10 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
             <CardTitle className="text-sm font-medium text-gray-500">Team Members</CardTitle>
           </CardHeader>          
           <CardContent>
-            <div className="flex -space-x-2 overflow-hidden">              
+            <div className="flex -space-x-2 overflow-hidden">                
               {group.members.slice(0, 4).map((member, index) => (
                 <Avatar key={index} className="border-2 border-white">
-                  {/* Member doesn't have avatarUrl property in the interface */}
+                  {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
                   <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(member.fullName)}</AvatarFallback>
                 </Avatar>
               ))}
@@ -137,7 +149,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
         onValueChange={(value) => setCurrentView(value as 'kanban' | 'timeline' | 'calendar' | 'peer-reviews')}
         className="mb-6"
       >
-        <TabsList className="grid grid-cols-4 w-full mb-4">
+        <TabsList className={`grid ${isRegularStudent ? 'grid-cols-4' : 'grid-cols-3'} w-full mb-4`}>
           <TabsTrigger value="kanban" className="flex items-center gap-1.5">
             <BarChart className="h-4 w-4" />
             Kanban Board
@@ -149,34 +161,49 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
           <TabsTrigger value="calendar" className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4" />
             Calendar
-          </TabsTrigger>          <TabsTrigger value="peer-reviews" className="flex items-center gap-1.5">
-            <UserSquare2 className="h-4 w-4" />
-            Peer Reviews
           </TabsTrigger>
-        </TabsList><TabsContent value="kanban" className="space-y-4">
+          
+          {/* Only show Peer Reviews tab for regular students */}
+          {isRegularStudent && (
+            <TabsTrigger value="peer-reviews" className="flex items-center gap-1.5">
+              <UserSquare2 className="h-4 w-4" />
+              Peer Reviews
+            </TabsTrigger>
+          )}
+        </TabsList>
+        
+        <TabsContent value="kanban" className="space-y-4">
           {renderKanban || <div className="text-center py-6 text-gray-500">No Kanban content available</div>}
         </TabsContent>
         <TabsContent value="timeline" className="space-y-4">
           {renderTimeline || <div className="text-center py-6 text-gray-500">No Timeline content available</div>}
-        </TabsContent>        <TabsContent value="calendar" className="space-y-4">
+        </TabsContent>
+        <TabsContent value="calendar" className="space-y-4">
           {renderCalendar || <div className="text-center py-6 text-gray-500">No Calendar content available</div>}
         </TabsContent>
-        <TabsContent value="peer-reviews" className="space-y-4">
-          <div>
-            <PeerReviewResults projectId={projectIdNumber} />
-          </div>
-        </TabsContent>
+        
+        {/* Only render peer reviews content if user is a regular student */}
+        {isRegularStudent && (
+          <TabsContent value="peer-reviews" className="space-y-4">
+            <div>
+              <PeerReviewResults projectId={projectIdNumber} />
+            </div>
+          </TabsContent>
+        )}
       </Tabs>
       
     {/* We've moved the automatic peer review check to the page level to avoid duplicate modals */}
     {/* This modal will only appear when the user clicks "Peer Review" in the Review button */}
-    <PeerReviewModal
-      projectId={projectIdNumber}
-      open={showPeerReviewModal}
-      onOpenChange={(open) => {
-        setShowPeerReviewModal(open);
-      }}
-    />    </div>
+    {isRegularStudent && (
+      <PeerReviewModal
+        projectId={projectIdNumber}
+        open={showPeerReviewModal}
+        onOpenChange={(open) => {
+          setShowPeerReviewModal(open);
+        }}
+      />
+    )}
+    </div>
   );
 };
 

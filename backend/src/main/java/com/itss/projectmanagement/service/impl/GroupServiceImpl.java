@@ -3,6 +3,7 @@ package com.itss.projectmanagement.service.impl;
 import com.itss.projectmanagement.converter.GroupConverter;
 import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
+import com.itss.projectmanagement.dto.response.group.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
@@ -38,7 +39,8 @@ public class GroupServiceImpl implements IGroupService {
      * @return the created group
      */
     @Transactional
-    public Group createGroup(GroupCreateRequest request) {
+    @Override
+    public GroupDTO createGroup(GroupCreateRequest request) {
         // Get current user
         User currentUser = SecurityUtils.getCurrentUser();
 
@@ -71,11 +73,13 @@ public class GroupServiceImpl implements IGroupService {
                 .members(new HashSet<>(Collections.singletonList(currentUser)))
                 .build();
 
-        return groupRepository.save(group);
+        group = groupRepository.save(group);
+        return groupConverter.toDTO(group);
     }
 
     @Transactional
-    public Group joinGroup(Long groupId, Long projectId) {
+    @Override
+    public GroupDTO joinGroup(Long groupId, Long projectId) {
         User currentUser = SecurityUtils.getCurrentUser();
         if (currentUser == null) {
             throw new IllegalStateException("User not found");
@@ -104,7 +108,8 @@ public class GroupServiceImpl implements IGroupService {
         }
 
         // Use the safe method to add user to group
-        return safelyAddUserToGroup(groupId, currentUser.getId());
+        group = safelyAddUserToGroup(groupId, currentUser.getId());
+        return groupConverter.toDTO(group);
     }
 
     /**
@@ -113,7 +118,8 @@ public class GroupServiceImpl implements IGroupService {
      * @return the assigned group
      */
     @Transactional
-    public Group autoAssignGroup(Long projectId) {
+    @Override
+    public GroupDTO autoAssignGroup(Long projectId) {
         // Get current user
         User currentUser = SecurityUtils.getCurrentUser();
         if (currentUser == null) {
@@ -144,7 +150,8 @@ public class GroupServiceImpl implements IGroupService {
         Long selectedGroupId = availableGroups.get(0).getId();
 
         // Use the safe method to add user to group
-        return safelyAddUserToGroup(selectedGroupId, currentUser.getId());
+        Group group = safelyAddUserToGroup(selectedGroupId, currentUser.getId());
+        return groupConverter.toDTO(group);
     }
 
     /**
@@ -152,13 +159,14 @@ public class GroupServiceImpl implements IGroupService {
      * @param projectId the project ID
      * @return list of groups
      */
-    public List<Group> getProjectGroups(Long projectId) {
+    @Override
+    public List<GroupDTO> getProjectGroups(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found"));
 
         // Admin and instructor can see all groups
         if (SecurityUtils.hasAnyRole(Role.ADMIN, Role.INSTRUCTOR)) {
-            return groupRepository.findByProject(project);
+            return groupConverter.toDTO(groupRepository.findByProject(project));
         }
 
         // Students can see all groups if they haven't joined any group for this project
@@ -167,13 +175,14 @@ public class GroupServiceImpl implements IGroupService {
 
         if (!isUserInAnyGroupForThisProject) {
             // Student hasn't joined any group for this project, show all groups
-            return groupRepository.findByProject(project);
+            return groupConverter.toDTO(groupRepository.findByProject(project));
         }
 
         // Otherwise, students can only see groups they are part of
-        return groupRepository.findByMember(currentUser).stream()
+        List<Group> groups = groupRepository.findByMember(currentUser).stream()
                 .filter(group -> group.getProject().getId().equals(projectId))
                 .collect(Collectors.toList());
+        return groupConverter.toDTO(groups);
     }
 
     /**
@@ -181,24 +190,25 @@ public class GroupServiceImpl implements IGroupService {
      * @param groupId the group ID
      * @return the group
      */
-    public Group getGroupById(Long groupId) {
+    @Override
+    public GroupDTO getGroupById(Long groupId) {
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
 
         // Admin and instructor can view any group
         if (SecurityUtils.hasAnyRole(Role.ADMIN, Role.INSTRUCTOR)) {
-            return group;
+            return groupConverter.toDTO(group);
         }
 
         // Students can only view groups they are part of
         User currentUser = SecurityUtils.getCurrentUser();
 
         if (Objects.equals(group.getLeader().getId(), currentUser.getId())) {
-            return group;
+            return groupConverter.toDTO(group);
         }
 
         if (group.getMembers().contains(currentUser)) {
-            return group;
+            return groupConverter.toDTO(group);
         }
 
         throw new IllegalStateException("You don't have permission to view this group");
@@ -208,19 +218,21 @@ public class GroupServiceImpl implements IGroupService {
      * Get all groups that the current user is a member of
      * @return list of groups
      */
-    public List<Group> getCurrentUserGroups() {
+    @Override
+    public List<GroupDTO> getCurrentUserGroups() {
         User currentUser = SecurityUtils.getCurrentUser();
-        return groupRepository.findByMember(currentUser);
+        return groupConverter.toDTO(groupRepository.findByMember(currentUser));
     }
 
     /**
      * Get all groups led by the current user
      * @return list of groups where the current user is leader
      */
-    public List<Group> getGroupsLedByCurrentUser() {
+    @Override
+    public List<GroupDTO> getGroupsLedByCurrentUser() {
         User currentUser = userRepository.findById(Objects.requireNonNull(SecurityUtils.getCurrentUserId()))
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
-        return groupRepository.findByLeader(currentUser);
+        return groupConverter.toDTO(groupRepository.findByLeader(currentUser));
     }
 
     /**
@@ -267,7 +279,7 @@ public class GroupServiceImpl implements IGroupService {
      * @return the updated group
      */
     @Transactional
-    public Group transferLeadership(Long groupId, Long newLeaderId) {
+    public GroupDTO transferLeadership(Long groupId, Long newLeaderId) {
         User currentUser = SecurityUtils.getCurrentUser();
         Group group = groupRepository.findById(groupId)
                 .orElseThrow(() -> new IllegalArgumentException("Group not found"));
@@ -288,7 +300,21 @@ public class GroupServiceImpl implements IGroupService {
 
         // Transfer leadership
         group.setLeader(newLeader);
-        return groupRepository.save(group);
+        group = groupRepository.save(group);
+        return groupConverter.toDTO(group);
+    }   
+    
+    @Override
+    public Set<User> getGroupMembers(Long groupId) {
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        
+        Set<User> allMembers = new HashSet<>(group.getMembers());
+        if (group.getLeader() != null) {
+            allMembers.add(group.getLeader());
+        }
+        
+        return allMembers;
     }
 
     /**
@@ -298,7 +324,8 @@ public class GroupServiceImpl implements IGroupService {
      * @return the updated group
      */
     @Transactional
-    public Group updateGroup(Long groupId, GroupUpdateRequest updateRequest) {
+    @Override
+    public GroupDTO updateGroup(Long groupId, GroupUpdateRequest updateRequest) {
         // Get current user
         User currentUser = SecurityUtils.getCurrentUser();
 
@@ -333,10 +360,9 @@ public class GroupServiceImpl implements IGroupService {
             }
         }
 
-        // Apply updates
         group = groupConverter.applyUpdateToEntity(group, updateRequest, newLeader);
-
-        return groupRepository.save(group);
+        group = groupRepository.save(group);
+        return groupConverter.toDTO(group);
     }
 
     /**

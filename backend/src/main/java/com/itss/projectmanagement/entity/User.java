@@ -1,10 +1,12 @@
 package com.itss.projectmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.itss.projectmanagement.enums.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,19 +20,21 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "users")
 @Data
+@EqualsAndHashCode(callSuper = true)
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User extends BaseEntity implements UserDetails {
-
+public class User extends BaseEntity implements UserDetails {    
+    
     @Column(nullable = false, unique = true)
     private String username;
 
+    @JsonIgnore
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
-    private String fullName;    
+    private String fullName;
     
     @Column(nullable = false, unique = true)
     private String email;
@@ -54,7 +58,7 @@ public class User extends BaseEntity implements UserDetails {
                 .map(role -> new SimpleGrantedAuthority(role.name()))
                 .collect(Collectors.toSet());
     }
-
+    
     @Override
     public boolean isAccountNonExpired() {
         return true;
@@ -73,5 +77,22 @@ public class User extends BaseEntity implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+      
+    @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    @Builder.Default
+    private Set<FreeRiderCase> freeRiderCases = new java.util.HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return getId() != null && getId().equals(user.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(getId());
     }
 }

@@ -25,6 +25,39 @@ import {
   YAxis,
 } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { pressureScoreService } from '@/services/pressureScoreService';
+import { PressureScoreResponse } from '@/types/pressure';
+import { PressureStatus } from '@/types/enums';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+
+// Helper functions for pressure status display
+const getPressureStatusColor = (status: PressureStatus) => {
+  switch (status) {
+    case PressureStatus.SAFE:
+      return 'bg-green-100 text-green-800 border-green-200';
+    case PressureStatus.AT_RISK:
+      return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+    case PressureStatus.OVERLOADED:
+      return 'bg-red-100 text-red-800 border-red-200';
+    default:
+      return 'bg-gray-100 text-gray-800 border-gray-200';
+  }
+};
+
+const getPressureStatusText = (status: PressureStatus) => {
+  switch (status) {
+    case PressureStatus.SAFE:
+      return 'Safe';
+    case PressureStatus.AT_RISK:
+      return 'At Risk';
+    case PressureStatus.OVERLOADED:
+      return 'Overloaded';
+    default:
+      return 'Unknown';
+  }
+};
 
 const GroupAnalyzePage: React.FC = () => {
   const { groupId, projectId } = useParams<{ groupId: string, projectId: string }>();
@@ -32,62 +65,80 @@ const GroupAnalyzePage: React.FC = () => {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
-  const [statistics, setStatistics] = useState<GroupStatisticsResponse | null>(null);
-  const [allGroups, setAllGroups] = useState<Group[]>([]);
+  const [statistics, setStatistics] = useState<GroupStatisticsResponse | null>(null);  const [allGroups, setAllGroups] = useState<Group[]>([]);
   const [progress, setProgress] = useState<number>(0);
   const [analyzing, setAnalyzing] = useState<boolean>(false);
+  const [pressureScores, setPressureScores] = useState<PressureScoreResponse[]>([]);
+  const [loadingPressureScores, setLoadingPressureScores] = useState<boolean>(false);
   const isAdmin = currentUser?.user.roles?.includes('ADMIN');
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
 
+  // Calculate pressure score metrics
+  const avgPressureScore = pressureScores.length > 0 
+    ? (pressureScores.reduce((sum, score) => sum + score.pressureScore, 0) / pressureScores.length).toFixed(2) 
+    : '0';
+  const safeCount = pressureScores.filter(score => score.status === PressureStatus.SAFE).length;
+  const atRiskCount = pressureScores.filter(score => score.status === PressureStatus.AT_RISK).length;
+  const overloadedCount = pressureScores.filter(score => score.status === PressureStatus.OVERLOADED).length;
+
+  // Prepare data for pressure distribution chart
+  const pressureDistributionData = [
+    { name: 'Safe', value: safeCount },
+    { name: 'At Risk', value: atRiskCount },
+    { name: 'Overloaded', value: overloadedCount },
+  ];
+
   // Fetch group statistics
   useEffect(() => {
-    let interval: NodeJS.Timeout | null = null;
-    let timeout: NodeJS.Timeout | null = null;
     const fetchStatistics = async () => {
       try {
         setLoading(true);
-        setProgress(0);
+        setProgress(25); // Start with 25% to indicate request is being made
         setAnalyzing(true);
-        let fakeProgress = 0;
-        interval = setInterval(() => {
-          fakeProgress += Math.random() * 5 + 1; // tăng ngẫu nhiên 1-6%
-          if (fakeProgress < 90) {
-            setProgress(Math.floor(fakeProgress));
-          } else {
-            setProgress(90);
-            clearInterval(interval!);
-          }
-        }, 300);
-        timeout = setTimeout(() => {
-          setAnalyzing(false);
-          setLoading(false);
+        
+        // Set a timeout for the API call
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => {
+          controller.abort();
+        }, 30000); // 30s timeout
+        
+        try {
+          // Increase progress to show request is in progress
+          setProgress(50);
+          
+          // Make the API call with abort signal
+          const response = await projectService.getGroupStatistics(Number(groupId));
+          
+          // API call successful, update progress
           setProgress(100);
-          clearInterval(interval!);
-          toast({
-            title: "Timeout",
-            description: "Phân tích quá lâu, vui lòng thử lại sau.",
-            variant: "destructive",
-          });
-        }, 30000); // 30s
-        const response = await projectService.getGroupStatistics(Number(groupId));
-        if (timeout) clearTimeout(timeout);
-        if (interval) clearInterval(interval);
-        setProgress(100);
-        setAnalyzing(false);
-        if (response.success) {
-          setStatistics(response.data);
-        } else {
-          toast({
-            title: "Error",
-            description: response.message || "Failed to load group statistics",
-            variant: "destructive",
-          });
-        }      
+          setAnalyzing(false);
+          
+          if (response.success) {
+            setStatistics(response.data);
+          } else {
+            toast({
+              title: "Error",
+              description: response.message || "Failed to load group statistics",
+              variant: "destructive",
+            });
+          }
+          
+          // Clear the timeout since the API call is complete
+          clearTimeout(timeoutId);
+        } catch (apiError) {
+          if (apiError.name === 'AbortError') {
+            toast({
+              title: "Timeout",
+              description: "Phân tích quá lâu, vui lòng thử lại sau.",
+              variant: "destructive",
+            });
+          } else {
+            throw apiError; // Re-throw for the outer catch block
+          }
+        }
       } catch (error: any) {
         setAnalyzing(false);
         setProgress(100);
-        if (interval) clearInterval(interval);
-        if (timeout) clearTimeout(timeout);
         console.error("Error fetching group statistics:", error);
         toast({
           title: "Error",
@@ -99,10 +150,6 @@ const GroupAnalyzePage: React.FC = () => {
       }
     };
     fetchStatistics();
-    return () => {
-      if (interval) clearInterval(interval);
-      if (timeout) clearTimeout(timeout);
-    };
   }, [groupId, toast]);
 
   // Fetch all groups for admin/instructor
@@ -111,19 +158,39 @@ const GroupAnalyzePage: React.FC = () => {
       groupService.getAllGroups(Number(projectId)).then(res => {
         if (res.success) setAllGroups(res.data || []);
       });
+    }  }, [isAdmin, isInstructor, projectId]);
+
+  // Fetch pressure scores for the group
+  useEffect(() => {
+    if (groupId) {
+      const fetchPressureScores = async () => {
+        try {
+          setLoadingPressureScores(true);
+          const data = await pressureScoreService.getGroupPressureScores(Number(groupId));
+          setPressureScores(data);
+        } catch (error: any) {
+          console.error("Error fetching pressure scores:", error);
+          toast({
+            title: "Error",
+            description: error.response?.data?.message || error.message || "Failed to load pressure scores",
+            variant: "destructive",
+          });
+        } finally {
+          setLoadingPressureScores(false);
+        }
+      };
+      fetchPressureScores();
     }
-  }, [isAdmin, isInstructor, projectId]);
+  }, [groupId, toast]);
 
   const taskStatusData = statistics?.taskStatistics ? [
     { name: 'Not Started', value: statistics.taskStatistics.tasksByStatus.notStarted },
     { name: 'In Progress', value: statistics.taskStatistics.tasksByStatus.inProgress },
     { name: 'Completed', value: statistics.taskStatistics.tasksByStatus.completed },
   ] : [];
-
   const contributionData = statistics?.memberContributions?.map(member => ({
     name: member.name,
-    contribution: member.contributionScore
-  })) || [];
+    contribution: member.contributionScore  })) || [];
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
@@ -147,12 +214,13 @@ const GroupAnalyzePage: React.FC = () => {
                     }
                   }}
                 >
-                  &#60;
-                </button>
+                  &#60;                </button>
                 <select
                   className="border rounded px-2 py-1 text-sm"
                   value={groupId}
                   onChange={e => navigate(`/projects/${projectId}/groups/${e.target.value}/analyze`)}
+                  aria-label="Select group"
+                  title="Select group"
                 >
                   {allGroups.map(g => (
                     <option key={g.id} value={g.id}>{g.name}</option>
@@ -176,13 +244,9 @@ const GroupAnalyzePage: React.FC = () => {
 
           {analyzing && (
             <div className="mb-6">
-              <div className="flex items-center gap-4">
-                <span className="font-medium text-blue-700 animate-pulse">Analyzing...</span>
+              <div className="flex items-center gap-4">                <span className="font-medium text-blue-700 animate-pulse">Analyzing...</span>
                 <div className="flex-1 h-3 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-200"
-                    style={{ width: `${progress}%` }}
-                  ></div>
+                  <Progress value={progress} className="h-3" />
                 </div>
                 <span className="w-12 text-right text-sm text-gray-700">{progress}%</span>
               </div>
@@ -206,10 +270,10 @@ const GroupAnalyzePage: React.FC = () => {
           ) : (
             <Tabs defaultValue="overview">
               <TabsList className="mb-6">
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="tasks">Tasks</TabsTrigger>
+                <TabsTrigger value="overview">Overview</TabsTrigger>                <TabsTrigger value="tasks">Tasks</TabsTrigger>
                 <TabsTrigger value="members">Members</TabsTrigger>
                 <TabsTrigger value="contributions">Contributions</TabsTrigger>
+                <TabsTrigger value="pressure">Pressure Scores</TabsTrigger>
               </TabsList>
               
               <TabsContent value="overview" className="space-y-6">
@@ -539,9 +603,136 @@ const GroupAnalyzePage: React.FC = () => {
                           </TableRow>
                         ))}
                       </TableBody>
-                    </Table>
-                  </CardContent>
+                    </Table>                  </CardContent>
                 </Card>
+              </TabsContent>
+              
+              <TabsContent value="pressure" className="space-y-6">
+                {loadingPressureScores ? (
+                  <div className="flex justify-center items-center h-32">
+                    <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+                    <span className="ml-2 text-lg text-gray-600">Loading pressure scores...</span>
+                  </div>
+                ) : pressureScores.length === 0 ? (
+                  <Card>
+                    <CardContent className="flex justify-center items-center h-32">
+                      <p className="text-gray-500">No pressure score data available</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle>Average Pressure Score</CardTitle>
+                          <CardDescription>Mean workload pressure</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{avgPressureScore}</div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle>At Risk Members</CardTitle>
+                          <CardDescription>Members approaching threshold</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{atRiskCount}</div>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardHeader className="pb-2">
+                          <CardTitle>Overloaded Members</CardTitle>
+                          <CardDescription>Members exceeding threshold</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-2xl font-bold">{overloadedCount}</div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Pressure Status Distribution</CardTitle>
+                        <CardDescription>Members by pressure level</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-2">
+                        <div className="h-80">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={pressureDistributionData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {pressureDistributionData.map((entry, index) => {
+                                  const colors = ['#10B981', '#F59E0B', '#EF4444'];
+                                  return <Sector key={`cell-${index}`} fill={colors[index]} />;
+                                })}
+                              </Pie>
+                              <Tooltip formatter={(value, name) => [`${value} members`, name]} />
+                              <Legend />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Member Pressure Scores</CardTitle>
+                        <CardDescription>Detailed pressure metrics for each member</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Member</TableHead>
+                              <TableHead>Tasks</TableHead>
+                              <TableHead>Pressure Score</TableHead>
+                              <TableHead>% of Threshold</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {pressureScores.map((score) => (
+                              <TableRow key={score.userId}>
+                                <TableCell className="font-medium">{score.fullName}</TableCell>
+                                <TableCell>{score.taskCount}</TableCell>
+                                <TableCell>{score.pressureScore.toFixed(2)}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Progress 
+                                      value={score.thresholdPercentage} 
+                                      className={`h-2 ${
+                                        score.status === PressureStatus.OVERLOADED 
+                                          ? 'bg-red-200' 
+                                          : score.status === PressureStatus.AT_RISK 
+                                            ? 'bg-yellow-200' 
+                                            : 'bg-green-200'
+                                      }`}
+                                    />
+                                    <span>{score.thresholdPercentage.toFixed(0)}%</span>
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={getPressureStatusColor(score.status)}>
+                                    {getPressureStatusText(score.status)}
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
               </TabsContent>
             </Tabs>
           )}

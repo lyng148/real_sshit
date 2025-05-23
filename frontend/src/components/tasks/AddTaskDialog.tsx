@@ -56,7 +56,7 @@ const taskSchema = z.object({
   description: z.string()
     .max(500, { message: 'Description cannot exceed 500 characters' })
     .optional(),
-  difficulty: z.enum(['EASY', 'MEDIUM', 'HARD', 'VERY_HARD']),
+  difficulty: z.enum(['EASY', 'MEDIUM', 'HARD']),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
   deadline: z.date({
     required_error: 'Deadline is required',
@@ -89,11 +89,19 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
         deadline: format(data.deadline, 'yyyy-MM-dd'),
         groupId,
       };
-      
-      const response = await taskService.createTask(taskRequest);
+        const response = await taskService.createTask(taskRequest);
       
       // API response follows the ApiResponse pattern with success, data, and message properties
       if (response && response.success) {
+        // Check if there's a pressure warning in the response
+        if (response.data && response.data.pressureWarning) {
+          toast({
+            title: "Warning: High Pressure Score",
+            description: "The assigned member is currently overloaded with tasks. Consider redistributing work if possible.",
+            variant: "warning",
+          });
+        }
+        
         toast({
           title: 'Success',
           description: 'Task created successfully',
@@ -170,12 +178,11 @@ const AddTaskDialog: React.FC<AddTaskDialogProps> = ({
                         <SelectTrigger>
                           <SelectValue placeholder="Select difficulty" />
                         </SelectTrigger>
-                      </FormControl>
+                      </FormControl>                      
                       <SelectContent>
                         <SelectItem value="EASY">Easy</SelectItem>
                         <SelectItem value="MEDIUM">Medium</SelectItem>
                         <SelectItem value="HARD">Hard</SelectItem>
-                        <SelectItem value="VERY_HARD">Very Hard</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

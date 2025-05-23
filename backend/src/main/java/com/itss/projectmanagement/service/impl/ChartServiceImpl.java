@@ -137,7 +137,13 @@ public class ChartServiceImpl implements IChartService {
         
         // Calculate total score for percentage calculation
         double totalScore = contributionScores.stream()
-            .mapToDouble(score -> score.getCalculatedScore() != null ? score.getCalculatedScore() : 0.0)
+            .mapToDouble(score -> {
+                // Get the contribution score (use adjusted if it exists, otherwise use calculated)
+                Double contributionScore = score.getAdjustedScore() != null && score.getAdjustedScore() > 0 
+                    ? score.getAdjustedScore() 
+                    : score.getCalculatedScore();
+                return contributionScore != null ? contributionScore : 0.0;
+            })
             .sum();
         
         // Create the DTO
@@ -152,8 +158,8 @@ public class ChartServiceImpl implements IChartService {
         
         result.setData(data);
         return result;
-    }
-
+    }    
+    
     private static ContributionPieChartDTO.MemberContribution getMemberContribution(ContributionScore score, double totalScore) {
         ContributionPieChartDTO.MemberContribution memberData = new ContributionPieChartDTO.MemberContribution();
         memberData.setMemberId(score.getUser().getId());
@@ -161,8 +167,13 @@ public class ChartServiceImpl implements IChartService {
 
         // Calculate percentage
         double contributionPercent = 0;
-        if (totalScore > 0 && score.getCalculatedScore() != null) {
-            contributionPercent = (score.getCalculatedScore() / totalScore) * 100;
+        // Get the contribution score (use adjusted if it exists, otherwise use calculated)
+        Double contributionScore = score.getAdjustedScore() != null && score.getAdjustedScore() > 0 
+            ? score.getAdjustedScore() 
+            : score.getCalculatedScore();
+            
+        if (totalScore > 0 && contributionScore != null) {
+            contributionPercent = (contributionScore / totalScore) * 100;
         }
         memberData.setContributionPercent(contributionPercent);
         return memberData;

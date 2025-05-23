@@ -37,6 +37,40 @@ public class ContributionScoreController {
     private final UserRepository userRepository;
     private final GroupRepository groupRepository;
 
+    @PostMapping("/calculate")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN')")
+    @Operation(summary = "Calculate contribution scores for a project",
+               description = "Calculates contribution scores for all users in a project. Restricted to instructors and admins.")
+    public ResponseEntity<ApiResponse<String>> calculateScores(@RequestParam Long projectId) {
+        try {
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+
+            contributionScoreService.calculateScoresForProject(project);
+
+            ApiResponse<String> response = ApiResponse.success(
+                    "Contribution scores calculated successfully",
+                    "Contribution scores calculated successfully"
+            );
+
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            ApiResponse<String> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.NOT_FOUND
+            );
+
+            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            ApiResponse<String> response = ApiResponse.error(
+                    e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR
+            );
+
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping("/projects/{projectId}")
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN')")
     @Operation(summary = "Get all contribution scores for a project", 
@@ -136,7 +170,8 @@ public class ContributionScoreController {
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByGroup(@PathVariable Long groupId, @AuthenticationPrincipal User currentUser) {
         try {
             Group group = groupRepository.findById(groupId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Group not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+
             // Nếu là student, chỉ cho xem điểm nhóm của mình
             if (currentUser.getRoles().contains(Role.STUDENT)) {
                 boolean isMember = group.getMembers().contains(currentUser) || (group.getLeader() != null && group.getLeader().getId().equals(currentUser.getId()));

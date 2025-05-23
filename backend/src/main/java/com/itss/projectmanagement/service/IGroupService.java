@@ -2,53 +2,55 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
+import com.itss.projectmanagement.dto.response.group.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
+import com.itss.projectmanagement.entity.User;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 public interface IGroupService {
     /**
-     * Create a new group for a project
+     * Create a new group for a project and return DTO
      * @param request the group creation request
      * @return the created group
      */
-    Group createGroup(GroupCreateRequest request);
+    GroupDTO createGroup(GroupCreateRequest request);
 
-    Group joinGroup(Long groupId, Long projectId);
+    GroupDTO joinGroup(Long groupId, Long projectId);
 
     /**
      * Auto-assign a user to a group in a project
      * @param projectId the project ID
      * @return the assigned group
      */
-    Group autoAssignGroup(Long projectId);
+    GroupDTO autoAssignGroup(Long projectId);
 
     /**
-     * Get all groups for a project
+     * Get all groups for a project as DTOs
      * @param projectId the project ID
      * @return list of groups
      */
-    List<Group> getProjectGroups(Long projectId);
+    List<GroupDTO> getProjectGroups(Long projectId);
 
     /**
-     * Get a group by ID
-     * @param groupId the group ID
+     * Get a group by ID as DTO
+     * @param id the group ID
      * @return the group
      */
-    Group getGroupById(Long groupId);
+    GroupDTO getGroupById(Long id);
 
     /**
      * Get all groups that the current user is a member of
      * @return list of groups
      */
-    List<Group> getCurrentUserGroups();
+    List<GroupDTO> getCurrentUserGroups();
 
     /**
-     * Get all groups led by the current user
+     * Get all groups led by the current user as DTOs
      * @return list of groups where the current user is leader
      */
-    List<Group> getGroupsLedByCurrentUser();
+    List<GroupDTO> getGroupsLedByCurrentUser();
 
     /**
      * Leave a group
@@ -58,22 +60,23 @@ public interface IGroupService {
     void leaveGroup(Long groupId);
 
     /**
-     * Transfer group leadership
+     * Transfer group leadership and return DTO
      * @param groupId the group ID
      * @param newLeaderId the ID of the new leader
      * @return the updated group
      */
     @Transactional
-    Group transferLeadership(Long groupId, Long newLeaderId);
+    GroupDTO transferLeadership(Long groupId, Long newLeaderId);
 
+    Set<User> getGroupMembers(Long groupId);
     /**
-     * Update an existing group
+     * Update an existing group and return DTO
      * @param groupId the group ID
      * @param updateRequest the update request
      * @return the updated group
      */
     @Transactional
-    Group updateGroup(Long groupId, GroupUpdateRequest updateRequest);
+    GroupDTO updateGroup(Long groupId, GroupUpdateRequest updateRequest);
 
     /**
      * Delete a group and all its related entities (tasks, comments, commit records)

@@ -1,13 +1,11 @@
 package com.itss.projectmanagement.controller;
 
-import com.itss.projectmanagement.converter.GroupConverter;
 import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.request.group.GroupAutoAssignRequest;
 import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupJoinRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
-import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.service.IGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,8 +31,6 @@ import java.util.stream.Collectors;
 public class GroupController {
     @Autowired
     private IGroupService groupService;
-    @Autowired
-    private GroupConverter groupConverter;
 
     @Operation(summary = "Create a new group", description = "Creates a new group for a project and assigns the creator as leader")
     @ApiResponses(value = {
@@ -48,28 +44,23 @@ public class GroupController {
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<GroupDTO>> createGroup(@Valid @RequestBody GroupCreateRequest request) {
         try {
-            Group group = groupService.createGroup(request);
-            GroupDTO groupDTO = groupConverter.toDTO(group);
-            
+            GroupDTO groupDTO = groupService.createGroup(request);
             ApiResponse<GroupDTO> response = ApiResponse.success(
-                    groupDTO, 
+                    groupDTO,
                     "Group created successfully"
             );
-            
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (IllegalArgumentException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.BAD_REQUEST
             );
-            
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (IllegalStateException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.CONFLICT
             );
-            
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
     }
@@ -85,28 +76,23 @@ public class GroupController {
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<GroupDTO>> joinGroup(@Valid @RequestBody GroupJoinRequest request) {
         try {
-            Group group = groupService.joinGroup(request.getGroupId(), request.getProjectId());
-            GroupDTO groupDTO = groupConverter.toDTO(group);
-            
+            GroupDTO groupDTO = groupService.joinGroup(request.getGroupId(), request.getProjectId());
             ApiResponse<GroupDTO> response = ApiResponse.success(
-                    groupDTO, 
+                    groupDTO,
                     "Joined group successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.BAD_REQUEST
             );
-            
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (IllegalStateException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.CONFLICT
             );
-            
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
     }
@@ -122,28 +108,23 @@ public class GroupController {
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<GroupDTO>> autoAssignGroup(@Valid @RequestBody GroupAutoAssignRequest request) {
         try {
-            Group group = groupService.autoAssignGroup(request.getProjectId());
-            GroupDTO groupDTO = groupConverter.toDTO(group);
-            
+            GroupDTO groupDTO = groupService.autoAssignGroup(request.getProjectId());
             ApiResponse<GroupDTO> response = ApiResponse.success(
-                    groupDTO, 
+                    groupDTO,
                     "Auto-assigned to group successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.BAD_REQUEST
             );
-            
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (IllegalStateException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.CONFLICT
             );
-            
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
     }
@@ -158,26 +139,20 @@ public class GroupController {
     public ResponseEntity<ApiResponse<List<GroupDTO>>> getProjectGroups(
             @Parameter(description = "ID of the project") @PathVariable Long projectId) {
         try {
-            List<Group> groups = groupService.getProjectGroups(projectId);
-            List<GroupDTO> groupDTOs = groupConverter.toDTO(groups);
-            
-            // Add metadata
+            List<GroupDTO> groupDTOs = groupService.getProjectGroups(projectId);
             Map<String, Object> metadata = new HashMap<>();
             metadata.put("count", groupDTOs.size());
-            
             ApiResponse<List<GroupDTO>> response = ApiResponse.success(
-                    groupDTOs, 
-                    "Groups retrieved successfully", 
+                    groupDTOs,
+                    "Groups retrieved successfully",
                     metadata
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<List<GroupDTO>> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.NOT_FOUND
             );
-            
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         }
     }
@@ -193,28 +168,23 @@ public class GroupController {
     public ResponseEntity<ApiResponse<GroupDTO>> getGroupById(
             @Parameter(description = "ID of the group to retrieve") @PathVariable Long id) {
         try {
-            Group group = groupService.getGroupById(id);
-            GroupDTO groupDTO = groupConverter.toDTO(group);
-            
+            GroupDTO groupDTO = groupService.getGroupById(id);
             ApiResponse<GroupDTO> response = ApiResponse.success(
-                    groupDTO, 
+                    groupDTO,
                     "Group retrieved successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.NOT_FOUND
             );
-            
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (IllegalStateException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.FORBIDDEN
             );
-            
             return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
     }
@@ -231,26 +201,22 @@ public class GroupController {
             @Parameter(description = "ID of the group to leave") @PathVariable Long id) {
         try {
             groupService.leaveGroup(id);
-            
             ApiResponse<Void> response = ApiResponse.success(
-                    null, 
+                    null,
                     "Left group successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<Void> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.NOT_FOUND
             );
-            
             return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
         } catch (IllegalStateException e) {
             ApiResponse<Void> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.CONFLICT
             );
-            
             return new ResponseEntity<>(response, HttpStatus.CONFLICT);
         }
     }
@@ -268,28 +234,23 @@ public class GroupController {
             @Parameter(description = "ID of the group") @PathVariable Long id,
             @Parameter(description = "ID of the new leader") @PathVariable Long newLeaderId) {
         try {
-            Group group = groupService.transferLeadership(id, newLeaderId);
-            GroupDTO groupDTO = groupConverter.toDTO(group);
-            
+            GroupDTO groupDTO = groupService.transferLeadership(id, newLeaderId);
             ApiResponse<GroupDTO> response = ApiResponse.success(
-                    groupDTO, 
+                    groupDTO,
                     "Leadership transferred successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.BAD_REQUEST
             );
-            
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (IllegalStateException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.FORBIDDEN
             );
-            
             return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
     }
@@ -307,28 +268,23 @@ public class GroupController {
             @Parameter(description = "ID of the group to update") @PathVariable Long id,
             @Valid @RequestBody GroupUpdateRequest request) {
         try {
-            Group group = groupService.updateGroup(id, request);
-            GroupDTO groupDTO = groupConverter.toDTO(group);
-            
+            GroupDTO groupDTO = groupService.updateGroup(id, request);
             ApiResponse<GroupDTO> response = ApiResponse.success(
-                    groupDTO, 
+                    groupDTO,
                     "Group updated successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.BAD_REQUEST
             );
-            
             return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
         } catch (IllegalStateException e) {
             ApiResponse<GroupDTO> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.FORBIDDEN
             );
-            
             return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
         }
     }
@@ -343,23 +299,17 @@ public class GroupController {
     @GetMapping("/my-groups")
     public ResponseEntity<ApiResponse<List<GroupDTO>>> getMyGroups() {
         try {
-            List<Group> groups = groupService.getCurrentUserGroups();
-            List<GroupDTO> groupDTOs = groups.stream()
-                    .map(groupConverter::toDTO)
-                    .collect(Collectors.toList());
-            
+            List<GroupDTO> groupDTOs = groupService.getCurrentUserGroups();
             ApiResponse<List<GroupDTO>> response = ApiResponse.success(
                     groupDTOs,
                     "User groups retrieved successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             ApiResponse<List<GroupDTO>> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
-            
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -374,21 +324,17 @@ public class GroupController {
     @GetMapping("/my-led-groups")
     public ResponseEntity<ApiResponse<List<GroupDTO>>> getMyLedGroups() {
         try {
-            List<Group> groups = groupService.getGroupsLedByCurrentUser();
-            List<GroupDTO> groupDTOs = groupConverter.toDTO(groups);
-            
+            List<GroupDTO> groupDTOs = groupService.getGroupsLedByCurrentUser();
             ApiResponse<List<GroupDTO>> response = ApiResponse.success(
                     groupDTOs,
                     "Groups where you are leader retrieved successfully"
             );
-            
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             ApiResponse<List<GroupDTO>> response = ApiResponse.error(
                     e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
-            
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

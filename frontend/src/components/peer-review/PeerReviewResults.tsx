@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Star } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { peerReviewService, PeerReviewResponse } from '@/services/peerReviewService';
+import peerReviewService, {PeerReviewResponse } from '@/services/peerReviewService';
 import { getInitials } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
