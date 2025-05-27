@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode } from 'lucide-react';
+import {AlertTriangle , AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import projectService from '@/services/projectService';

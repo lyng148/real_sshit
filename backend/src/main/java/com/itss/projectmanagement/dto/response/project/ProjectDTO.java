@@ -19,6 +19,7 @@ public class ProjectDTO {
     private Long id;
     private String name;
     private String description;
+    private String accessCode;
     private Integer maxMembers;
     private String evaluationCriteria;
 

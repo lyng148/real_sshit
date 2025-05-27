@@ -62,7 +62,7 @@ public class Group extends BaseEntity {
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<CommitRecord> commitRecords = new HashSet<>();
-    
+        
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<FreeRiderCase> freeRiderCases = new HashSet<>();

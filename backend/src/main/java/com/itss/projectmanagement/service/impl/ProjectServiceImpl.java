@@ -2,6 +2,8 @@ package com.itss.projectmanagement.service.impl;
 
 import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
+import com.itss.projectmanagement.dto.response.project.ProjectDTO;
+import com.itss.projectmanagement.converter.ProjectConverter;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.ProjectStudent;
@@ -27,7 +29,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ProjectServiceImpl implements IProjectService {
+public class ProjectServiceImpl implements IProjectService {    
     @Autowired
     private ProjectRepository projectRepository;
     @Autowired
@@ -38,12 +40,14 @@ public class ProjectServiceImpl implements IProjectService {
     private ProjectStudentRepository projectStudentRepository;
     @Autowired
     private UserRepository userRepository;
-
+    @Autowired
+    private ProjectConverter projectConverter;    
+    
     /**
      * Create a new project for an instructor
      */
     @Transactional
-    public Project createProject(ProjectCreateRequest request) {
+    public ProjectDTO createProject(ProjectCreateRequest request) {
         // Check if project name already exists
         if (projectRepository.existsByName(request.getName())) {
             throw new IllegalArgumentException("Project name already exists");
@@ -70,15 +74,16 @@ public class ProjectServiceImpl implements IProjectService {
                 .accessCode(accessCode)
                 .build();
 
-        return projectRepository.save(project);
-    }
-
+        Project savedProject = projectRepository.save(project);
+        return projectConverter.toDTO(savedProject);
+    }    
+    
     /**
      * Update an existing project
      */
     @Transactional
-    public Project updateProject(Long projectId, ProjectCreateRequest request) {
-        Project project = getProjectById(projectId)
+    public ProjectDTO updateProject(Long projectId, ProjectCreateRequest request) {
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
 
         // Verify the current user is the instructor of this project
@@ -98,43 +103,49 @@ public class ProjectServiceImpl implements IProjectService {
         project.setFreeriderThreshold(request.getFreeriderThreshold());
         project.setPressureThreshold(request.getPressureThreshold());
 
-        return projectRepository.save(project);
-    }
-
+        Project updatedProject = projectRepository.save(project);
+        return projectConverter.toDTO(updatedProject);
+    }    
+    
     /**
      * Get project by ID
      */
-    public Optional<Project> getProjectById(Long projectId) {
-        return projectRepository.findById(projectId);
-    }
-
+    public Optional<ProjectDTO> getProjectById(Long projectId) {
+        return projectRepository.findById(projectId)
+                .map(projectConverter::toDTO);
+    }    
+    
     /**
      * Get all projects (for admin)
      */
-    public List<Project> getAllProjects() {
+    public List<ProjectDTO> getAllProjects() {
         List<Project> projects = projectRepository.findAll();
 
         // Filter out projects with invalid instructor references
-        return projects.stream()
+        List<Project> validProjects = projects.stream()
                 .filter(project -> project.getInstructor() != null
                         && project.getInstructor().getId() != null
                         && project.getInstructor().getId() > 0)
                 .toList();
+        
+        return projectConverter.toDTO(validProjects);
     }
 
     /**
      * Get all projects created by the current instructor
      */
-    public List<Project> getInstructorProjects() {
+    public List<ProjectDTO> getInstructorProjects() {
         User instructor = getCurrentUser();
-        return projectRepository.findByInstructor(instructor);
-    }
+        List<Project> projects = projectRepository.findByInstructor(instructor);
+        return projectConverter.toDTO(projects);
+    }    
+    
     /**
      * Delete a project and all related entities
      */
     @Transactional
     public void deleteProject(Long projectId) {
-        Project project = getProjectById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
 
         // Verify the current user is the instructor of this project
@@ -150,14 +161,14 @@ public class ProjectServiceImpl implements IProjectService {
         // 4. Delete all commit records for those groups
         // 5. Delete all peer reviews for the project
         projectRepository.delete(project);
-    }
-
+    }    
+    
     /**
      * Update pressure score configuration for a project
      */
     @Transactional
-    public Project updatePressureScoreConfig(Long projectId, PressureScoreConfigRequest request) {
-        Project project = getProjectById(projectId)
+    public ProjectDTO updatePressureScoreConfig(Long projectId, PressureScoreConfigRequest request) {
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
 
         // Verify the current user is the instructor of this project
@@ -167,9 +178,10 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         project.setPressureThreshold(request.getPressureThreshold());
-        return projectRepository.save(project);
-    }
-
+        Project updatedProject = projectRepository.save(project);
+        return projectConverter.toDTO(updatedProject);
+    }    
+    
     /**
      * Check if the current user is a leader of any group in the project
      * @param projectId The project ID to check
@@ -177,7 +189,7 @@ public class ProjectServiceImpl implements IProjectService {
      */
     public boolean isUserGroupLeaderInProject(Long projectId) {
         User currentUser = getCurrentUser();
-        Project project = getProjectById(projectId)
+        Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
 
         List<Group> projectGroups = groupRepository.findByProject(project);
@@ -286,15 +298,15 @@ public class ProjectServiceImpl implements IProjectService {
         }
 
         return invitedStudents;
-    }
-
+    }    
+    
     /**
      * Let a student join a project using access code
      * @param accessCode Project access code
      * @return The project the student joined
      */
     @Transactional
-    public Project joinProjectByAccessCode(String accessCode) {
+    public ProjectDTO joinProjectByAccessCode(String accessCode) {
         // Get current user (must be a student)
         User student = getCurrentUser();
         if (!SecurityUtils.hasAnyRole(Role.STUDENT)) {
@@ -321,23 +333,25 @@ public class ProjectServiceImpl implements IProjectService {
 
         projectStudentRepository.save(projectStudent);
 
-        return project;
-    }
-
+        return projectConverter.toDTO(project);
+    }    
+    
     /**
      * Get all projects a student has access to
      * @return List of projects the student has access to
      */
-    public List<Project> getStudentProjects() {
+    public List<ProjectDTO> getStudentProjects() {
         User student = getCurrentUser();
         if (!SecurityUtils.hasAnyRole(Role.STUDENT)) {
             throw new IllegalArgumentException("This method is only for students");
         }
 
         List<ProjectStudent> projectStudents = projectStudentRepository.findByStudent(student);
-        return projectStudents.stream()
+        List<Project> projects = projectStudents.stream()
                 .map(ProjectStudent::getProject)
                 .collect(Collectors.toList());
+        
+        return projectConverter.toDTO(projects);
     }
 
     /**

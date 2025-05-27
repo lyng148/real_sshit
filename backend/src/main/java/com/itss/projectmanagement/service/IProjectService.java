@@ -2,6 +2,7 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
+import com.itss.projectmanagement.dto.response.project.ProjectDTO;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
 
@@ -9,40 +10,41 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface IProjectService {
-      /**
+public interface IProjectService {    
+    /**
      * Create a new project for an instructor
      */
-      Project createProject(ProjectCreateRequest request);
-    
+      ProjectDTO createProject(ProjectCreateRequest request);
+      
     /**
      * Update an existing project
      */
-    Project updateProject(Long projectId, ProjectCreateRequest request);
-    
+    ProjectDTO updateProject(Long projectId, ProjectCreateRequest request);
+      
     /**
      * Get project by ID
      */
-    Optional<Project> getProjectById(Long projectId);
-    
+    Optional<ProjectDTO> getProjectById(Long projectId);
+      
     /**
      * Get all projects (for admin)
      */
-    List<Project> getAllProjects();
+    List<ProjectDTO> getAllProjects();
     
     /**
      * Get all projects created by the current instructor
      */
-    List<Project> getInstructorProjects();
+    List<ProjectDTO> getInstructorProjects();
+    
     /**
      * Delete a project and all related entities
      */
     void deleteProject(Long projectId);
-    
+      
     /**
      * Update pressure score configuration for a project
      */
-    Project updatePressureScoreConfig(Long projectId, PressureScoreConfigRequest request);
+    ProjectDTO updatePressureScoreConfig(Long projectId, PressureScoreConfigRequest request);
     
     /**
      * Check if the current user is a leader of any group in the project
@@ -58,19 +60,19 @@ public interface IProjectService {
      * @return List of successfully invited students
      */
     List<User> inviteStudentsToProject(Long projectId, List<String> usernames);
-    
+      
     /**
      * Let a student join a project using access code
      * @param accessCode Project access code
      * @return The project the student joined
      */
-    Project joinProjectByAccessCode(String accessCode);
+    ProjectDTO joinProjectByAccessCode(String accessCode);
     
     /**
      * Get all projects a student has access to
      * @return List of projects the student has access to
      */
-    List<Project> getStudentProjects();
+    List<ProjectDTO> getStudentProjects();
     
     /**
      * Check if a student can access a project

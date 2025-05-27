@@ -28,7 +28,6 @@ const ReviewTriggerButton: React.FC<ReviewTriggerButtonProps> = ({
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-
   const handleTriggerReviews = async () => {
     try {
       setLoading(true);
@@ -47,12 +46,30 @@ const ReviewTriggerButton: React.FC<ReviewTriggerButtonProps> = ({
         });
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Could not start peer review process. Try again later.",
-        variant: "destructive"
-      });
       console.error("Error triggering peer reviews:", error);
+      
+      const errorMessage = error?.response?.data?.message || error?.message || "";
+      
+      if (errorMessage.includes("Peer reviews can only be triggered once per week") || 
+          errorMessage.includes("Last triggered on:")) {
+        toast({
+          title: "Weekly Limit Reached",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      } else if (error?.response?.status === 400 || error?.response?.status === 409) {
+        toast({
+          title: "Error",
+          description: errorMessage || "Unable to start peer reviews at this time",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Could not start peer review process. Try again later.",
+          variant: "destructive"
+        });
+      }
     } finally {
       setLoading(false);
       setOpen(false);

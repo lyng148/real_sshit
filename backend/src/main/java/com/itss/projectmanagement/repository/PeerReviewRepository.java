@@ -95,9 +95,18 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
      * Count total reviews for a project
      */
     long countByProject(Project project);
-    
+      
     /**
      * Count reviews by project and completion status
      */
     long countByProjectAndIsCompleted(Project project, boolean isCompleted);
+    
+    /**
+     * Check if peer review has been triggered for a group in the last week
+     */
+    @Query("SELECT COUNT(pr) > 0 FROM PeerReview pr " +
+           "JOIN User u ON pr.reviewer = u " +
+           "JOIN Group g ON u MEMBER OF g.members OR g.leader = u " +
+           "WHERE g.id = :groupId AND pr.assignedAt >= :oneWeekAgo")
+    boolean hasGroupTriggeredPeerReviewInLastWeek(@Param("groupId") Long groupId, @Param("oneWeekAgo") LocalDateTime oneWeekAgo);
 }

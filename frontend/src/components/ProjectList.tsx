@@ -25,7 +25,11 @@ interface Project {
   isActive?: boolean;
 }
 
-export const ProjectList: React.FC = () => {
+interface ProjectListProps {
+  isCollapsed?: boolean;
+}
+
+export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
@@ -182,25 +186,27 @@ export const ProjectList: React.FC = () => {
             Refresh
           </button>
         </div>
-      ) : (
-        projects.map((project) => (
+      ) : (        projects.map((project) => (
           <div key={project.id}>
             <div 
               onClick={() => handleProjectClick(project.id)}
               className={cn(
                 "flex items-center px-4 py-1.5 my-0.5 text-sm hover:bg-gray-100 cursor-pointer",
-                selectedProject === project.id ? "text-blue-600" : "text-gray-800"
+                selectedProject === project.id ? "text-blue-600" : "text-gray-800",
+                isCollapsed && "justify-center"
               )}
+              title={isCollapsed ? project.name : ""}
             >
               <div className={cn(
-                "w-4 h-4 mr-3 rounded-full border flex items-center justify-center",
-                selectedProject === project.id ? "border-blue-500" : "border-gray-300"
+                "w-4 h-4 rounded-full border flex items-center justify-center",
+                selectedProject === project.id ? "border-blue-500" : "border-gray-300",
+                isCollapsed ? "mr-0" : "mr-3"
               )}>
                 {selectedProject === project.id && <div className="w-2 h-2 rounded-full bg-blue-500"></div>}
               </div>
-              <span className="truncate">{project.name}</span>
+              {!isCollapsed && <span className="truncate">{project.name}</span>}
             </div>
-            {selectedProject === project.id && (
+            {!isCollapsed && selectedProject === project.id && (
               <div className="ml-6 border-l border-gray-200">
                 <div>
                   {/* Project Info option - available for all users */}

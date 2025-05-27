@@ -37,10 +37,12 @@ public class StatisticsServiceImpl implements IStatisticsService {
     private IPeerReviewService peerReviewService;
     @Autowired
     private IGitHubService gitHubService;
+    @Autowired
+    private ProjectRepository projectRepository;
 
     public ProjectStatisticsDTO getProjectStatistics(Long projectId) {
-        Project project = projectService.getProjectById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new NoSuchElementException("Project not found with ID: " + projectId));
 
         return ProjectStatisticsDTO.builder()
                 .projectSummary(createProjectSummary(project))

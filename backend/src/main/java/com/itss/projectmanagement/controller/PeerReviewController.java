@@ -4,7 +4,8 @@ import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.request.peer.PeerReviewRequest;
 import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
-import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
+import com.itss.projectmanagement.exception.ValidationException;
 import com.itss.projectmanagement.security.CurrentUser;
 import com.itss.projectmanagement.security.UserPrincipal;
 import com.itss.projectmanagement.utils.SecurityUtils;
@@ -52,12 +53,11 @@ public class PeerReviewController {
         PeerReviewResponse response = peerReviewService.submitReview(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Peer review submitted successfully"));
-    }
-
-    @PostMapping("/start-review")
+    }    @PostMapping("/start-review")
     @Operation(summary = "Start peer review process for a group (group leader only)")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Peer review process has been started for your group"),
+        @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Bad request - validation failed"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized"),
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Access denied")
     })
@@ -65,13 +65,24 @@ public class PeerReviewController {
     public ResponseEntity<ApiResponse<Void>> startPeerReviewForGroup(
             @RequestParam Long groupId,
             @CurrentUser UserPrincipal currentUser) {
-        Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+        try {
+            Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
+            if (userId == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+            }
+            peerReviewService.startPeerReviewForGroup(groupId, userId);
+            return ResponseEntity.ok(ApiResponse.success(null, "Peer review process has been started for your group"));
+        } catch (ValidationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(ApiResponse.error(e.getMessage(), HttpStatus.BAD_REQUEST));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR));
         }
-        peerReviewService.startPeerReviewForGroup(groupId, userId);
-        return ResponseEntity.ok(ApiResponse.success(null, "Peer review process has been started for your group"));
     }
 
     @GetMapping("/submitted")
@@ -110,8 +121,8 @@ public class PeerReviewController {
         }
         List<PeerReviewResponse> reviews = peerReviewService.getReviewsByReviewee(userId, projectId);
         return ResponseEntity.ok(ApiResponse.success(reviews, "Fetched received reviews successfully"));
-    }
-
+    }    
+    
     @GetMapping("/members-to-review")
     @Operation(summary = "Get list of team members that need to be reviewed by the current user")
     @ApiResponses(value = {
@@ -119,7 +130,7 @@ public class PeerReviewController {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Unauthorized")
     })
     @PreAuthorize("hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<List<User>>> getMembersToReview(
+    public ResponseEntity<ApiResponse<List<UserSummaryDTO>>> getMembersToReview(
             @RequestParam Long projectId,
             @CurrentUser UserPrincipal currentUser) {
         Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
@@ -127,7 +138,7 @@ public class PeerReviewController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
         }
-        List<User> members = peerReviewService.getMembersToReview(projectId, userId);
+        List<UserSummaryDTO> members = peerReviewService.getMembersToReview(projectId, userId);
         return ResponseEntity.ok(ApiResponse.success(members, "Fetched members to review successfully"));
     }
 

@@ -2,8 +2,8 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.request.peer.PeerReviewRequest;
 import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
+import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
 import com.itss.projectmanagement.entity.Project;
-import com.itss.projectmanagement.entity.User;
 
 import java.util.List;
 
@@ -47,14 +47,14 @@ public interface IPeerReviewService {
      * @return True if the user has pending peer reviews, false otherwise
      */
     boolean hasPendingPeerReviews(Long userId);
-    
+      
     /**
      * Get list of team members that haven't been reviewed by a user
      * @param projectId The ID of the project
      * @param reviewerId The ID of the reviewer
      * @return List of users that need to be reviewed
      */
-    List<User> getMembersToReview(Long projectId, Long reviewerId);
+    List<UserSummaryDTO> getMembersToReview(Long projectId, Long reviewerId);
     
     /**
      * Get average peer review score for a user in a project

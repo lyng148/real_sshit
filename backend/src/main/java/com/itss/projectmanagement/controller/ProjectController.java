@@ -63,11 +63,10 @@ public class ProjectController {
     @PostMapping
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     public ResponseEntity<ApiResponse<ProjectDTO>> createProject(@Valid @RequestBody ProjectCreateRequest request) {
-        Project createdProject = projectService.createProject(request);
-        ProjectDTO projectDTO = projectConverter.toDTO(createdProject);
-        
+        ProjectDTO createdProject = projectService.createProject(request);
+
         ApiResponse<ProjectDTO> response = ApiResponse.success(
-                projectDTO, 
+                createdProject,
                 "Project created successfully"
         );
         
@@ -81,26 +80,24 @@ public class ProjectController {
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<ProjectDTO>>> getProjects() {
-        List<Project> projects;
+        List<ProjectDTO> projectDTOs;
         String message;
         
         // Different role-based project access
         if (SecurityUtils.isAdmin()) {
             // Admin can see all projects
-            projects = projectService.getAllProjects();
+            projectDTOs = projectService.getAllProjects();
             message = "All projects retrieved successfully";
         } else if (SecurityUtils.isInstructor()) {
             // Instructors can only see their own projects
-            projects = projectService.getInstructorProjects();
+            projectDTOs = projectService.getInstructorProjects();
             message = "Instructor projects retrieved successfully";
         } else {
             // Students can only see projects they have access to
-            projects = projectService.getStudentProjects();
+            projectDTOs = projectService.getStudentProjects();
             message = "Student accessible projects retrieved successfully";
         }
-        
-        List<ProjectDTO> projectDTOs = projectConverter.toDTO(projects);
-        
+
         // Add metadata
         Map<String, Object> metadata = new HashMap<>();
         metadata.put("count", projectDTOs.size());
@@ -125,9 +122,8 @@ public class ProjectController {
             @Parameter(description = "ID of the project to retrieve") @PathVariable Long id) {
         return projectService.getProjectById(id)
                 .map(project -> {
-                    ProjectDTO projectDTO = projectConverter.toDTO(project);
                     ApiResponse<ProjectDTO> response = ApiResponse.success(
-                            projectDTO,
+                            project,
                             "Project retrieved successfully"
                     );
                     return ResponseEntity.ok(response);
@@ -154,9 +150,8 @@ public class ProjectController {
             @Parameter(description = "ID of the project to update") @PathVariable Long id,
             @Valid @RequestBody ProjectCreateRequest request) {
         try {
-            Project updatedProject = projectService.updateProject(id, request);
-            ProjectDTO projectDTO = projectConverter.toDTO(updatedProject);
-            
+            ProjectDTO projectDTO = projectService.updateProject(id, request);
+
             ApiResponse<ProjectDTO> response = ApiResponse.success(
                     projectDTO,
                     "Project updated successfully"
@@ -231,9 +226,8 @@ public class ProjectController {
             @Parameter(description = "ID of the project to update") @PathVariable Long id,
             @Valid @RequestBody PressureScoreConfigRequest request) {
         try {
-            Project updatedProject = projectService.updatePressureScoreConfig(id, request);
-            ProjectDTO projectDTO = projectConverter.toDTO(updatedProject);
-            
+            ProjectDTO projectDTO = projectService.updatePressureScoreConfig(id, request);
+
             ApiResponse<ProjectDTO> response = ApiResponse.success(
                     projectDTO,
                     "Pressure score configuration updated successfully"
@@ -410,7 +404,7 @@ public class ProjectController {
             @Parameter(description = "ID of the project") @PathVariable Long id) {
         try {
             // Check if project exists
-            Optional<Project> project = projectService.getProjectById(id);
+            Optional<ProjectDTO> project = projectService.getProjectById(id);
             if (project.isEmpty()) {
                 ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
                         "Project not found with id: " + id,
@@ -456,9 +450,8 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<ProjectDTO>> joinProjectByAccessCode(@Valid @RequestBody ProjectAccessRequest request) {
         try {
-            Project project = projectService.joinProjectByAccessCode(request.getAccessCode());
-            ProjectDTO projectDTO = projectConverter.toDTO(project);
-            
+            ProjectDTO projectDTO = projectService.joinProjectByAccessCode(request.getAccessCode());
+
             ApiResponse<ProjectDTO> response = ApiResponse.success(
                     projectDTO,
                     "Successfully joined project"
@@ -561,11 +554,11 @@ public class ProjectController {
             @Parameter(description = "ID of the project") @PathVariable Long id) {
         try {
             // Get the project
-            Project project = projectService.getProjectById(id)
+            ProjectDTO project = projectService.getProjectById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
             
             // Check if the current user has access to this project
-            if (!SecurityUtils.isAdmin() && !project.getInstructor().equals(SecurityUtils.getCurrentUser())) {
+            if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
                 return new ResponseEntity<>(HttpStatus.FORBIDDEN);
             }
             
@@ -594,7 +587,7 @@ public class ProjectController {
             @Parameter(description = "ID of the project") @PathVariable Long id) {
         try {
             // Get the project
-            Project project = projectService.getProjectById(id)
+            ProjectDTO project = projectService.getProjectById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
             
             // Check if the current user has access to this project
@@ -634,11 +627,11 @@ public class ProjectController {
             @Parameter(description = "ID of the project") @PathVariable Long id) {
         try {
             // Get the project
-            Project project = projectService.getProjectById(id)
+            ProjectDTO project = projectService.getProjectById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
             
             // Check if the current user has access to this project (either admin or project instructor)
-            if (!SecurityUtils.isAdmin() && !project.getInstructor().equals(SecurityUtils.getCurrentUser())) {
+            if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
                 ApiResponse<List<UserDTO>> response = ApiResponse.error(
                         "You don't have permission to access this project's students",
                         HttpStatus.FORBIDDEN

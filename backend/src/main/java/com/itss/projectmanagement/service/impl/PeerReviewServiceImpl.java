@@ -1,8 +1,10 @@
 package com.itss.projectmanagement.service.impl;
 
 import com.itss.projectmanagement.converter.PeerReviewConverter;
+import com.itss.projectmanagement.converter.UserConverter;
 import com.itss.projectmanagement.dto.request.peer.PeerReviewRequest;
 import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
+import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.PeerReview;
 import com.itss.projectmanagement.entity.Project;
@@ -31,13 +33,13 @@ import java.util.Set;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class PeerReviewServiceImpl implements IPeerReviewService {
-
+public class PeerReviewServiceImpl implements IPeerReviewService {    
     private final PeerReviewRepository peerReviewRepository;
     private final UserRepository userRepository;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
     private final PeerReviewConverter peerReviewConverter;
+    private final UserConverter userConverter;
     private final INotificationService notificationService;
 
     @Override
@@ -121,14 +123,15 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
         
         // Return true if the user has completed all valid reviews
         return validReviewsToComplete == 0;
-    }
-
+    }    
+    
     @Override
-    public List<User> getMembersToReview(Long projectId, Long reviewerId) {
+    public List<UserSummaryDTO> getMembersToReview(Long projectId, Long reviewerId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new NotFoundException("Project not found with ID: " + projectId));
         
-        return peerReviewRepository.findMembersNotReviewedByReviewer(project, reviewerId);
+        List<User> members = peerReviewRepository.findMembersNotReviewedByReviewer(project, reviewerId);
+        return userConverter.toUserSummaryDTO(members);
     }
 
     @Override
@@ -256,8 +259,8 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
         }
         
         return false; // Đã hoàn thành tất cả đánh giá chéo hợp lệ
-    }
-
+    }    
+      
     @Override
     public void startPeerReviewForGroup(Long groupId, Long userId) {
         // Verify the user is the leader of this group
@@ -266,6 +269,15 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
         
         if (group.getLeader() == null || !group.getLeader().getId().equals(userId)) {
             throw new ValidationException("Only the group leader can start peer review process for the group");
+        }
+        
+        // Check if peer reviews were already triggered this week using PeerReview records
+        LocalDateTime oneWeekAgo = LocalDateTime.now().minusWeeks(1);
+        boolean hasTriggeredThisWeek = peerReviewRepository.hasGroupTriggeredPeerReviewInLastWeek(groupId, oneWeekAgo);
+        
+        if (hasTriggeredThisWeek) {
+            throw new ValidationException("Peer reviews can only be triggered once per week. " +
+                "This group has already triggered peer reviews in the last 7 days.");
         }
         
         log.info("Manually triggering peer review for group: {} (ID: {}) by leader ID: {}", 
@@ -319,8 +331,7 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
             
             notificationService.notifyUser(reviewer, title, message);
         }
-        
-        // Notify project instructor
+          // Notify project instructor        
         if (project.getInstructor() != null) {
             String title = "Đánh giá chéo đã được kích hoạt thủ công";
             String message = String.format("Đánh giá chéo tuần %d đã được kích hoạt thủ công bởi nhóm trưởng %s cho nhóm %s trong dự án %s",
