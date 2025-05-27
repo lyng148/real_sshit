@@ -81,7 +81,9 @@ public class Project extends BaseEntity {
     // Project has many groups - cascade delete to remove all groups when project is deleted
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<Group> groups = new HashSet<>();    // Project has many peer reviews - cascade delete to remove all peer reviews when project is deleted
+    private Set<Group> groups = new HashSet<>();
+
+    // Project has many peer reviews - cascade delete to remove all peer reviews when project is deleted
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<PeerReview> peerReviews = new HashSet<>();
@@ -89,4 +91,13 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<FreeRiderCase> freeRiderCases = new HashSet<>();
+    
+    // Project has many contribution scores - cascade delete to remove all scores when project is deleted
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ContributionScore> contributionScores = new HashSet<>();
+
+    @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ProjectStudent> projectStudents = new HashSet<>();
 }

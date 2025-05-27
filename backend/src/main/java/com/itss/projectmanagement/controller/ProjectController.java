@@ -591,7 +591,7 @@ public class ProjectController {
                     .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
             
             // Check if the current user has access to this project
-            if (!SecurityUtils.isAdmin() && !project.getInstructor().equals(SecurityUtils.getCurrentUser())) {
+            if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
                 ApiResponse<String> response = ApiResponse.error(
                         "You don't have permission to access this project's access code",
                         HttpStatus.FORBIDDEN
