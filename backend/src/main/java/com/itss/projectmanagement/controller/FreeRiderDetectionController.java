@@ -134,6 +134,7 @@ public class FreeRiderDetectionController {
                         .build()
         );
     }
+
     /**
      * Get free rider evidence for a group or all groups in a project
      * @param projectId Project ID

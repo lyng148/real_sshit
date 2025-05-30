@@ -6,6 +6,7 @@ import com.itss.projectmanagement.dto.response.auth.AuthResponse;
 import com.itss.projectmanagement.dto.response.auth.RegisterResponse;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.security.JwtTokenProvider;
+import com.itss.projectmanagement.security.UserPrincipal;
 import com.itss.projectmanagement.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,8 +55,21 @@ public class AuthController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        User user = (User) authentication.getPrincipal();
-        String jwt = jwtTokenProvider.generateToken(user);
+        
+        // Get UserDetails (which is now UserPrincipal)
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        
+        // Get the actual User entity
+        User user;
+        if (userDetails instanceof UserPrincipal) {
+            user = ((UserPrincipal) userDetails).getUser();
+        } else {
+            // Fallback - shouldn't happen but just in case
+            user = userService.getUserByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new IllegalStateException("User not found"));
+        }
+        
+        String jwt = jwtTokenProvider.generateToken(userDetails);
         
         // Update last login timestamp
         userService.updateLastLogin(loginRequest.getUsername());
