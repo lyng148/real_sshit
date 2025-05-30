@@ -41,23 +41,14 @@ public class TaskController {
     @PostMapping
     @PreAuthorize("hasAuthority('INSTRUCTOR') or @groupSecurityService.isGroupLeader(authentication.principal, #request.groupId)")
     public ResponseEntity<ApiResponse<TaskResponse>> createTask(@Valid @RequestBody TaskCreateRequest request) {
-        try {
-            TaskResponse createdTask = taskService.createTask(request);
-            
-            ApiResponse<TaskResponse> response = ApiResponse.success(
-                    createdTask,
-                    "Task created successfully"
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<TaskResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.BAD_REQUEST
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+        TaskResponse createdTask = taskService.createTask(request);
+        
+        ApiResponse<TaskResponse> response = ApiResponse.success(
+                createdTask,
+                "Task created successfully"
+        );
+        
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 
     @Operation(summary = "Update a task", description = "Updates an existing task")
@@ -72,28 +63,14 @@ public class TaskController {
     public ResponseEntity<ApiResponse<TaskResponse>> updateTask(
             @Parameter(description = "ID of the task to update") @PathVariable Long taskId,
             @Valid @RequestBody TaskCreateRequest request) {
-        try {
-            TaskResponse updatedTask = taskService.updateTask(taskId, request);
-            
-            ApiResponse<TaskResponse> response = ApiResponse.success(
-                    updatedTask,
-                    "Task updated successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status = HttpStatus.BAD_REQUEST;
-            if (e.getMessage().contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            }
-            
-            ApiResponse<TaskResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        TaskResponse updatedTask = taskService.updateTask(taskId, request);
+        
+        ApiResponse<TaskResponse> response = ApiResponse.success(
+                updatedTask,
+                "Task updated successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get task by ID", description = "Retrieves a task by its ID")
@@ -105,23 +82,14 @@ public class TaskController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<TaskResponse>> getTaskById(
             @Parameter(description = "ID of the task to retrieve") @PathVariable Long taskId) {
-        try {
-            TaskResponse task = taskService.getTaskById(taskId);
-            
-            ApiResponse<TaskResponse> response = ApiResponse.success(
-                    task,
-                    "Task retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<TaskResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        TaskResponse task = taskService.getTaskById(taskId);
+        
+        ApiResponse<TaskResponse> response = ApiResponse.success(
+                task,
+                "Task retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get tasks by group", description = "Retrieves all tasks for a specific group")
@@ -133,28 +101,19 @@ public class TaskController {
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<TaskResponse>>> getTasksByGroup(
             @Parameter(description = "ID of the group") @PathVariable Long groupId) {
-        try {
-            List<TaskResponse> tasks = taskService.getTasksByGroup(groupId);
-            
-            // Add metadata
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("count", tasks.size());
-            
-            ApiResponse<List<TaskResponse>> response = ApiResponse.success(
-                    tasks,
-                    "Tasks retrieved successfully",
-                    metadata
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<List<TaskResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        List<TaskResponse> tasks = taskService.getTasksByGroup(groupId);
+        
+        // Add metadata
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("count", tasks.size());
+        
+        ApiResponse<List<TaskResponse>> response = ApiResponse.success(
+                tasks,
+                "Tasks retrieved successfully",
+                metadata
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get tasks by assignee", description = "Retrieves all tasks assigned to a specific user")
@@ -166,28 +125,19 @@ public class TaskController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<List<TaskResponse>>> getTasksByAssignee(
             @Parameter(description = "ID of the assignee") @PathVariable Long assigneeId) {
-        try {
-            List<TaskResponse> tasks = taskService.getTasksByAssignee(assigneeId);
-            
-            // Add metadata
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("count", tasks.size());
-            
-            ApiResponse<List<TaskResponse>> response = ApiResponse.success(
-                    tasks,
-                    "Tasks retrieved successfully",
-                    metadata
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<List<TaskResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        List<TaskResponse> tasks = taskService.getTasksByAssignee(assigneeId);
+        
+        // Add metadata
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("count", tasks.size());
+        
+        ApiResponse<List<TaskResponse>> response = ApiResponse.success(
+                tasks,
+                "Tasks retrieved successfully",
+                metadata
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Delete task", description = "Deletes an existing task")
@@ -200,23 +150,14 @@ public class TaskController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(authentication.principal, #taskId)")
     public ResponseEntity<ApiResponse<Void>> deleteTask(
             @Parameter(description = "ID of the task to delete") @PathVariable Long taskId) {
-        try {
-            taskService.deleteTask(taskId);
-            
-            ApiResponse<Void> response = ApiResponse.success(
-                    null,
-                    "Task deleted successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<Void> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        taskService.deleteTask(taskId);
+        
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                "Task deleted successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Assign task to a user", description = "Assigns a task to a specific user")
@@ -231,28 +172,14 @@ public class TaskController {
     public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
             @Parameter(description = "ID of the task to assign") @PathVariable Long taskId,
             @Parameter(description = "ID of the user to assign the task to") @PathVariable Long assigneeId) {
-        try {
-            TaskResponse updatedTask = taskService.assignTask(taskId, assigneeId);
-            
-            ApiResponse<TaskResponse> response = ApiResponse.success(
-                    updatedTask,
-                    "Task assigned successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status = HttpStatus.BAD_REQUEST;
-            if (e.getMessage().contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            }
-            
-            ApiResponse<TaskResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        TaskResponse updatedTask = taskService.assignTask(taskId, assigneeId);
+        
+        ApiResponse<TaskResponse> response = ApiResponse.success(
+                updatedTask,
+                "Task assigned successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Update task status", description = "Updates the status of a task")
@@ -266,28 +193,14 @@ public class TaskController {
     public ResponseEntity<ApiResponse<TaskResponse>> updateTaskStatus(
             @Parameter(description = "ID of the task to update") @PathVariable Long taskId,
             @Parameter(description = "New status of the task") @RequestParam TaskStatus taskStatus) {
-        try {
-            TaskResponse updatedTask = taskService.updateTaskStatus(taskId, taskStatus);
-            
-            ApiResponse<TaskResponse> response = ApiResponse.success(
-                    updatedTask,
-                    "Task status updated successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status = HttpStatus.BAD_REQUEST;
-            if (e.getMessage().contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            }
-            
-            ApiResponse<TaskResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        TaskResponse updatedTask = taskService.updateTaskStatus(taskId, taskStatus);
+        
+        ApiResponse<TaskResponse> response = ApiResponse.success(
+                updatedTask,
+                "Task status updated successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get pressure score for a user", description = "Calculates and returns the pressure score for a specific user")
@@ -299,22 +212,13 @@ public class TaskController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or @groupSecurityService.isLeaderOfUserGroup(authentication.principal, #userId)")
     public ResponseEntity<ApiResponse<Double>> getPressureScore(
             @Parameter(description = "ID of the user") @PathVariable Long userId) {
-        try {
-            Double pressureScore = taskService.calculatePressureScore(userId);
-            
-            ApiResponse<Double> response = ApiResponse.success(
-                    pressureScore,
-                    "Pressure score retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<Double> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        Double pressureScore = taskService.calculatePressureScore(userId);
+        
+        ApiResponse<Double> response = ApiResponse.success(
+                pressureScore,
+                "Pressure score retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 }

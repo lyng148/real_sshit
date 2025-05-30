@@ -4,7 +4,6 @@ import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
-import com.itss.projectmanagement.security.TaskSecurityService;
 import com.itss.projectmanagement.service.IGitHubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -25,7 +24,6 @@ import java.util.Map;
 public class GitHubController {    private final IGitHubService gitHubService;
     private final ProjectRepository projectRepository;
     private final GroupRepository groupRepository;
-    private final TaskSecurityService taskSecurityService;
 
     @PostMapping("/fetch-commits/project/{projectId}")
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
@@ -127,13 +125,7 @@ public class GitHubController {    private final IGitHubService gitHubService;
     @Operation(summary = "Get all commits for a group", 
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<List<CommitRecordDTO>> getCommitsByGroup(@PathVariable Long groupId) {
-
-        try {
-            return ResponseEntity.ok(gitHubService.getCommitsByGroup(groupId));
-        } catch (Exception e) {
-            // return empty list
-            return ResponseEntity.ok(List.of());
-        }
+        return ResponseEntity.ok(gitHubService.getCommitsByGroup(groupId));
     }
 
     @GetMapping("/commits/invalid/project/{projectId}")
@@ -162,23 +154,14 @@ public class GitHubController {    private final IGitHubService gitHubService;
                description = "Returns all commit records associated with a specific task",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ApiResponse<List<CommitRecordDTO>>> getCommitsByTask(@PathVariable Long taskId) {
-        try {
-            List<CommitRecordDTO> commits = gitHubService.getCommitsByTask(taskId);
-            
-            ApiResponse<List<CommitRecordDTO>> response = ApiResponse.success(
-                commits,
-                "Commits retrieved successfully",
-                Map.of("count", commits.size())
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<List<CommitRecordDTO>> response = ApiResponse.error(
-                e.getMessage(),
-                HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        List<CommitRecordDTO> commits = gitHubService.getCommitsByTask(taskId);
+        
+        ApiResponse<List<CommitRecordDTO>> response = ApiResponse.success(
+            commits,
+            "Commits retrieved successfully",
+            Map.of("count", commits.size())
+        );
+        
+        return ResponseEntity.ok(response);
     }
 }

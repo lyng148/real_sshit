@@ -3,6 +3,8 @@ package com.itss.projectmanagement.repository;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,6 +24,14 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
      * @return list of groups
      */
     List<Group> findByProject(Project project);
+
+    /**
+     * Find all groups in a project with pagination
+     * @param project the project
+     * @param pageable the pagination information
+     * @return page of groups
+     */
+    Page<Group> findByProject(Project project, Pageable pageable);
     
     /**
      * Find all groups that a user is a member of
@@ -30,6 +40,15 @@ public interface GroupRepository extends JpaRepository<Group, Long> {
      */
     @Query("SELECT g FROM Group g JOIN g.members m WHERE m = :member")
     List<Group> findByMember(User member);
+
+    /**
+     * Find all groups that a user is a member of with pagination
+     * @param member the user
+     * @param pageable the pagination information
+     * @return page of groups
+     */
+    @Query("SELECT g FROM Group g JOIN g.members m WHERE m = :member")
+    Page<Group> findByMember(User member, Pageable pageable);
     
     /**
      * Find all groups led by a specific user

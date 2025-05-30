@@ -5,6 +5,7 @@ import com.itss.projectmanagement.dto.request.peer.PeerReviewRequest;
 import com.itss.projectmanagement.dto.response.peer.PeerReviewResponse;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.dto.response.user.UserSummaryDTO;
+import com.itss.projectmanagement.exception.UnauthorizedAccessException;
 import com.itss.projectmanagement.exception.ValidationException;
 import com.itss.projectmanagement.security.CurrentUser;
 import com.itss.projectmanagement.security.UserPrincipal;
@@ -47,13 +48,14 @@ public class PeerReviewController {
             @CurrentUser UserPrincipal currentUser) {
         Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         PeerReviewResponse response = peerReviewService.submitReview(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success(response, "Peer review submitted successfully"));
-    }    @PostMapping("/start-review")
+    }    
+    
+    @PostMapping("/start-review")
     @Operation(summary = "Start peer review process for a group (group leader only)")
     @ApiResponses(value = {
         @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Peer review process has been started for your group"),
@@ -65,24 +67,12 @@ public class PeerReviewController {
     public ResponseEntity<ApiResponse<Void>> startPeerReviewForGroup(
             @RequestParam Long groupId,
             @CurrentUser UserPrincipal currentUser) {
-        try {
-            Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
-            if (userId == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
-            }
-            peerReviewService.startPeerReviewForGroup(groupId, userId);
-            return ResponseEntity.ok(ApiResponse.success(null, "Peer review process has been started for your group"));
-        } catch (ValidationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage(), HttpStatus.BAD_REQUEST));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(ApiResponse.error(e.getMessage(), HttpStatus.BAD_REQUEST));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(ApiResponse.error("An unexpected error occurred", HttpStatus.INTERNAL_SERVER_ERROR));
+        Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            throw new UnauthorizedAccessException("Unauthorized");
         }
+        peerReviewService.startPeerReviewForGroup(groupId, userId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Peer review process has been started for your group"));
     }
 
     @GetMapping("/submitted")
@@ -97,8 +87,7 @@ public class PeerReviewController {
             @CurrentUser UserPrincipal currentUser) {
         Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         List<PeerReviewResponse> reviews = peerReviewService.getReviewsByReviewer(userId, projectId);
         return ResponseEntity.ok(ApiResponse.success(reviews, "Fetched submitted reviews successfully"));
@@ -116,8 +105,7 @@ public class PeerReviewController {
             @CurrentUser UserPrincipal currentUser) {
         Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         List<PeerReviewResponse> reviews = peerReviewService.getReviewsByReviewee(userId, projectId);
         return ResponseEntity.ok(ApiResponse.success(reviews, "Fetched received reviews successfully"));
@@ -135,8 +123,7 @@ public class PeerReviewController {
             @CurrentUser UserPrincipal currentUser) {
         Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         List<UserSummaryDTO> members = peerReviewService.getMembersToReview(projectId, userId);
         return ResponseEntity.ok(ApiResponse.success(members, "Fetched members to review successfully"));
@@ -154,8 +141,7 @@ public class PeerReviewController {
             @CurrentUser UserPrincipal currentUser) {
         Long userId = (currentUser != null) ? currentUser.getId() : SecurityUtils.getCurrentUserId();
         if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Unauthorized", HttpStatus.UNAUTHORIZED));
+            throw new UnauthorizedAccessException("Unauthorized");
         }
         boolean completed = peerReviewService.hasCompletedAllReviews(userId, projectId);
         return ResponseEntity.ok(ApiResponse.success(completed, "Checked completion status successfully"));

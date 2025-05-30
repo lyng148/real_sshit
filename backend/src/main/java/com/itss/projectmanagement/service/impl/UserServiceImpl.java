@@ -1,10 +1,15 @@
 package com.itss.projectmanagement.service.impl;
 
+import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +27,48 @@ public class UserServiceImpl implements IUserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    /**
+     * Get all users with pagination
+     * @param page the page number
+     * @param size the page size
+     * @param sortBy the field to sort by
+     * @param sortDirection the sort direction (ASC or DESC)
+     * @return paginated list of users
+     */
+    @Override
+    public PaginationResponse<User> getAllUsersPaginated(int page, int size, String sortBy, String sortDirection) {
+        // Create sort direction
+        Sort.Direction direction = "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        // Default sort by fullName if not specified
+        if (sortBy == null || sortBy.trim().isEmpty()) {
+            sortBy = "fullName";
+        }
+        
+        // Create pageable
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        // Get paginated users
+        Page<User> userPage = userRepository.findAll(pageable);
+        
+        // Create pagination metadata
+        PaginationResponse.PaginationMeta meta = PaginationResponse.PaginationMeta.builder()
+                .page(userPage.getNumber())
+                .size(userPage.getSize())
+                .totalElements(userPage.getTotalElements())
+                .totalPages(userPage.getTotalPages())
+                .hasNext(userPage.hasNext())
+                .hasPrevious(userPage.hasPrevious())
+                .isFirst(userPage.isFirst())
+                .isLast(userPage.isLast())
+                .build();
+        
+        return PaginationResponse.<User>builder()
+                .content(userPage.getContent())
+                .pagination(meta)
+                .build();
     }
 
     public Optional<User> getUserById(Long id) {

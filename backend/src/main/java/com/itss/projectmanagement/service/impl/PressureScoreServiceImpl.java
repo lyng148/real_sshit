@@ -71,49 +71,220 @@ public class PressureScoreServiceImpl implements IPressureScoreService {
 
     @Override
     public double calculateTotalMemberPressureScore(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         
-        // Get all incomplete tasks assigned to the user
-        List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
-        incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
-        
-        double totalPressureScore = 0.0;
-        LocalDate currentDate = LocalDate.now();
-        
-        for (Task task : incompleteTasks) {
-            // Step 1: Get Difficulty Weight (DW)
-            int difficultyWeight = task.getDifficulty().getValue();
+        try {
+            // Get all incomplete tasks assigned to the user
+            List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
+            incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
             
-            // Step 2: Calculate Time Urgency Factor (TUF)
-            long daysRemaining = ChronoUnit.DAYS.between(currentDate, task.getDeadline());
-            double timeUrgencyFactor = calculateTimeUrgencyFactor(daysRemaining);
+            double totalPressureScore = 0.0;
+            LocalDate currentDate = LocalDate.now();
             
-            // Step 3: Calculate Task Pressure Score (TPS)
-            double taskPressureScore = calculateTaskPressureScore(difficultyWeight, timeUrgencyFactor);
+            for (Task task : incompleteTasks) {
+                try {
+                    // Validate task data
+                    if (task.getDifficulty() == null) {
+                        log.warn("Task ID {} has null difficulty, skipping", task.getId());
+                        continue;
+                    }
+                    if (task.getDeadline() == null) {
+                        log.warn("Task ID {} has null deadline, skipping", task.getId());
+                        continue;
+                    }
+                    
+                    // Step 1: Get Difficulty Weight (DW)
+                    int difficultyWeight = task.getDifficulty().getValue();
+                    
+                    // Step 2: Calculate Time Urgency Factor (TUF)
+                    long daysRemaining = ChronoUnit.DAYS.between(currentDate, task.getDeadline());
+                    double timeUrgencyFactor = calculateTimeUrgencyFactor(daysRemaining);
+                    
+                    // Step 3: Calculate Task Pressure Score (TPS)
+                    double taskPressureScore = calculateTaskPressureScore(difficultyWeight, timeUrgencyFactor);
+                    
+                    // Step 4: Add to total member pressure score
+                    totalPressureScore += taskPressureScore;
+                    
+                    log.debug("Task ID {}: DW={}, DaysRemaining={}, TUF={}, TPS={}",
+                            task.getId(), difficultyWeight, daysRemaining, timeUrgencyFactor, taskPressureScore);
+                } catch (Exception e) {
+                    log.error("Error calculating pressure score for task ID {}: {}", task.getId(), e.getMessage());
+                    // Continue with other tasks instead of failing completely
+                }
+            }
             
-            // Step 4: Add to total member pressure score
-            totalPressureScore += taskPressureScore;
+            log.info("User {}: Total Member Pressure Score = {}, Task count = {}",
+                    user.getUsername(), totalPressureScore, incompleteTasks.size());
             
-            log.debug("Task ID {}: DW={}, DaysRemaining={}, TUF={}, TPS={}",
-                    task.getId(), difficultyWeight, daysRemaining, timeUrgencyFactor, taskPressureScore);
+            return totalPressureScore;
+        } catch (Exception e) {
+            log.error("Error calculating total pressure score for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to calculate pressure score for user: " + userId, e);
         }
-        
-        log.info("User {}: Total Member Pressure Score = {}, Task count = {}",
-                user.getUsername(), totalPressureScore, incompleteTasks.size());
-        
-        return totalPressureScore;
     }
 
     @Override
     public PressureScoreResponse evaluatePressureStatus(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         
-        // Find projects this user is involved in
-        List<Group> userGroups = groupRepository.findByMembersContainingOrLeader(user, user);
-        if (userGroups.isEmpty()) {
-            // User is not a member of any group, return minimal response
+        try {
+            // Find projects this user is involved in
+            List<Group> userGroups = groupRepository.findByMembersContainingOrLeader(user, user);
+            if (userGroups.isEmpty()) {
+                // User is not a member of any group, return minimal response
+                return PressureScoreResponse.builder()
+                        .userId(user.getId())
+                        .username(user.getUsername())
+                        .fullName(user.getFullName())
+                        .pressureScore(0.0)
+                        .status(PressureStatus.SAFE)
+                        .taskCount(0)
+                        .threshold(0)
+                        .thresholdPercentage(0.0)
+                        .statusDescription(PressureStatus.SAFE.getDescription() + " - No groups found for this user")
+                        .build();
+            }
+            
+            // Get all projects this user is involved in
+            Map<Long, Project> userProjects = new HashMap<>();
+            for (Group group : userGroups) {
+                if (group.getProject() != null) {
+                    userProjects.put(group.getProject().getId(), group.getProject());
+                }
+            }
+            
+            if (userProjects.isEmpty()) {
+                log.warn("User {} is in groups but no valid projects found", user.getUsername());
+                return PressureScoreResponse.builder()
+                        .userId(user.getId())
+                        .username(user.getUsername())
+                        .fullName(user.getFullName())
+                        .pressureScore(0.0)
+                        .status(PressureStatus.SAFE)
+                        .taskCount(0)
+                        .threshold(0)
+                        .thresholdPercentage(0.0)
+                        .statusDescription(PressureStatus.SAFE.getDescription() + " - No valid projects found")
+                        .build();
+            }
+            
+            // If user is in multiple projects, calculate pressure scores for each project
+            // and use the highest relative threshold percentage to determine status
+            double highestPressureScore = 0.0;
+            Project highestPressureProject = null;
+            double highestThresholdPercentage = 0.0;
+            int totalTaskCount = 0;
+            
+            // Get incomplete tasks for this user
+            List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
+            incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
+            
+            // Group tasks by project
+            Map<Long, List<Task>> tasksByProject = new HashMap<>();
+            for (Task task : incompleteTasks) {
+                try {
+                    if (task.getGroup() != null && task.getGroup().getProject() != null) {
+                        Long projectId = task.getGroup().getProject().getId();
+                        tasksByProject.computeIfAbsent(projectId, k -> new ArrayList<>()).add(task);
+                    } else {
+                        log.warn("Task ID {} has null group or project, skipping", task.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("Error processing task ID {}: {}", task.getId(), e.getMessage());
+                }
+            }
+            
+            // Calculate pressure score for each project
+            for (Map.Entry<Long, List<Task>> entry : tasksByProject.entrySet()) {
+                try {
+                    Long projectId = entry.getKey();
+                    List<Task> projectTasks = entry.getValue();
+                    Project project = userProjects.get(projectId);
+                    
+                    if (project == null) {
+                        log.warn("Project {} not found in user projects for user {}", projectId, user.getUsername());
+                        continue;
+                    }
+                    
+                    double projectPressureScore = 0.0;
+                    LocalDate currentDate = LocalDate.now();
+                    
+                    for (Task task : projectTasks) {
+                        try {
+                            // Validate task data
+                            if (task.getDifficulty() == null || task.getDeadline() == null) {
+                                log.warn("Task ID {} has null difficulty or deadline, skipping", task.getId());
+                                continue;
+                            }
+                            
+                            int difficultyWeight = task.getDifficulty().getValue();
+                            long daysRemaining = ChronoUnit.DAYS.between(currentDate, task.getDeadline());
+                            double timeUrgencyFactor = calculateTimeUrgencyFactor(daysRemaining);
+                            double taskPressureScore = calculateTaskPressureScore(difficultyWeight, timeUrgencyFactor);
+                            
+                            projectPressureScore += taskPressureScore;
+                        } catch (Exception e) {
+                            log.error("Error calculating pressure for task ID {}: {}", task.getId(), e.getMessage());
+                        }
+                    }
+                    
+                    totalTaskCount += projectTasks.size();
+                    
+                    // Calculate what percentage of the threshold this score represents
+                    if (project.getPressureThreshold() != null && project.getPressureThreshold() > 0) {
+                        double thresholdPercentage = projectPressureScore / project.getPressureThreshold();
+                        
+                        if (thresholdPercentage > highestThresholdPercentage) {
+                            highestThresholdPercentage = thresholdPercentage;
+                            highestPressureScore = projectPressureScore;
+                            highestPressureProject = project;
+                        }
+                    } else {
+                        log.warn("Project {} has null or zero pressure threshold", project.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("Error processing project {}: {}", entry.getKey(), e.getMessage());
+                }
+            }
+            
+            // Determine status based on the highest threshold percentage
+            PressureStatus status;
+            if (highestThresholdPercentage >= 1.0) {
+                status = PressureStatus.OVERLOADED;
+            } else if (highestThresholdPercentage >= RISK_THRESHOLD_PERCENTAGE) {
+                status = PressureStatus.AT_RISK;
+            } else {
+                status = PressureStatus.SAFE;
+            }
+            
+            // Build and return the response
+            return PressureScoreResponse.builder()
+                    .userId(user.getId())
+                    .username(user.getUsername())
+                    .fullName(user.getFullName())
+                    .pressureScore(highestPressureScore)
+                    .status(status)
+                    .taskCount(totalTaskCount)
+                    .threshold(highestPressureProject != null ? highestPressureProject.getPressureThreshold() : 0)
+                    .thresholdPercentage(highestThresholdPercentage * 100.0) // Convert to percentage format
+                    .statusDescription(status.getDescription())
+                    .projectId(highestPressureProject != null ? highestPressureProject.getId() : null)
+                    .projectName(highestPressureProject != null ? highestPressureProject.getName() : null)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error evaluating pressure status for user {}: {}", userId, e.getMessage());
+            // Return safe default response instead of throwing exception
             return PressureScoreResponse.builder()
                     .userId(user.getId())
                     .username(user.getUsername())
@@ -123,108 +294,49 @@ public class PressureScoreServiceImpl implements IPressureScoreService {
                     .taskCount(0)
                     .threshold(0)
                     .thresholdPercentage(0.0)
-                    .statusDescription(PressureStatus.SAFE.getDescription() + " - No groups found for this user")
+                    .statusDescription("Error calculating pressure status - defaulting to SAFE")
                     .build();
         }
-        
-        // Get all projects this user is involved in
-        Map<Long, Project> userProjects = new HashMap<>();
-        for (Group group : userGroups) {
-            userProjects.put(group.getProject().getId(), group.getProject());
-        }
-        
-        // If user is in multiple projects, calculate pressure scores for each project
-        // and use the highest relative threshold percentage to determine status
-        double highestPressureScore = 0.0;
-        Project highestPressureProject = null;
-        double highestThresholdPercentage = 0.0;
-        int totalTaskCount = 0;
-        
-        // Get incomplete tasks for this user
-        List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
-        incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
-        
-        // Group tasks by project
-        Map<Long, List<Task>> tasksByProject = new HashMap<>();
-        for (Task task : incompleteTasks) {
-            Long projectId = task.getGroup().getProject().getId();
-            tasksByProject.computeIfAbsent(projectId, k -> new ArrayList<>()).add(task);
-        }
-        
-        // Calculate pressure score for each project
-        for (Map.Entry<Long, List<Task>> entry : tasksByProject.entrySet()) {
-            Long projectId = entry.getKey();
-            List<Task> projectTasks = entry.getValue();
-            Project project = userProjects.get(projectId);
-            
-            if (project == null) {
-                continue;
-            }
-            
-            double projectPressureScore = 0.0;
-            LocalDate currentDate = LocalDate.now();
-            
-            for (Task task : projectTasks) {
-                int difficultyWeight = task.getDifficulty().getValue();
-                long daysRemaining = ChronoUnit.DAYS.between(currentDate, task.getDeadline());
-                double timeUrgencyFactor = calculateTimeUrgencyFactor(daysRemaining);
-                double taskPressureScore = calculateTaskPressureScore(difficultyWeight, timeUrgencyFactor);
-                
-                projectPressureScore += taskPressureScore;
-            }
-            
-            totalTaskCount += projectTasks.size();
-            
-            // Calculate what percentage of the threshold this score represents
-            double thresholdPercentage = projectPressureScore / project.getPressureThreshold();
-            
-            if (thresholdPercentage > highestThresholdPercentage) {
-                highestThresholdPercentage = thresholdPercentage;
-                highestPressureScore = projectPressureScore;
-                highestPressureProject = project;
-            }
-        }
-        
-        // Determine status based on the highest threshold percentage
-        PressureStatus status;
-        if (highestThresholdPercentage >= 1.0) {
-            status = PressureStatus.OVERLOADED;
-        } else if (highestThresholdPercentage >= RISK_THRESHOLD_PERCENTAGE) {
-            status = PressureStatus.AT_RISK;
-        } else {
-            status = PressureStatus.SAFE;
-        }
-        
-        // Build and return the response
-        return PressureScoreResponse.builder()
-                .userId(user.getId())
-                .username(user.getUsername())
-                .fullName(user.getFullName())
-                .pressureScore(highestPressureScore)
-                .status(status)
-                .taskCount(totalTaskCount)
-                .threshold(highestPressureProject != null ? highestPressureProject.getPressureThreshold() : 0)
-                .thresholdPercentage(highestThresholdPercentage * 100.0) // Convert to percentage format
-                .statusDescription(status.getDescription())
-                .projectId(highestPressureProject != null ? highestPressureProject.getId() : null)
-                .projectName(highestPressureProject != null ? highestPressureProject.getName() : null)
-                .build();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<PressureScoreResponse> getProjectPressureScores(Long projectId) {
+        if (projectId == null) {
+            throw new IllegalArgumentException("Project ID cannot be null");
+        }
+        
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
         
-        // Get all users in this project
-        List<User> projectUsers = getUsersInProject(project);
-        
-        log.info("Getting pressure scores for {} users in project {}", projectUsers.size(), project.getName());
-        
-        return projectUsers.stream()
-                .map(user -> getPressureScoreForUser(user, project))
-                .collect(Collectors.toList());
+        try {
+            // Get all users in this project
+            List<User> projectUsers = getUsersInProject(project);
+            
+            if (projectUsers.isEmpty()) {
+                log.warn("No users found in project {}", project.getName());
+                return new ArrayList<>();
+            }
+            
+            log.info("Getting pressure scores for {} users in project {}", projectUsers.size(), project.getName());
+            
+            List<PressureScoreResponse> responses = new ArrayList<>();
+            for (User user : projectUsers) {
+                try {
+                    PressureScoreResponse response = getPressureScoreForUser(user, project);
+                    responses.add(response);
+                } catch (Exception e) {
+                    log.error("Error getting pressure score for user {} in project {}: {}", 
+                            user.getUsername(), project.getName(), e.getMessage());
+                    // Continue with other users instead of failing completely
+                }
+            }
+            
+            return responses;
+        } catch (Exception e) {
+            log.error("Error getting project pressure scores for project {}: {}", projectId, e.getMessage());
+            throw new RuntimeException("Failed to get pressure scores for project: " + projectId, e);
+        }
     }
 
     @Override
@@ -449,16 +561,41 @@ public class PressureScoreServiceImpl implements IPressureScoreService {
      * Helper method to get all users in a project (members and leaders)
      */
     private List<User> getUsersInProject(Project project) {
-        List<Group> groups = groupRepository.findByProject(project);
-        List<User> users = new ArrayList<>();
-        
-        for (Group group : groups) {
-            users.addAll(group.getMembers());
-            if (group.getLeader() != null && !users.contains(group.getLeader())) {
-                users.add(group.getLeader());
-            }
+        if (project == null) {
+            log.warn("Project is null in getUsersInProject");
+            return new ArrayList<>();
         }
         
-        return users;
+        try {
+            List<Group> groups = groupRepository.findByProject(project);
+            if (groups.isEmpty()) {
+                log.warn("No groups found for project {}", project.getName());
+                return new ArrayList<>();
+            }
+            
+            List<User> users = new ArrayList<>();
+            
+            for (Group group : groups) {
+                try {
+                    // Add group members
+                    if (group.getMembers() != null) {
+                        users.addAll(group.getMembers());
+                    }
+                    
+                    // Add group leader if not already included
+                    if (group.getLeader() != null && !users.contains(group.getLeader())) {
+                        users.add(group.getLeader());
+                    }
+                } catch (Exception e) {
+                    log.error("Error processing group {} in project {}: {}", 
+                            group.getId(), project.getName(), e.getMessage());
+                }
+            }
+            
+            return users;
+        } catch (Exception e) {
+            log.error("Error getting users for project {}: {}", project.getName(), e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

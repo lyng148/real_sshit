@@ -1,6 +1,7 @@
 package com.itss.projectmanagement.service;
 
 
+import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
@@ -32,6 +33,17 @@ public interface IGroupService {
      * @return list of groups
      */
     List<GroupDTO> getProjectGroups(Long projectId);
+
+    /**
+     * Get all groups for a project with pagination
+     * @param projectId the project ID
+     * @param page the page number
+     * @param size the page size
+     * @param sortBy the field to sort by
+     * @param sortDirection the sort direction (ASC or DESC)
+     * @return paginated list of groups
+     */
+    PaginationResponse<GroupDTO> getProjectGroupsPaginated(Long projectId, int page, int size, String sortBy, String sortDirection);
 
     /**
      * Get a group by ID as DTO

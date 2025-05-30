@@ -42,33 +42,17 @@ public class ContributionScoreController {
     @Operation(summary = "Calculate contribution scores for a project",
                description = "Calculates contribution scores for all users in a project. Restricted to instructors and admins.")
     public ResponseEntity<ApiResponse<String>> calculateScores(@RequestParam Long projectId) {
-        try {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
-            contributionScoreService.calculateScoresForProject(project);
+        contributionScoreService.calculateScoresForProject(project);
 
-            ApiResponse<String> response = ApiResponse.success(
-                    "Contribution scores calculated successfully",
-                    "Contribution scores calculated successfully"
-            );
+        ApiResponse<String> response = ApiResponse.success(
+                "Contribution scores calculated successfully",
+                "Contribution scores calculated successfully"
+        );
 
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            ApiResponse<String> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            ApiResponse<String> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/projects/{projectId}")
@@ -76,38 +60,22 @@ public class ContributionScoreController {
     @Operation(summary = "Get all contribution scores for a project", 
                description = "Returns the latest calculated contribution scores for all users in a project. Restricted to instructors and admins.")
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByProject(@PathVariable Long projectId) {
-        try {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-            
-            List<ContributionScoreResponse> scores = contributionScoreService.getScoresByProject(project);
-            
-            // Add metadata
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("count", scores.size());
-            
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
-                    scores,
-                    "Contribution scores retrieved successfully",
-                    metadata
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        
+        List<ContributionScoreResponse> scores = contributionScoreService.getScoresByProject(project);
+        
+        // Add metadata
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("count", scores.size());
+        
+        ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
+                scores,
+                "Contribution scores retrieved successfully",
+                metadata
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/projects/{projectId}/users/{userId}")
@@ -119,48 +87,25 @@ public class ContributionScoreController {
             @PathVariable Long userId,
             @AuthenticationPrincipal User currentUser) {
         
-        try {
-            Project project = projectRepository.findById(projectId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
-            
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-            
-            // Check if user has permission to view this score
-            if (!hasPermissionToViewScore(currentUser, user, projectId)) {
-                throw new ForbiddenException("You don't have permission to view this score");
-            }
-            
-            ContributionScoreResponse score = contributionScoreService.getScoreByUserAndProject(user, project);
-            
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.success(
-                    score,
-                    "Contribution score retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (ForbiddenException e) {
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.FORBIDDEN
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        // Check if user has permission to view this score
+        if (!hasPermissionToViewScore(currentUser, user, projectId)) {
+            throw new ForbiddenException("You don't have permission to view this score");
         }
+        
+        ContributionScoreResponse score = contributionScoreService.getScoreByUserAndProject(user, project);
+        
+        ApiResponse<ContributionScoreResponse> response = ApiResponse.success(
+                score,
+                "Contribution score retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/groups/{groupId}")
@@ -168,45 +113,25 @@ public class ContributionScoreController {
     @Operation(summary = "Get all contribution scores for a group", 
                description = "Returns the latest calculated contribution scores for all users in a group. Student can only see scores of his group.")
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByGroup(@PathVariable Long groupId, @AuthenticationPrincipal User currentUser) {
-        try {
-            Group group = groupRepository.findById(groupId)
-                    .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
 
-            // Nếu là student, chỉ cho xem điểm nhóm của mình
-            if (currentUser.getRoles().contains(Role.STUDENT)) {
-                boolean isMember = group.getMembers().contains(currentUser) || (group.getLeader() != null && group.getLeader().getId().equals(currentUser.getId()));
-                if (!isMember) {
-                    throw new ForbiddenException("You dont't have permission to view this score");
-                }
+        // Nếu là student, chỉ cho xem điểm nhóm của mình
+        if (currentUser.getRoles().contains(Role.STUDENT)) {
+            boolean isMember = group.getMembers().contains(currentUser) || (group.getLeader() != null && group.getLeader().getId().equals(currentUser.getId()));
+            if (!isMember) {
+                throw new ForbiddenException("You dont't have permission to view this score");
             }
-            List<ContributionScoreResponse> scores = contributionScoreService.getScoresByGroup(groupId);
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("count", scores.size());
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
-                    scores,
-                    "Contribution scores for group retrieved successfully",
-                    metadata
-            );
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (ForbiddenException e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.FORBIDDEN
-            );
-            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-        } catch (Exception e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        List<ContributionScoreResponse> scores = contributionScoreService.getScoresByGroup(groupId);
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("count", scores.size());
+        ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
+                scores,
+                "Contribution scores for group retrieved successfully",
+                metadata
+        );
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/{id}/adjust")
@@ -217,31 +142,15 @@ public class ContributionScoreController {
             @PathVariable Long id,
             @RequestBody ScoreAdjustmentRequest request) {
         
-        try {
-            ContributionScoreResponse updatedScore = contributionScoreService.adjustScore(
-                    id, request.getAdjustedScore(), request.getAdjustmentReason());
-            
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.success(
-                    updatedScore,
-                    "Contribution score adjusted successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            ApiResponse<ContributionScoreResponse> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        ContributionScoreResponse updatedScore = contributionScoreService.adjustScore(
+                id, request.getAdjustedScore(), request.getAdjustmentReason());
+        
+        ApiResponse<ContributionScoreResponse> response = ApiResponse.success(
+                updatedScore,
+                "Contribution score adjusted successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @PutMapping("/projects/{projectId}/finalize")
@@ -249,35 +158,19 @@ public class ContributionScoreController {
     @Operation(summary = "Finalize all contribution scores for a project",
                description = "Marks all contribution scores for a project as final. Restricted to instructors and admins.")
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> finalizeScores(@PathVariable Long projectId) {
-        try {
-            List<ContributionScoreResponse> finalizedScores = contributionScoreService.finalizeScores(projectId);
-            
-            // Add metadata
-            Map<String, Object> metadata = new HashMap<>();
-            metadata.put("count", finalizedScores.size());
-            
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
-                    finalizedScores,
-                    "Contribution scores finalized successfully",
-                    metadata
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (ResourceNotFoundException e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        List<ContributionScoreResponse> finalizedScores = contributionScoreService.finalizeScores(projectId);
+        
+        // Add metadata
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("count", finalizedScores.size());
+        
+        ApiResponse<List<ContributionScoreResponse>> response = ApiResponse.success(
+                finalizedScores,
+                "Contribution scores finalized successfully",
+                metadata
+        );
+        
+        return ResponseEntity.ok(response);
     }
     
     /**

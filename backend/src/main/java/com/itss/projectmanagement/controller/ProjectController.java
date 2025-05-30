@@ -14,8 +14,9 @@ import com.itss.projectmanagement.dto.response.project.ProjectDTO;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.dto.response.project.ProjectStatisticsDTO;
 import com.itss.projectmanagement.dto.response.report.ProjectReportDTO;
-import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.exception.ForbiddenException;
+import com.itss.projectmanagement.exception.NotFoundException;
 import com.itss.projectmanagement.service.IChartService;
 import com.itss.projectmanagement.service.IProjectService;
 import com.itss.projectmanagement.service.IReportService;
@@ -47,7 +48,6 @@ import java.util.stream.Collectors;
 @Tag(name = "Project Management", description = "APIs for managing projects")
 public class ProjectController {
     private final IProjectService projectService;
-    private final ProjectConverter projectConverter;
     private final UserConverter userConverter;
     private final IChartService chartService;
     private final IReportService reportService;
@@ -128,13 +128,7 @@ public class ProjectController {
                     );
                     return ResponseEntity.ok(response);
                 })
-                .orElseGet(() -> {
-                    ApiResponse<ProjectDTO> response = ApiResponse.error(
-                            "Project not found with id: " + id,
-                            HttpStatus.NOT_FOUND
-                    );
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                });
+                .orElseThrow(() -> new NotFoundException("Project not found with id: " + id));
     }
 
     @Operation(summary = "Update project", description = "Updates an existing project")
@@ -149,30 +143,14 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectDTO>> updateProject(
             @Parameter(description = "ID of the project to update") @PathVariable Long id,
             @Valid @RequestBody ProjectCreateRequest request) {
-        try {
-            ProjectDTO projectDTO = projectService.updateProject(id, request);
+        ProjectDTO projectDTO = projectService.updateProject(id, request);
 
-            ApiResponse<ProjectDTO> response = ApiResponse.success(
-                    projectDTO,
-                    "Project updated successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status;
-            if (e.getMessage().contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            } else {
-                status = HttpStatus.FORBIDDEN;
-            }
-            
-            ApiResponse<ProjectDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        ApiResponse<ProjectDTO> response = ApiResponse.success(
+                projectDTO,
+                "Project updated successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Delete project", description = "Deletes an existing project")
@@ -185,30 +163,14 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     public ResponseEntity<ApiResponse<Void>> deleteProject(
             @Parameter(description = "ID of the project to delete") @PathVariable Long id) {
-        try {
-            projectService.deleteProject(id);
-            
-            ApiResponse<Void> response = ApiResponse.success(
-                    null,
-                    "Project deleted successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status;
-            if (e.getMessage().contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            } else {
-                status = HttpStatus.FORBIDDEN;
-            }
-            
-            ApiResponse<Void> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        projectService.deleteProject(id);
+        
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                "Project deleted successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Update pressure score configuration", description = "Updates the pressure score configuration for a project")
@@ -225,30 +187,14 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProjectDTO>> updatePressureScoreConfig(
             @Parameter(description = "ID of the project to update") @PathVariable Long id,
             @Valid @RequestBody PressureScoreConfigRequest request) {
-        try {
-            ProjectDTO projectDTO = projectService.updatePressureScoreConfig(id, request);
+        ProjectDTO projectDTO = projectService.updatePressureScoreConfig(id, request);
 
-            ApiResponse<ProjectDTO> response = ApiResponse.success(
-                    projectDTO,
-                    "Pressure score configuration updated successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status;
-            if (e.getMessage().contains("not found")) {
-                status = HttpStatus.NOT_FOUND;
-            } else {
-                status = HttpStatus.FORBIDDEN;
-            }
-            
-            ApiResponse<ProjectDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        ApiResponse<ProjectDTO> response = ApiResponse.success(
+                projectDTO,
+                "Pressure score configuration updated successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get commit count chart data", description = "Retrieves commit count chart data for a project")
@@ -261,32 +207,19 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<CommitCountChartDTO>> getCommitCountChart(
             @Parameter(description = "ID of the project") @PathVariable Long id,
             @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
-        try {
-            // Check if the student is a leader of any group in this project
-            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-                ApiResponse<CommitCountChartDTO> response = ApiResponse.error(
-                        "Only group leaders or instructors can access this chart data",
-                        HttpStatus.FORBIDDEN
-                );
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
-            
-            CommitCountChartDTO chartData = chartService.getCommitCountChart(id, rangeType);
-            
-            ApiResponse<CommitCountChartDTO> response = ApiResponse.success(
-                    chartData,
-                    "Commit count chart data retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ApiResponse<CommitCountChartDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        // Check if the student is a leader of any group in this project
+        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+            throw new ForbiddenException("Only group leaders or instructors can access this chart data");
         }
+        
+        CommitCountChartDTO chartData = chartService.getCommitCountChart(id, rangeType);
+        
+        ApiResponse<CommitCountChartDTO> response = ApiResponse.success(
+                chartData,
+                "Commit count chart data retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get progress timeline chart data", description = "Retrieves progress timeline chart data for a project")
@@ -299,32 +232,19 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ProgressTimelineChartDTO>> getProgressTimelineChart(
             @Parameter(description = "ID of the project") @PathVariable Long id,
             @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
-        try {
-            // Check if the student is a leader of any group in this project
-            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-                ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.error(
-                        "Only group leaders or instructors can access this chart data",
-                        HttpStatus.FORBIDDEN
-                );
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
-            
-            ProgressTimelineChartDTO chartData = chartService.getProgressTimelineChart(id, rangeType);
-            
-            ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.success(
-                    chartData,
-                    "Progress timeline chart data retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        // Check if the student is a leader of any group in this project
+        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+            throw new ForbiddenException("Only group leaders or instructors can access this chart data");
         }
+        
+        ProgressTimelineChartDTO chartData = chartService.getProgressTimelineChart(id, rangeType);
+        
+        ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.success(
+                chartData,
+                "Progress timeline chart data retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get contribution pie chart data", description = "Retrieves contribution percentage pie chart data for a project")
@@ -337,32 +257,19 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<ContributionPieChartDTO>> getContributionPieChart(
             @Parameter(description = "ID of the project") @PathVariable Long id,
             @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
-        try {
-            // Check if the student is a leader of any group in this project
-            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-                ApiResponse<ContributionPieChartDTO> response = ApiResponse.error(
-                        "Only group leaders or instructors can access this chart data",
-                        HttpStatus.FORBIDDEN
-                );
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
-            
-            ContributionPieChartDTO chartData = chartService.getContributionPieChart(id, rangeType);
-            
-            ApiResponse<ContributionPieChartDTO> response = ApiResponse.success(
-                    chartData,
-                    "Contribution pie chart data retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ApiResponse<ContributionPieChartDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        // Check if the student is a leader of any group in this project
+        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+            throw new ForbiddenException("Only group leaders or instructors can access this chart data");
         }
+        
+        ContributionPieChartDTO chartData = chartService.getContributionPieChart(id, rangeType);
+        
+        ApiResponse<ContributionPieChartDTO> response = ApiResponse.success(
+                chartData,
+                "Contribution pie chart data retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get project detailed report", description = "Retrieves detailed project report for instructor evaluation")
@@ -374,23 +281,14 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('INSTRUCTOR')")
     public ResponseEntity<ApiResponse<ProjectReportDTO>> getProjectReport(
             @Parameter(description = "ID of the project") @PathVariable Long id) {
-        try {
-            ProjectReportDTO reportData = reportService.getProjectReport(id);
-            
-            ApiResponse<ProjectReportDTO> response = ApiResponse.success(
-                    reportData,
-                    "Project detailed report retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ApiResponse<ProjectReportDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-        }
+        ProjectReportDTO reportData = reportService.getProjectReport(id);
+        
+        ApiResponse<ProjectReportDTO> response = ApiResponse.success(
+                reportData,
+                "Project detailed report retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get project statistics", description = "Retrieves detailed statistics for a project")
@@ -402,42 +300,25 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<ProjectStatisticsDTO>> getProjectStatistics(
             @Parameter(description = "ID of the project") @PathVariable Long id) {
-        try {
-            // Check if project exists
-            Optional<ProjectDTO> project = projectService.getProjectById(id);
-            if (project.isEmpty()) {
-                ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
-                        "Project not found with id: " + id,
-                        HttpStatus.NOT_FOUND
-                );
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
-
-            // Check if the student is a leader of any group in this project
-            if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-                ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
-                        "Only group leaders or instructors can access project statistics",
-                        HttpStatus.FORBIDDEN
-                );
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
-            
-            ProjectStatisticsDTO statistics = statisticsService.getProjectStatistics(id);
-            
-            ApiResponse<ProjectStatisticsDTO> response = ApiResponse.success(
-                    statistics,
-                    "Project statistics retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            ApiResponse<ProjectStatisticsDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+        // Check if project exists
+        Optional<ProjectDTO> project = projectService.getProjectById(id);
+        if (project.isEmpty()) {
+            throw new NotFoundException("Project not found with id: " + id);
         }
+
+        // Check if the student is a leader of any group in this project
+        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
+            throw new ForbiddenException("Only group leaders or instructors can access project statistics");
+        }
+        
+        ProjectStatisticsDTO statistics = statisticsService.getProjectStatistics(id);
+        
+        ApiResponse<ProjectStatisticsDTO> response = ApiResponse.success(
+                statistics,
+                "Project statistics retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Join project by access code", description = "Students can join a project using its access code")
@@ -449,23 +330,14 @@ public class ProjectController {
     @PostMapping("/join")
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<ProjectDTO>> joinProjectByAccessCode(@Valid @RequestBody ProjectAccessRequest request) {
-        try {
-            ProjectDTO projectDTO = projectService.joinProjectByAccessCode(request.getAccessCode());
+        ProjectDTO projectDTO = projectService.joinProjectByAccessCode(request.getAccessCode());
 
-            ApiResponse<ProjectDTO> response = ApiResponse.success(
-                    projectDTO,
-                    "Successfully joined project"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            ApiResponse<ProjectDTO> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.BAD_REQUEST
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+        ApiResponse<ProjectDTO> response = ApiResponse.success(
+                projectDTO,
+                "Successfully joined project"
+        );
+        
+        return ResponseEntity.ok(response);
     }
     
     @Operation(summary = "Invite students to project", description = "Instructors can invite students to their projects by username")
@@ -480,32 +352,20 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<List<String>>> inviteStudentsToProject(
             @Parameter(description = "ID of the project") @PathVariable Long id,
             @Valid @RequestBody ProjectInviteRequest request) {
-        try {
-            // Override the project ID from the path
-            request.setProjectId(id);
-            
-            List<User> invitedStudents = projectService.inviteStudentsToProject(id, request.getUsernames());
-            List<String> invitedUsernames = invitedStudents.stream()
-                    .map(User::getUsername)
-                    .collect(Collectors.toList());
-            
-            ApiResponse<List<String>> response = ApiResponse.success(
-                    invitedUsernames,
-                    "Students successfully invited to project"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status = e.getMessage().contains("not found") ? 
-                    HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
-            
-            ApiResponse<List<String>> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        // Override the project ID from the path
+        request.setProjectId(id);
+        
+        List<User> invitedStudents = projectService.inviteStudentsToProject(id, request.getUsernames());
+        List<String> invitedUsernames = invitedStudents.stream()
+                .map(User::getUsername)
+                .collect(Collectors.toList());
+        
+        ApiResponse<List<String>> response = ApiResponse.success(
+                invitedUsernames,
+                "Students successfully invited to project"
+        );
+        
+        return ResponseEntity.ok(response);
     }
     
     @Operation(summary = "Remove student from project", description = "Instructors can remove students from their projects")
@@ -520,26 +380,14 @@ public class ProjectController {
     public ResponseEntity<ApiResponse<Void>> removeStudentFromProject(
             @Parameter(description = "ID of the project") @PathVariable Long projectId,
             @Parameter(description = "ID of the student to remove") @PathVariable Long studentId) {
-        try {
-            projectService.removeStudentFromProject(projectId, studentId);
-            
-            ApiResponse<Void> response = ApiResponse.success(
-                    null,
-                    "Student successfully removed from project"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            HttpStatus status = e.getMessage().contains("not found") ? 
-                    HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
-            
-            ApiResponse<Void> response = ApiResponse.error(
-                    e.getMessage(),
-                    status
-            );
-            
-            return new ResponseEntity<>(response, status);
-        }
+        projectService.removeStudentFromProject(projectId, studentId);
+        
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                "Student successfully removed from project"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get QR code for project access", description = "Generates a QR code containing the project access code")
@@ -552,27 +400,21 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
     public ResponseEntity<byte[]> getProjectQRCode(
             @Parameter(description = "ID of the project") @PathVariable Long id) {
-        try {
-            // Get the project
-            ProjectDTO project = projectService.getProjectById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
-            
-            // Check if the current user has access to this project
-            if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-            
-            // Generate QR code
-            byte[] qrCodeImage = qrCodeGenerator.generateProjectAccessQRCode(project.getName(), project.getAccessCode());
-            
-            return ResponseEntity.ok()
-                    .header("Content-Disposition", "inline; filename=project-" + id + "-qrcode.png")
-                    .body(qrCodeImage);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        // Get the project
+        ProjectDTO project = projectService.getProjectById(id)
+                .orElseThrow(() -> new NotFoundException("Project not found with id: " + id));
+        
+        // Check if the current user has access to this project
+        if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
+            throw new ForbiddenException("You don't have permission to access this project's QR code");
         }
+        
+        // Generate QR code
+        byte[] qrCodeImage = qrCodeGenerator.generateProjectAccessQRCode(project.getName(), project.getAccessCode());
+        
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "inline; filename=project-" + id + "-qrcode.png")
+                .body(qrCodeImage);
     }
     
     @Operation(summary = "Get project access code", description = "Gets the access code for a project")
@@ -585,34 +427,21 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<String>> getProjectAccessCode(
             @Parameter(description = "ID of the project") @PathVariable Long id) {
-        try {
-            // Get the project
-            ProjectDTO project = projectService.getProjectById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
-            
-            // Check if the current user has access to this project
-            if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
-                ApiResponse<String> response = ApiResponse.error(
-                        "You don't have permission to access this project's access code",
-                        HttpStatus.FORBIDDEN
-                );
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
-            
-            ApiResponse<String> response = ApiResponse.success(
-                    project.getAccessCode(),
-                    "Project access code retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<String> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        // Get the project
+        ProjectDTO project = projectService.getProjectById(id)
+                .orElseThrow(() -> new NotFoundException("Project not found with id: " + id));
+        
+        // Check if the current user has access to this project
+        if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
+            throw new ForbiddenException("You don't have permission to access this project's access code");
         }
+        
+        ApiResponse<String> response = ApiResponse.success(
+                project.getAccessCode(),
+                "Project access code retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get students in a project", description = "Returns all students invited to a project")
@@ -625,39 +454,26 @@ public class ProjectController {
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<List<UserDTO>>> getProjectStudents(
             @Parameter(description = "ID of the project") @PathVariable Long id) {
-        try {
-            // Get the project
-            ProjectDTO project = projectService.getProjectById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + id));
-            
-            // Check if the current user has access to this project (either admin or project instructor)
-            if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
-                ApiResponse<List<UserDTO>> response = ApiResponse.error(
-                        "You don't have permission to access this project's students",
-                        HttpStatus.FORBIDDEN
-                );
-                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-            }
-            
-            // Get students
-            List<User> students = projectService.getProjectStudents(id);
-            List<UserDTO> studentDTOs = students.stream()
-                    .map(userConverter::toDTO)
-                    .collect(Collectors.toList());
-            
-            ApiResponse<List<UserDTO>> response = ApiResponse.success(
-                    studentDTOs,
-                    "Project students retrieved successfully"
-            );
-            
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            ApiResponse<List<UserDTO>> response = ApiResponse.error(
-                    e.getMessage(),
-                    HttpStatus.NOT_FOUND
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+        // Get the project
+        ProjectDTO project = projectService.getProjectById(id)
+                .orElseThrow(() -> new NotFoundException("Project not found with id: " + id));
+        
+        // Check if the current user has access to this project (either admin or project instructor)
+        if (!SecurityUtils.isAdmin() && !project.getInstructor().getId().equals(SecurityUtils.getCurrentUser().getId())) {
+            throw new ForbiddenException("You don't have permission to access this project's students");
         }
+        
+        // Get students
+        List<User> students = projectService.getProjectStudents(id);
+        List<UserDTO> studentDTOs = students.stream()
+                .map(userConverter::toDTO)
+                .collect(Collectors.toList());
+        
+        ApiResponse<List<UserDTO>> response = ApiResponse.success(
+                studentDTOs,
+                "Project students retrieved successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 }

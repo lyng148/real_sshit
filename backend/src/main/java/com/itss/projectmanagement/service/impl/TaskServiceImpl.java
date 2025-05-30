@@ -16,6 +16,7 @@ import com.itss.projectmanagement.service.INotificationService;
 import com.itss.projectmanagement.service.ITaskService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TaskServiceImpl implements ITaskService {
 
     private final TaskRepository taskRepository;
@@ -237,49 +239,73 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public double calculatePressureScore(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
         
-        // Get all incomplete tasks assigned to the user
-        List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
-        incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
-        
-        double totalPressureScore = 0.0;
-        LocalDate currentDate = LocalDate.now();
-        
-        for (Task task : incompleteTasks) {
-            // Step 1: Get Difficulty Weight (DW)
-            int difficultyWeight = task.getDifficulty().getValue();
+        try {
+            // Get all incomplete tasks assigned to the user
+            List<Task> incompleteTasks = taskRepository.findByAssigneeAndStatus(user, TaskStatus.NOT_STARTED);
+            incompleteTasks.addAll(taskRepository.findByAssigneeAndStatus(user, TaskStatus.IN_PROGRESS));
             
-            // Step 2: Calculate Time Urgency Factor (TUF)
-            double timeUrgencyFactor;
+            double totalPressureScore = 0.0;
+            LocalDate currentDate = LocalDate.now();
             
-            long daysRemaining = java.time.temporal.ChronoUnit.DAYS.between(currentDate, task.getDeadline());
-            
-            if (daysRemaining < 0) {
-                // Task is overdue
-                timeUrgencyFactor = 3.5;
-            } else if (daysRemaining <= 1) {
-                // Due today or tomorrow
-                timeUrgencyFactor = 3.0;
-            } else if (daysRemaining <= 3) {
-                // Due within 3 days
-                timeUrgencyFactor = 2.0;
-            } else if (daysRemaining <= 7) {
-                // Due within a week
-                timeUrgencyFactor = 1.5;
-            } else {
-                // More than a week away
-                timeUrgencyFactor = 1.0;
+            for (Task task : incompleteTasks) {
+                try {
+                    // Validate task data
+                    if (task.getDifficulty() == null) {
+                        log.warn("Task ID {} has null difficulty, skipping", task.getId());
+                        continue;
+                    }
+                    if (task.getDeadline() == null) {
+                        log.warn("Task ID {} has null deadline, skipping", task.getId());
+                        continue;
+                    }
+                    
+                    // Step 1: Get Difficulty Weight (DW)
+                    int difficultyWeight = task.getDifficulty().getValue();
+                    
+                    // Step 2: Calculate Time Urgency Factor (TUF)
+                    double timeUrgencyFactor;
+                    
+                    long daysRemaining = java.time.temporal.ChronoUnit.DAYS.between(currentDate, task.getDeadline());
+                    
+                    if (daysRemaining < 0) {
+                        // Task is overdue
+                        timeUrgencyFactor = 3.5;
+                    } else if (daysRemaining <= 1) {
+                        // Due today or tomorrow
+                        timeUrgencyFactor = 3.0;
+                    } else if (daysRemaining <= 3) {
+                        // Due within 3 days
+                        timeUrgencyFactor = 2.0;
+                    } else if (daysRemaining <= 7) {
+                        // Due within a week
+                        timeUrgencyFactor = 1.5;
+                    } else {
+                        // More than a week away
+                        timeUrgencyFactor = 1.0;
+                    }
+                    
+                    // Step 3: Calculate Task Pressure Score (TPS)
+                    double taskPressureScore = difficultyWeight * timeUrgencyFactor;
+                    
+                    // Add to total
+                    totalPressureScore += taskPressureScore;
+                } catch (Exception e) {
+                    log.error("Error calculating pressure score for task ID {}: {}", task.getId(), e.getMessage());
+                    // Continue with other tasks instead of failing completely
+                }
             }
             
-            // Step 3: Calculate Task Pressure Score (TPS)
-            double taskPressureScore = difficultyWeight * timeUrgencyFactor;
-            
-            // Add to total
-            totalPressureScore += taskPressureScore;
+            return totalPressureScore;
+        } catch (Exception e) {
+            log.error("Error calculating pressure score for user {}: {}", userId, e.getMessage());
+            throw new RuntimeException("Failed to calculate pressure score for user: " + userId, e);
         }
-        
-        return totalPressureScore;
     }
 }

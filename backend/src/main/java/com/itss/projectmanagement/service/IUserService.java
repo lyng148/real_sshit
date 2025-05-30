@@ -1,5 +1,6 @@
 package com.itss.projectmanagement.service;
 
+import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.entity.User;
 
 import java.util.List;
@@ -8,6 +9,16 @@ import java.util.Optional;
 
 public interface IUserService {
     List<User> getAllUsers();
+
+    /**
+     * Get all users with pagination
+     * @param page the page number
+     * @param size the page size
+     * @param sortBy the field to sort by
+     * @param sortDirection the sort direction (ASC or DESC)
+     * @return paginated list of users
+     */
+    PaginationResponse<User> getAllUsersPaginated(int page, int size, String sortBy, String sortDirection);
 
     Optional<User> getUserById(Long id);
 

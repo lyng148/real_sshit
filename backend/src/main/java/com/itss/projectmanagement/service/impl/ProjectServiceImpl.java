@@ -16,6 +16,7 @@ import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.service.IProjectService;
 import com.itss.projectmanagement.service.IUserService;
 import com.itss.projectmanagement.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class ProjectServiceImpl implements IProjectService {    
     @Autowired
     private ProjectRepository projectRepository;
@@ -188,15 +190,34 @@ public class ProjectServiceImpl implements IProjectService {
      * @return True if the user is a leader of any group in the project, false otherwise
      */
     public boolean isUserGroupLeaderInProject(Long projectId) {
-        User currentUser = getCurrentUser();
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
+        if (projectId == null) {
+            log.warn("Project ID is null in isUserGroupLeaderInProject");
+            return false;
+        }
+        
+        try {
+            User currentUser = getCurrentUser();
+            if (currentUser == null) {
+                log.warn("Current user is null in isUserGroupLeaderInProject");
+                return false;
+            }
+            
+            Project project = projectRepository.findById(projectId)
+                    .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
 
-        List<Group> projectGroups = groupRepository.findByProject(project);
+            List<Group> projectGroups = groupRepository.findByProject(project);
+            if (projectGroups.isEmpty()) {
+                log.debug("No groups found for project {}", projectId);
+                return false;
+            }
 
-        return projectGroups.stream()
-                .anyMatch(group -> group.getLeader() != null &&
-                        Objects.equals(group.getLeader().getId(), currentUser.getId()));
+            return projectGroups.stream()
+                    .anyMatch(group -> group.getLeader() != null &&
+                            Objects.equals(group.getLeader().getId(), currentUser.getId()));
+        } catch (Exception e) {
+            log.error("Error checking if user is group leader in project {}: {}", projectId, e.getMessage());
+            return false;
+        }
     }
 
     /**

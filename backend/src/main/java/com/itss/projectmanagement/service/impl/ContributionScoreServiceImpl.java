@@ -187,24 +187,6 @@ public class ContributionScoreServiceImpl implements IContributionScoreService {
     }
     
     /**
-     * Convert the contribution score to an integer scale (0-100)
-     * This normalizes scores that could have different ranges based on project weights
-     */
-    private int convertScoreToIntegerScale(Double score) {
-        if (score == null) return 0;
-        
-        // For scores below zero, return minimum score (likely due to many late tasks)
-        if (score < 0) return 0;
-        
-        // Cap at 100 for very high scores
-        // Typical scores might be in 0-50 range depending on project weights
-        // Using 50 as a typical "excellent" score to map to 100
-        double normalizedScore = Math.min(100, (score / 50.0) * 100);
-        
-        return (int) Math.round(normalizedScore);
-    }
-    
-    /**
      * Calculate weighted task completion score based on difficulty level
      */
     private Double calculateWeightedTaskCompletionScore(User user, Project project) {

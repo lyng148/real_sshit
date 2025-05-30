@@ -1,0 +1,114 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+description: This rule set provides comprehensive best practices and coding standards for developing robust and maintainable Java backend applications using the Spring Boot framework. It focuses on code structure, performance, security, and testing.
+globs: *.java
+---
+
+- **Code Organization and Structure**
+  - **Directory Structure Best Practices**
+    - **Layered Architecture:** Organize code into layers: `controller`, `service`, `service/impl`, `repository`, `model`, `dto`, `configuration`, and `exception`. This provides clear separation of concerns.
+      - Service interfaces should be prefixed with `I` (e.g., `IOrderService`).
+      - Implementations should be placed in an `impl/` subfolder and class names should end with `Impl` (e.g., `OrderServiceImpl`).
+
+      Example:
+      ```
+      src/
+      └── main/
+          └── java/
+              └── com/example/app/
+                  ├── controller/
+                  │   └── OrderController.java
+                  ├── service/
+                  │   ├── IOrderService.java
+                  │   └── impl/
+                  │       └── OrderServiceImpl.java
+                  ├── repository/
+                  │   └── OrderRepository.java
+                  ├── model/
+                  │   └── Order.java
+                  ├── dto/
+                  │   ├── request/
+                  │   │   └── OrderRequestDTO.java
+                  │   ├── response/
+                  │   │   └── OrderResponseDTO.java
+                  │   └── common/
+                  │       └── PagingInfoDTO.java
+                  ├── configuration/
+                  │   └── AppConfig.java
+                  └── exception/
+                      └── OrderNotFoundException.java
+      ```
+
+  - **Data Transfer Objects (DTOs):**  
+    Use DTOs for request and response payloads to decouple internal domain models from external API contracts. Organize DTOs by responsibility:
+    
+    - `request/` – For incoming API payloads.
+    - `response/` – For outgoing API responses.
+    - `common/` – For shared or reusable DTOs (e.g., pagination, metadata).
+
+    **Best Practices:**
+    - Suffix DTOs with `DTO`: e.g., `OrderRequestDTO`, `OrderResponseDTO`.
+    - Keep DTOs in a `dto/` package, organized by subfolder.
+    - Do not expose JPA entities directly in controller or service layers.
+    - Use mappers (e.g., MapStruct, ModelMapper) to convert between DTOs and domain models.
+    - Use `@Valid` + JSR-303 annotations in request DTOs for validation.
+
+    **Example Controller Usage:**
+    ```java
+    @PostMapping("/orders")
+    public ResponseEntity<OrderResponseDTO> createOrder(@Valid @RequestBody OrderRequestDTO dto) {
+        OrderResponseDTO response = orderService.createOrder(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+    ```
+
+  - **File Naming Conventions**
+    - Classes: `PascalCase` (e.g., `OrderService`, `ProductController`)
+    - Interfaces: Prefix with `I` (e.g., `IOrderService`)
+    - Variables/Methods: `camelCase`
+    - Constants: `UPPER_SNAKE_CASE`
+
+  - **Modular Organization**
+    - Modular monolith preferred for mid-size systems.
+    - Use microservices when necessary—e.g., `OrderService`, `CustomerService`.
+
+  - **Component Responsibilities**
+    - **Controller**: HTTP handling only.
+    - **Service**: Business logic.
+    - **Repository**: Database access.
+    - **DTO**: API contract (never expose domain model).
+
+  - **Code Splitting**
+    - By **feature** or **layer** for scalability.
+
+- **Design Patterns and Anti-Patterns**
+  - Constructor injection over field injection.
+  - Use AOP for logging/security/transactions.
+  - Avoid God objects, long methods, magic numbers, tight coupling.
+
+- **Performance**
+  - Enable caching, lazy loading, and use `@Async` where appropriate.
+  - Use connection pooling (e.g., HikariCP).
+
+- **Security**
+  - Use Spring Security and JSR-303 validations.
+  - Encrypt sensitive data, hash passwords.
+  - Protect against CSRF/XSS/SQLi.
+
+- **Testing**
+  - JUnit & Mockito for unit tests.
+  - `@SpringBootTest`, `TestRestTemplate` for integration tests.
+  - Organize tests by module/component.
+
+- **Tooling**
+  - Use Checkstyle, PMD, SpotBugs.
+  - Integrate CI/CD via GitHub Actions, Jenkins, GitLab CI.
+  - Containerize with Docker.
+
+- **Additional**
+  - Use Spring Boot DevTools and Actuator for local development and monitoring.
+  - Stay up to date with Spring Boot releases and breaking changes.
+

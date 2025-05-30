@@ -2,10 +2,13 @@ package com.itss.projectmanagement.controller;
 
 import com.itss.projectmanagement.converter.UserConverter;
 import com.itss.projectmanagement.dto.common.ApiResponse;
+import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.dto.request.user.RoleAssignmentRequest;
 import com.itss.projectmanagement.dto.response.user.RoleAssignmentResponse;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.exception.ForbiddenException;
+import com.itss.projectmanagement.exception.NotFoundException;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import com.itss.projectmanagement.service.IUserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,6 +63,39 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "Get all users with pagination", description = "Retrieves a list of all users with pagination support")
+    @ApiResponses(value = {
+            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved list of users with pagination",
+                    content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = UserDTO.class)))
+    })
+    @GetMapping("/paginated")
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
+    public ResponseEntity<ApiResponse<PaginationResponse<UserDTO>>> getAllUsersPaginated(
+            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "Sort field") @RequestParam(defaultValue = "fullName") String sortBy,
+            @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(defaultValue = "ASC") String sortDirection) {
+        
+        PaginationResponse<User> userPaginationResponse = userService.getAllUsersPaginated(page, size, sortBy, sortDirection);
+        
+        // Convert Users to UserDTOs
+        List<UserDTO> userDTOs = userConverter.toDTO(userPaginationResponse.getContent());
+        
+        // Create new pagination response with DTOs
+        PaginationResponse<UserDTO> paginationResponse = PaginationResponse.<UserDTO>builder()
+                .content(userDTOs)
+                .pagination(userPaginationResponse.getPagination())
+                .build();
+        
+        ApiResponse<PaginationResponse<UserDTO>> response = ApiResponse.success(
+                paginationResponse,
+                "Users retrieved successfully with pagination"
+        );
+        
+        return ResponseEntity.ok(response);
+    }
+
     @Operation(summary = "Get user by ID", description = "Retrieves a user by their ID")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User found"),
@@ -71,29 +107,18 @@ public class UserController {
             @Parameter(description = "ID of the user to retrieve") @PathVariable Long id) {
         // Check if the user is the current user
         if (!SecurityUtils.isAdmin() && !SecurityUtils.isCurrentUser(id) && !SecurityUtils.isInstructor()) {
-            ApiResponse<UserDTO> response = ApiResponse.error(
-                    "Access denied",
-                    HttpStatus.FORBIDDEN
-            );
-            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Access denied");
         }
 
-        return userService.getUserById(id)
-                .map(user -> {
-                    UserDTO userDTO = userConverter.toDTO(user);
-                    ApiResponse<UserDTO> response = ApiResponse.success(
-                            userDTO,
-                            "User retrieved successfully"
-                    );
-                    return ResponseEntity.ok(response);
-                })
-                .orElseGet(() -> {
-                    ApiResponse<UserDTO> response = ApiResponse.error(
-                            "User not found with id: " + id,
-                            HttpStatus.NOT_FOUND
-                    );
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                });
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
+        
+        UserDTO userDTO = userConverter.toDTO(user);
+        ApiResponse<UserDTO> response = ApiResponse.success(
+                userDTO,
+                "User retrieved successfully"
+        );
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Get user by username", description = "Retrieves a user by their username")
@@ -104,22 +129,15 @@ public class UserController {
     @GetMapping("/username/{username}")
     public ResponseEntity<ApiResponse<UserDTO>> getUserByUsername(
             @Parameter(description = "Username of the user to retrieve") @PathVariable String username) {
-        return userService.getUserByUsername(username)
-                .map(user -> {
-                    UserDTO userDTO = userConverter.toDTO(user);
-                    ApiResponse<UserDTO> response = ApiResponse.success(
-                            userDTO,
-                            "User retrieved successfully"
-                    );
-                    return ResponseEntity.ok(response);
-                })
-                .orElseGet(() -> {
-                    ApiResponse<UserDTO> response = ApiResponse.error(
-                            "User not found with username: " + username,
-                            HttpStatus.NOT_FOUND
-                    );
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                });
+        User user = userService.getUserByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
+        
+        UserDTO userDTO = userConverter.toDTO(user);
+        ApiResponse<UserDTO> response = ApiResponse.success(
+                userDTO,
+                "User retrieved successfully"
+        );
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Create a new user", description = "Creates a new user in the system")
@@ -153,54 +171,44 @@ public class UserController {
             @RequestBody User userRequest) {
         // Check if the user is the current user
         if (!SecurityUtils.isAdmin() && !SecurityUtils.isCurrentUser(id)) {
-            ApiResponse<UserDTO> response = ApiResponse.error(
-                    "Access denied",
-                    HttpStatus.FORBIDDEN
-            );
-            return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            throw new ForbiddenException("Access denied");
         }
 
-        return userService.getUserById(id)
-                .map(existingUser -> {
-                    // Only update fields that are provided in the request
-                    if (userRequest.getUsername() != null) {
-                        existingUser.setUsername(userRequest.getUsername());
-                    }
-                    if (userRequest.getFullName() != null) {
-                        existingUser.setFullName(userRequest.getFullName());
-                    }                    if (userRequest.getEmail() != null) {
-                        existingUser.setEmail(userRequest.getEmail());
-                    }
-                    if (userRequest.getRoles() != null) {
-                        existingUser.setRoles(userRequest.getRoles());
-                    }
-                    if (userRequest.getPassword() != null) {
-                        // Password will be encoded in the service
-                        existingUser.setPassword(userRequest.getPassword());
-                    }
-                    if (userRequest.getAvatarUrl() != null) {
-                        existingUser.setAvatarUrl(userRequest.getAvatarUrl());
-                    }
-                    // Update enabled status if explicitly set in the request
-                    existingUser.setEnabled(userRequest.isEnabled());
-                    
-                    User updatedUser = userService.updateUser(existingUser);
-                    UserDTO userDTO = userConverter.toDTO(updatedUser);
-                    
-                    ApiResponse<UserDTO> response = ApiResponse.success(
-                            userDTO,
-                            "User updated successfully"
-                    );
-                    
-                    return ResponseEntity.ok(response);
-                })
-                .orElseGet(() -> {
-                    ApiResponse<UserDTO> response = ApiResponse.error(
-                            "User not found with id: " + id,
-                            HttpStatus.NOT_FOUND
-                    );
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                });
+        User existingUser = userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
+        
+        // Only update fields that are provided in the request
+        if (userRequest.getUsername() != null) {
+            existingUser.setUsername(userRequest.getUsername());
+        }
+        if (userRequest.getFullName() != null) {
+            existingUser.setFullName(userRequest.getFullName());
+        }
+        if (userRequest.getEmail() != null) {
+            existingUser.setEmail(userRequest.getEmail());
+        }
+        if (userRequest.getRoles() != null) {
+            existingUser.setRoles(userRequest.getRoles());
+        }
+        if (userRequest.getPassword() != null) {
+            // Password will be encoded in the service
+            existingUser.setPassword(userRequest.getPassword());
+        }
+        if (userRequest.getAvatarUrl() != null) {
+            existingUser.setAvatarUrl(userRequest.getAvatarUrl());
+        }
+        // Update enabled status if explicitly set in the request
+        existingUser.setEnabled(userRequest.isEnabled());
+        
+        User updatedUser = userService.updateUser(existingUser);
+        UserDTO userDTO = userConverter.toDTO(updatedUser);
+        
+        ApiResponse<UserDTO> response = ApiResponse.success(
+                userDTO,
+                "User updated successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Delete a user", description = "Deletes a user from the system")
@@ -212,24 +220,17 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @Parameter(description = "ID of the user to delete") @PathVariable Long id) {
-        return userService.getUserById(id)
-                .map(user -> {
-                    userService.deleteUser(id);
-                    
-                    ApiResponse<Void> response = ApiResponse.success(
-                            null,
-                            "User deleted successfully"
-                    );
-                    
-                    return ResponseEntity.ok(response);
-                })
-                .orElseGet(() -> {
-                    ApiResponse<Void> response = ApiResponse.error(
-                            "User not found with id: " + id,
-                            HttpStatus.NOT_FOUND
-                    );
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                });
+        User user = userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
+        
+        userService.deleteUser(id);
+        
+        ApiResponse<Void> response = ApiResponse.success(
+                null,
+                "User deleted successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "Assign roles to a user", description = "Updates the roles assigned to a user. Only admins can perform this operation.")
@@ -245,39 +246,24 @@ public class UserController {
             @Parameter(description = "ID of the user to update roles") @PathVariable Long id,
             @Valid @RequestBody RoleAssignmentRequest request) {
         
-        return userService.getUserById(id)
-                .map(existingUser -> {
-                    existingUser.setRoles(request.getRoles());
-                    User updatedUser = userService.updateUser(existingUser);
-                    
-                    RoleAssignmentResponse roleResponse = new RoleAssignmentResponse(
-                            updatedUser.getId(),
-                            updatedUser.getUsername(),
-                            updatedUser.getRoles(),
-                            "Roles assigned successfully"
-                    );
-                    
-                    ApiResponse<RoleAssignmentResponse> response = ApiResponse.success(
-                            roleResponse,
-                            "Roles assigned successfully"
-                    );
-                    
-                    return ResponseEntity.ok(response);
-                })
-                .orElseGet(() -> {
-                    RoleAssignmentResponse roleResponse = new RoleAssignmentResponse(
-                            id,
-                            null,
-                            null,
-                            "User not found"
-                    );
-                    
-                    ApiResponse<RoleAssignmentResponse> response = ApiResponse.error(
-                            "User not found with id: " + id,
-                            HttpStatus.NOT_FOUND
-                    );
-                    
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                });
+        User existingUser = userService.getUserById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
+        
+        existingUser.setRoles(request.getRoles());
+        User updatedUser = userService.updateUser(existingUser);
+        
+        RoleAssignmentResponse roleResponse = new RoleAssignmentResponse(
+                updatedUser.getId(),
+                updatedUser.getUsername(),
+                updatedUser.getRoles(),
+                "Roles assigned successfully"
+        );
+        
+        ApiResponse<RoleAssignmentResponse> response = ApiResponse.success(
+                roleResponse,
+                "Roles assigned successfully"
+        );
+        
+        return ResponseEntity.ok(response);
     }
 }

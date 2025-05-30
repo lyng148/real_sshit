@@ -1,6 +1,7 @@
 package com.itss.projectmanagement.service.impl;
 
 import com.itss.projectmanagement.converter.GroupConverter;
+import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
@@ -16,6 +17,10 @@ import com.itss.projectmanagement.utils.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -183,6 +188,82 @@ public class GroupServiceImpl implements IGroupService {
                 .filter(group -> group.getProject().getId().equals(projectId))
                 .collect(Collectors.toList());
         return groupConverter.toDTO(groups);
+    }
+
+    /**
+     * Get all groups for a project with pagination
+     * @param projectId the project ID
+     * @param page the page number
+     * @param size the page size
+     * @param sortBy the field to sort by
+     * @param sortDirection the sort direction (ASC or DESC)
+     * @return paginated list of groups
+     */
+    @Override
+    public PaginationResponse<GroupDTO> getProjectGroupsPaginated(Long projectId, int page, int size, String sortBy, String sortDirection) {
+        Project project = projectRepository.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
+
+        // Create sort direction
+        Sort.Direction direction = "DESC".equalsIgnoreCase(sortDirection) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        // Default sort by name if not specified
+        if (sortBy == null || sortBy.trim().isEmpty()) {
+            sortBy = "name";
+        }
+        
+        // Create pageable
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        
+        Page<Group> groupPage;
+        
+        // Admin and instructor can see all groups
+        if (SecurityUtils.hasAnyRole(Role.ADMIN, Role.INSTRUCTOR)) {
+            groupPage = groupRepository.findByProject(project, pageable);
+        } else {
+            // Students can see all groups if they haven't joined any group for this project
+            User currentUser = SecurityUtils.getCurrentUser();
+            boolean isUserInAnyGroupForThisProject = groupRepository.isUserInAnyGroupForProject(currentUser, project);
+
+            if (!isUserInAnyGroupForThisProject) {
+                // Student hasn't joined any group for this project, show all groups
+                groupPage = groupRepository.findByProject(project, pageable);
+            } else {
+                // Otherwise, students can only see groups they are part of
+                groupPage = groupRepository.findByMember(currentUser, pageable);
+                // Filter by project ID
+                List<Group> filteredGroups = groupPage.getContent().stream()
+                        .filter(group -> group.getProject().getId().equals(projectId))
+                        .collect(Collectors.toList());
+                
+                // Create a new page with filtered content
+                groupPage = new org.springframework.data.domain.PageImpl<>(
+                    filteredGroups, 
+                    pageable, 
+                    filteredGroups.size()
+                );
+            }
+        }
+        
+        // Convert to DTOs
+        List<GroupDTO> groupDTOs = groupConverter.toDTO(groupPage.getContent());
+        
+        // Create pagination metadata
+        PaginationResponse.PaginationMeta meta = PaginationResponse.PaginationMeta.builder()
+                .page(groupPage.getNumber())
+                .size(groupPage.getSize())
+                .totalElements(groupPage.getTotalElements())
+                .totalPages(groupPage.getTotalPages())
+                .hasNext(groupPage.hasNext())
+                .hasPrevious(groupPage.hasPrevious())
+                .isFirst(groupPage.isFirst())
+                .isLast(groupPage.isLast())
+                .build();
+        
+        return PaginationResponse.<GroupDTO>builder()
+                .content(groupDTOs)
+                .pagination(meta)
+                .build();
     }
 
     /**

@@ -74,30 +74,20 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input or username/email already exists")
     })
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        try {
-            User user = userService.register(
-                    registerRequest.getUsername(),
-                    registerRequest.getPassword(),
-                    registerRequest.getFullName(),
-                    registerRequest.getEmail()
-            );
-            
-            RegisterResponse response = new RegisterResponse(
-                    "User registered successfully",
-                    true,
-                    user.getUsername()
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            RegisterResponse response = new RegisterResponse(
-                    e.getMessage(),
-                    false,
-                    null
-            );
-            
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<RegisterResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+        User user = userService.register(
+                registerRequest.getUsername(),
+                registerRequest.getPassword(),
+                registerRequest.getFullName(),
+                registerRequest.getEmail()
+        );
+        
+        RegisterResponse response = new RegisterResponse(
+                "User registered successfully",
+                true,
+                user.getUsername()
+        );
+        
+        return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
 }
