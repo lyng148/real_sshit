@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -103,8 +102,8 @@ const UserEdit = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+    <div>
+      
       <div className="flex-1 overflow-auto p-6">
         <h1 className="text-2xl font-bold mb-4">Edit User</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -189,3 +188,4 @@ const UserEdit = () => {
 };
 
 export default UserEdit;
+

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -193,8 +192,8 @@ const GroupAnalyzePage: React.FC = () => {
     contribution: member.contributionScore  })) || [];
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+    <div>
+      
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-6 flex items-center gap-4">
@@ -743,3 +742,4 @@ const GroupAnalyzePage: React.FC = () => {
 };
 
 export default GroupAnalyzePage;
+

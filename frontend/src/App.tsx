@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import Layout from "@/components/Layout";
 import Index from "./pages/Index";
 import Settings from "./pages/settings/Settings";
 import Profile from "./pages/user/Profile";
@@ -36,127 +37,176 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <NotificationProvider>        <TooltipProvider>
+      <NotificationProvider>
+        <TooltipProvider>
           <Toaster />
           <Sonner />
           <BrowserRouter>
-          <Routes>
-            <Route path="/dashboard" element={
-              <ProtectedRoute>
-                <Index />
-              </ProtectedRoute>
-            } />
-            <Route path="/settings" element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            } />
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin" element={
-              <ProtectedRoute roles={["ADMIN"]}>
-                <Admin />
-              </ProtectedRoute>
-            } />
-            {/* User Management Routes */}
-            <Route path="/admin/users" element={
-              <ProtectedRoute roles={["ADMIN"]}>
-                <UserManagement />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users/create" element={
-              <ProtectedRoute roles={["ADMIN"]}>
-                <UserCreate />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users/:id" element={
-              <ProtectedRoute roles={["ADMIN"]}>
-                <UserDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/users/:id/edit" element={
-              <ProtectedRoute roles={["ADMIN"]}>
-                <UserEdit />
-              </ProtectedRoute>
-            } />
-            {/* Project Management Routes */}
-            <Route path="/projects/create" element={
-              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
-                <ProjectCreate />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/details" element={
-              <ProtectedRoute>
-                <ProjectDetails />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/edit" element={
-              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
-                <ProjectEdit />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/groups" element={
-              <ProtectedRoute>
-                <GroupsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/groups/:groupId" element={
-              <ProtectedRoute>
-                <GroupsPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/groups/:groupId/manage" element={
-              <ProtectedRoute>
-                <GroupManagePage />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/create-group" element={
-              <ProtectedRoute>
-                <CreateGroupPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/tasks" element={
-              <ProtectedRoute>
-                <TasksPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/groups/:groupId/analyze" element={
-              <ProtectedRoute>
-                <GroupAnalyzePage />
-              </ProtectedRoute>
-            } />            <Route path="/projects/:projectId/project-analyze" element={
-              <ProtectedRoute>
-                <ProjectAnalyzePage />
-              </ProtectedRoute>
-            } />
-            <Route path="/projects/:projectId/free-rider-detection" element={
-              <ProtectedRoute roles={["ADMIN", "INSTRUCTOR", "STUDENT"]}>
-                <FreeRiderDetectionPage />
-              </ProtectedRoute>
-            } />            <Route path="/projects/:projectId/admin-analyze" element={
-              <ProtectedRoute roles={["ADMIN", "INSTRUCTOR"]}>
-                <AdminAnalyzePage />
-              </ProtectedRoute>
-            } />
-            {/* Global Free-Rider Detection Route */}            <Route path="/freerider-detection" element={
-              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
-                <FreeRiderDetectionPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/freerider-detection/evidence/:projectId/:userId" element={
-              <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
-                <FreeRiderEvidenceDetailPage />
-              </ProtectedRoute>
-            } />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/" element={<Landing />} />
-            <Route path="*" element={<NotFound />} />          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
+            <Routes>
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Index />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Profile />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin" element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <Admin />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              {/* User Management Routes */}
+              <Route path="/admin/users" element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <UserManagement />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users/create" element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <UserCreate />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users/:id" element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <UserDetail />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/users/:id/edit" element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <UserEdit />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              {/* Project Management Routes */}
+              <Route path="/projects/create" element={
+                <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                  <Layout>
+                    <ProjectCreate />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/details" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectDetails />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/edit" element={
+                <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                  <Layout>
+                    <ProjectEdit />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/groups" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GroupsPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/groups/:groupId" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GroupsPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/groups/:groupId/manage" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GroupManagePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/create-group" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <CreateGroupPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/tasks" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <TasksPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/groups/:groupId/analyze" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GroupAnalyzePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/project-analyze" element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProjectAnalyzePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/free-rider-detection" element={
+                <ProtectedRoute roles={["ADMIN", "INSTRUCTOR", "STUDENT"]}>
+                  <Layout>
+                    <FreeRiderDetectionPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/projects/:projectId/admin-analyze" element={
+                <ProtectedRoute roles={["ADMIN", "INSTRUCTOR"]}>
+                  <Layout>
+                    <AdminAnalyzePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              {/* Global Free-Rider Detection Route */}
+              <Route path="/freerider-detection" element={
+                <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                  <Layout>
+                    <FreeRiderDetectionPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/freerider-detection/evidence/:projectId/:userId" element={
+                <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                  <Layout>
+                    <FreeRiderEvidenceDetailPage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/" element={<Landing />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
       </NotificationProvider>
     </AuthProvider>
   </QueryClientProvider>

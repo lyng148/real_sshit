@@ -191,6 +191,25 @@ class ProjectService {
     return `${axiosInstance.defaults.baseURL}/api/projects/${projectId}/qrcode`;
   }
   
+  // Fetch QR code with authorization header
+  async getProjectQRCodeBlob(projectId: number): Promise<string> {
+    try {
+      const response = await axiosInstance.get(`/api/projects/${projectId}/qrcode`, {
+        responseType: 'blob',
+        headers: {
+          'Accept': 'image/png'
+        }
+      });
+      
+      // Create a blob URL from the response
+      const blob = new Blob([response.data], { type: 'image/png' });
+      return URL.createObjectURL(blob);
+    } catch (error) {
+      console.error('Error fetching QR code:', error);
+      throw error;
+    }
+  }
+  
   // Join a project with access code
   async joinProjectWithAccessCode(accessCode: string) {
     try {

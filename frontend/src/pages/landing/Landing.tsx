@@ -1,252 +1,415 @@
+import React, { useEffect, useRef } from 'react';
+import { Button } from '../../components/ui/button';
+import {
+  ArrowRight,
+  Users,
+  GitBranch,
+  Shield,
+  TrendingUp,
+  Github,
+  Heart,
+  BookOpen,
+  Zap,
+  Target,
+} from 'lucide-react';
+import { 
+  animations, 
+  createAnimationTimeline, 
+  animateOnScroll,
+  DURATION,
+  EASING 
+} from '../../lib/animations';
+import { animate, stagger } from 'animejs';
 
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Rocket, Users, Shield, CheckCircle, Code, BarChart } from 'lucide-react';
+const Landing: React.FC = () => {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
 
-const Landing = () => {
-  const scrollToVideo = () => {
-    const videoSection = document.getElementById('video-section');
-    if (videoSection) {
-      videoSection.scrollIntoView({ behavior: 'smooth' });
-    }
-  };  
   useEffect(() => {
-    // Intersection Observer for smooth animations
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
+    if (typeof window === 'undefined') return; // guard cho SSR
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('fade-up');
-        }
-      });
-    }, observerOptions);
-
-    // Observe all animate-in elements
-    const animatedElements = document.querySelectorAll('.animate-in');
-    animatedElements.forEach((element) => {
-      observer.observe(element);
+    // 1. Timeline entrance animation với styling mới
+    const tl = createAnimationTimeline({
+      easing: EASING.smooth,
+      duration: DURATION.page,
     });
 
-    // Trigger hero animations immediately with staggered timing like Vue template
-    setTimeout(() => {
-      const heroTitle = document.querySelector('.animate-in.delay-1');
-      if (heroTitle) heroTitle.classList.add('fade-up');
-    }, 200);
+    tl
+      .add(titleRef.current!, { 
+        translateY: [100, 0], 
+        opacity: [0, 1], 
+        duration: 1200, 
+        delay: 300,
+        scale: [0.9, 1]
+      })
+      .add(subtitleRef.current!, { 
+        translateY: [50, 0], 
+        opacity: [0, 1], 
+        duration: 800 
+      }, '-=600')
+      .add(ctaRef.current!, { 
+        translateY: [30, 0], 
+        opacity: [0, 1], 
+        duration: 600,
+        scale: [0.95, 1]
+      }, '-=400');
 
-    setTimeout(() => {
-      const heroTagline = document.querySelector('.animate-in.delay-2');
-      if (heroTagline) heroTagline.classList.add('fade-up');
-    }, 400);
+    // 2. Enhanced floating decorative elements
+    animate('.floating-element', {
+      translateY: [-20, 20],
+      rotate: [-5, 5],
+      duration: 3000,
+      loop: true,
+      direction: 'alternate',
+      easing: EASING.gentle,
+      delay: stagger(200),
+    });
 
-    setTimeout(() => {
-      const heroButtons = document.querySelector('.animate-in.delay-3');
-      if (heroButtons) heroButtons.classList.add('fade-up');
-    }, 600);
+    // 3. Background orbs với animation phức tạp hơn
+    animate('.bg-orb', {
+      scale: [1, 1.3, 1],
+      opacity: [0.2, 0.7, 0.2],
+      rotate: [0, 180, 360],
+      duration: 6000,
+      loop: true,
+      easing: EASING.gentle,
+      delay: stagger(1500),
+    });
 
-    setTimeout(() => {
-      const videoSection = document.querySelector('.animate-in.delay-4');
-      if (videoSection) videoSection.classList.add('fade-up');
-    }, 800);
+    // 4. Grid items animate on scroll với hiệu ứng đẹp hơn
+    animateOnScroll('.grid-item', () => {
+      animations.card.staggerIn('.grid-item', 120);
+    });
 
-    return () => {
-      animatedElements.forEach((element) => {
-        observer.unobserve(element);
-      });
-    };
+    // 5. Continuous floating animation cho nav
+    animate('.nav-logo', {
+      translateY: [-2, 2],
+      duration: 2000,
+      loop: true,
+      direction: 'alternate',
+      easing: EASING.gentle,
+    });
+
+    // 6. Sparkle effects
+    animate('.sparkle', {
+      scale: [0, 1, 0],
+      opacity: [0, 1, 0],
+      rotate: [0, 180],
+      duration: 2000,
+      delay: stagger(300),
+      loop: true,
+      easing: EASING.bounce,
+    });
+
   }, []);
-  return (
-    <div className="min-h-screen bg-[#0a0a14] text-white">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden bg-[#0a0a14] min-h-screen">
-        {/* Background */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="/wallpaper.png" 
-            alt="Background" 
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 hero-overlay"></div>
-        </div>
 
-        {/* Navigation */}
-        <header className="absolute top-0 left-0 right-0 z-50 py-6">
-          <div className="container mx-auto px-6">
-            <div className="flex items-center justify-between">
-              <div className="text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                TasuMana
-              </div>
-              <nav className="hidden md:flex space-x-8">
-                <Link to="#features" className="text-white/90 hover:text-white transition-all duration-300 hover:scale-105">Features</Link>
-                <Link to="#process" className="text-white/90 hover:text-white transition-all duration-300 hover:scale-105">Process</Link>
-                <Link to="#help" className="text-white/90 hover:text-white transition-all duration-300 hover:scale-105">Help</Link>
-                <Link to="/teams" className="text-white/90 hover:text-white transition-all duration-300 hover:scale-105">Teams</Link>
-              </nav>
-              <div className="flex items-center space-x-4">
-                <Link to="/login" className="text-white/90 hover:text-white transition-all duration-300 hover:scale-105">Login</Link>
-                <Link to="/signup">
-                  <Button variant="outline" className="border-white/60 text-white hover:bg-white/10 btn-cta">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </header>        
-        {/* Hero Content */}
-        <div className="container mx-auto px-6 relative z-10 flex flex-col justify-center min-h-screen mt-28">
-          <div className="text-center pt-20 pb-16">
-            <div className="max-w-4xl mx-auto">
-              <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6 animate-in delay-1 hero-title">
-                Just manage it<br />
-                <span className="bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-                  with TasuMana
-                </span>
-              </h1>
-              <p className="text-xl md:text-2xl mb-12 text-white/80 animate-in delay-2 hero-tagline">
-                The best tool to manage your tasks and projects
-              </p>
-              
-              <div className="flex flex-col sm:flex-row justify-center items-center gap-4 animate-in delay-3">
-                <Link to="/signup">
-                  <Button className="btn-cta bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 text-lg">
-                    Start for free
-                  </Button>
-                </Link>
-                <Button 
-                  onClick={scrollToVideo}
-                  className="btn-video text-white px-8 py-3 text-lg"
-                >
-                  Watch video
-                </Button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Video Preview */}
-          <div className="flex justify-center mb-16">
-            <div className="w-full max-w-5xl">
-              <div id="video-section" className="relative animate-in delay-4">
-                <div className="date-badge absolute -top-6 left-1/2 transform -translate-x-1/2 px-4 py-2 rounded-full text-sm text-white/80">
-                  May 2, 2025: Introducing TasuMana
-                </div>
-                <div className="video-container aspect-video w-full overflow-hidden rounded-lg shadow-2xl">
-                  <iframe 
-                    className="w-full h-full"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?controls=0" 
-                    title="TasuMana Introduction" 
-                    frameBorder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowFullScreen>
-                  </iframe>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>      {/* Features Section */}
-      <div className="bg-[#0a0a14] py-24 relative z-10">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16 animate-in">
-            <h6 className="section-subtitle">Features</h6>
-            <h2 className="section-title">Key Features</h2>
-            <div className="section-divider"></div>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 mt-12">
-            <div className="feature-card animate-in delay-1">
-              <div className="feature-icon">
-                <Rocket className="w-6 h-6 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-3">Instant Task Creation</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Create and organize tasks instantly with our intuitive interface. Get your projects started in seconds.
-              </p>
-            </div>
-            
-            <div className="feature-card animate-in delay-2">
-              <div className="feature-icon">
-                <Users className="w-6 h-6 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-3">Team Collaboration</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Work seamlessly with your team members. Share tasks, track progress, and communicate effectively.
-              </p>
-            </div>
-            
-            <div className="feature-card animate-in delay-3">
-              <div className="feature-icon">
-                <Shield className="w-6 h-6 text-blue-400" />
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-3">Secure & Reliable</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Your data is protected with enterprise-grade security. Focus on work while we handle the safety.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>      {/* How It Works Section */}
-      <div className="bg-gray-900/30 py-24">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16 animate-in">
-            <h6 className="section-subtitle">Process</h6>
-            <h2 className="section-title">How It Works</h2>
-            <div className="section-divider"></div>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 mt-16">
-            <div className="step-card animate-in delay-1">
-              <div className="step-number">01</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Create Project</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Start by creating a new project and defining your goals and requirements clearly.
-              </p>
-            </div>
-            
-            <div className="step-card animate-in delay-2">
-              <div className="step-number">02</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Organize Tasks</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Break down your project into manageable tasks and assign them to team members.
-              </p>
-            </div>
-            
-            <div className="step-card animate-in delay-3">
-              <div className="step-number">03</div>
-              <h3 className="text-xl font-semibold text-white mb-3">Track Progress</h3>
-              <p className="text-gray-400 leading-relaxed">
-                Monitor progress in real-time and get insights to keep your project on track.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>      {/* CTA Section */}
-      <div className="cta-section bg-gray-900/50 border border-gray-800 rounded-xl mx-6 my-16 overflow-hidden relative">
-        <div className="cta-glow absolute top-0 right-0 w-96 h-96 bg-gradient-radial from-blue-500/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        <div className="container mx-auto px-8 py-16 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center justify-between">
-            <div className="lg:w-2/3 mb-8 lg:mb-0 animate-in delay-1">
-              <h2 className="cta-title text-3xl md:text-4xl font-bold text-white mb-4">
-                Ready to boost your productivity?
-              </h2>
-              <p className="cta-text text-xl text-gray-400">
-                Join thousands of teams already using TasuMana to manage their projects.
-              </p>
-            </div>
-            <div className="lg:w-1/3 lg:text-right animate-in delay-2">
-              <Link to="/signup">
-                <Button className="btn-cta bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 text-lg font-semibold">
-                  Get Started Now
-                </Button>
-              </Link>
-            </div>
-          </div>        
-        </div>
+  const handleCTAClick = () => {
+    animations.button.click('.cta-button');
+  };
+
+  const handleCardHover = (e: React.MouseEvent) => {
+    animations.card.hoverScale(e.currentTarget as HTMLElement);
+  };
+
+  const handleCardLeave = (e: React.MouseEvent) => {
+    animations.card.hoverReset(e.currentTarget as HTMLElement);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden relative">
+      {/* Enhanced Background orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="bg-orb absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
+        <div className="bg-orb absolute top-40 right-20 w-96 h-96 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
+        <div className="bg-orb absolute -bottom-20 left-40 w-80 h-80 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
       </div>
+
+      {/* Enhanced Floating elements với sparkles */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="floating-element absolute top-32 left-10 w-4 h-4 bg-gradient-to-r from-white to-purple-200 rounded-full opacity-30" />
+        <div className="floating-element absolute top-48 right-32 w-6 h-6 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full opacity-40" />
+        <div className="floating-element absolute bottom-40 left-20 w-3 h-3 bg-gradient-to-r from-pink-300 to-blue-300 rounded-full opacity-35" />
+        <div className="floating-element absolute bottom-60 right-10 w-5 h-5 bg-gradient-to-r from-blue-300 to-purple-300 rounded-full opacity-30" />
+        
+        {/* Sparkle effects */}
+        <div className="sparkle absolute top-1/4 left-1/4 w-2 h-2 bg-white rounded-full" />
+        <div className="sparkle absolute top-3/4 right-1/4 w-1 h-1 bg-yellow-300 rounded-full" />
+        <div className="sparkle absolute top-1/2 left-3/4 w-2 h-2 bg-pink-300 rounded-full" />
+      </div>
+
+      {/* Navigation với enhanced styling */}
+      <nav className="relative z-10 p-6 backdrop-blur-sm bg-white/5 border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="nav-logo flex items-center space-x-2">
+            <div className="relative">
+              <Shield className="w-8 h-8 text-purple-400" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full opacity-80"></div>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent">
+              ITss
+            </span>
+          </div>
+          <div className="hidden md:flex items-center space-x-8">
+            <a href="#features" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Tính năng</a>
+            <a href="#demo" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Demo</a>
+            <a href="#docs" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Hướng dẫn</a>
+            <Button 
+              variant="outline" 
+              className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-400/25"
+            >
+              Bắt đầu
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero Section với enhanced effects */}
+      <section ref={heroRef} className="relative z-10 px-6 pt-20 pb-32">
+        <div className="max-w-6xl mx-auto text-center">
+          <h1 ref={titleRef} className="text-5xl md:text-7xl font-bold mb-8 opacity-0">
+            <span className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent drop-shadow-2xl">
+              ITss - Thiên Mệnh
+            </span>
+            <br/>
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent drop-shadow-2xl">
+              Dự Án Sinh Viên
+            </span>
+          </h1>
+          <p ref={subtitleRef} className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto opacity-0 leading-relaxed drop-shadow-lg">
+            Hệ thống quản lý dự án thông minh với tích hợp GitHub, theo dõi tiến độ thời gian thực và phát hiện Free-rider tự động. 
+            Nâng cao hiệu quả teamwork và đảm bảo công bằng trong đánh giá.
+          </p>
+          <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0">
+            <Button
+              size="lg"
+              className="cta-button bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25"
+              onClick={handleCTAClick}
+            >
+              Khám phá ngay <ArrowRight className="ml-2 w-5 h-5"/>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-gray-400 text-gray-300 hover:bg-white hover:text-gray-900 px-8 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25"
+            >
+              <Github className="mr-2 w-5 h-5"/> Xem GitHub
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section với enhanced animations */}
+      <section id="features" className="relative z-10 px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
+              Tại sao chọn ITss?
+            </h2>
+            <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+              Giải pháp toàn diện cho quản lý dự án sinh viên với công nghệ hiện đại
+            </p>
+          </div>
+          <div ref={gridRef} className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                icon: <GitBranch className="w-6 h-6 text-white"/>, 
+                title: 'Tích hợp GitHub', 
+                text: 'Đồng bộ tự động với repository, theo dõi commit và đóng góp real-time của từng thành viên.',
+                gradient: 'from-purple-500 to-blue-500'
+              },
+              { 
+                icon: <TrendingUp className="w-6 h-6 text-white"/>, 
+                title: 'Theo dõi tiến độ', 
+                text: 'Dashboard trực quan với biểu đồ progress, timeline và phân tích hiệu suất team.',
+                gradient: 'from-green-500 to-teal-500'
+              },
+              { 
+                icon: <Shield className="w-6 h-6 text-white"/>, 
+                title: 'Phát hiện Free-rider', 
+                text: 'AI phân tích pattern làm việc, cảnh báo thành viên không đóng góp và đảm bảo công bằng.',
+                gradient: 'from-red-500 to-pink-500'
+              },
+              { 
+                icon: <Users className="w-6 h-6 text-white"/>, 
+                title: 'Quản lý nhóm', 
+                text: 'Tạo nhóm, phân chia task, giao việc và theo dõi workload của từng member.',
+                gradient: 'from-orange-500 to-yellow-500'
+              },
+              { 
+                icon: <Target className="w-6 h-6 text-white"/>, 
+                title: 'Pressure Score', 
+                text: 'Hệ thống tính điểm áp lực thông minh, cân bằng workload và tối ưu hiệu suất.',
+                gradient: 'from-indigo-500 to-purple-500'
+              },
+              { 
+                icon: <BookOpen className="w-6 h-6 text-white"/>, 
+                title: 'Đánh giá đa chiều', 
+                text: 'Peer review, tự đánh giá và đánh giá của giảng viên với báo cáo chi tiết.',
+                gradient: 'from-pink-500 to-rose-500'
+              },
+            ].map((item, i) => (
+              <div 
+                key={i} 
+                className="grid-item bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-purple-400/50 transition-all duration-500 cursor-pointer group"
+                onMouseEnter={handleCardHover}
+                onMouseLeave={handleCardLeave}
+              >
+                <div className={`w-12 h-12 bg-gradient-to-r ${item.gradient} rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  {item.icon}
+                </div>
+                <h3 className="text-2xl font-bold mb-4 group-hover:text-purple-300 transition-colors duration-300">{item.title}</h3>
+                <p className="text-gray-300 leading-relaxed group-hover:text-gray-200 transition-colors duration-300">{item.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Section với enhanced styling */}
+      <section id="demo" className="relative z-10 px-6 py-20">
+        <div className="max-w-6xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
+            Xem ITss hoạt động
+          </h2>
+          
+          {/* GitHub Integration Demo với enhanced styling */}
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-purple-400/30 transition-all duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold flex items-center">
+                  <GitBranch className="w-5 h-5 mr-2 text-purple-400" />
+                  GitHub Activity
+                </h3>
+                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { user: 'Nguyễn A', action: 'pushed 3 commits', time: '2 phút trước', task: 'TASK-001', color: 'text-green-400' },
+                  { user: 'Trần B', action: 'created pull request', time: '15 phút trước', task: 'TASK-003', color: 'text-blue-400' },
+                  { user: 'Lê C', action: 'merged branch', time: '1 giờ trước', task: 'TASK-002', color: 'text-purple-400' },
+                ].map((activity, i) => (
+                  <div key={i} className="flex items-center justify-between text-sm bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-all duration-300">
+                    <div>
+                      <span className={`font-medium ${activity.color}`}>{activity.user}</span>
+                      <span className="text-gray-300 ml-2">{activity.action}</span>
+                      <span className="text-blue-300 ml-2 text-xs bg-blue-500/20 px-2 py-1 rounded">#{activity.task}</span>
+                    </div>
+                    <span className="text-gray-400 text-xs">{activity.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-green-400/30 transition-all duration-500">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-green-400" />
+                  Team Progress
+                </h3>
+                <span className="text-green-400 text-sm font-medium bg-green-500/20 px-3 py-1 rounded-full">85%</span>
+              </div>
+              <div className="space-y-4">
+                {[
+                  { name: 'Nguyễn A', progress: 92, commits: 28, color: 'bg-green-500', bgColor: 'bg-green-500/20' },
+                  { name: 'Trần B', progress: 88, commits: 24, color: 'bg-blue-500', bgColor: 'bg-blue-500/20' },
+                  { name: 'Lê C', progress: 76, commits: 18, color: 'bg-purple-500', bgColor: 'bg-purple-500/20' },
+                  { name: 'Phạm D', progress: 45, commits: 8, color: 'bg-red-500', bgColor: 'bg-red-500/20' },
+                ].map((member, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300 font-medium">{member.name}</span>
+                      <span className={`text-gray-400 ${member.bgColor} px-2 py-1 rounded text-xs`}>{member.commits} commits</span>
+                    </div>
+                    <div className="w-full bg-gray-700/50 rounded-full h-3 overflow-hidden">
+                      <div 
+                        className={`h-3 rounded-full ${member.color} transition-all duration-1000 shadow-lg`}
+                        style={{ width: `${member.progress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Free-rider Detection với enhanced styling */}
+          <div className="bg-gradient-to-r from-yellow-500/10 to-red-500/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-500/30 max-w-2xl mx-auto hover:border-yellow-400/50 transition-all duration-500">
+            <div className="flex items-center justify-center mb-6">
+              <Shield className="w-6 h-6 mr-2 text-yellow-400" />
+              <h3 className="text-xl font-bold">Free-rider Detection</h3>
+            </div>
+            <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 mb-4 backdrop-blur-sm">
+              <div className="flex items-center">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 animate-pulse shadow-lg shadow-yellow-400/50"></div>
+                <span className="text-yellow-300">⚠️ Cảnh báo: Phạm D có mức đóng góp thấp (45%)</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="text-center bg-white/5 rounded-lg p-4">
+                <div className="text-3xl font-bold text-purple-400">3.2</div>
+                <div className="text-gray-400">Pressure Score</div>
+              </div>
+              <div className="text-center bg-white/5 rounded-lg p-4">
+                <div className="text-3xl font-bold text-yellow-400">65%</div>
+                <div className="text-gray-400">So với team</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Roles Section với enhanced styling */}
+      <section className="relative z-10 px-6 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
+              Dành cho mọi vai trò
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { title: '🌱 Sinh viên', desc: 'Tham gia nhóm, thực hiện task, đánh giá đồng môn', gradient: 'from-green-500/20 to-teal-500/20' },
+              { title: '🐉 Nhóm trưởng', desc: 'Quản lý team, phân chia công việc, theo dõi tiến độ', gradient: 'from-blue-500/20 to-indigo-500/20' },
+              { title: '🧓 Giảng viên', desc: 'Tạo dự án, giám sát nhóm, đánh giá kết quả', gradient: 'from-purple-500/20 to-pink-500/20' },
+              { title: '🛡️ Admin', desc: 'Quản trị hệ thống, phân quyền, báo cáo tổng thể', gradient: 'from-red-500/20 to-orange-500/20' },
+            ].map((role, i) => (
+              <div 
+                key={i} 
+                className={`bg-gradient-to-br ${role.gradient} backdrop-blur-sm rounded-xl p-6 border border-white/10 text-center hover:border-white/30 transition-all duration-500 hover:scale-105 cursor-pointer`}
+              >
+                <h3 className="text-xl font-bold mb-3">{role.title}</h3>
+                <p className="text-gray-300 text-sm leading-relaxed">{role.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Footer với enhanced styling */}
+      <footer className="relative z-10 px-6 py-12 border-t border-white/10 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center space-x-2 mb-4 md:mb-0">
+            <Shield className="w-6 h-6 text-purple-400"/>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+              ITss - Thiên Mệnh Dự Án
+            </span>
+          </div>
+          <div className="flex items-center space-x-6">
+            <a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110">
+              <Github className="w-5 h-5"/>
+            </a>
+            <a href="#" className="text-gray-400 hover:text-white transition-all duration-300 hover:scale-110">
+              <BookOpen className="w-5 h-5"/>
+            </a>
+            <div className="flex items-center text-gray-400">
+              Made with <Heart className="w-4 h-4 mx-1 text-red-400 animate-pulse"/> for students
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

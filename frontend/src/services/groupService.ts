@@ -41,6 +41,22 @@ export const groupService = {
     }
   },
   
+  async getAllGroupsPaginated(projectId: number, page: number = 0, size: number = 10, sortBy: string = 'name', sortDirection: string = 'ASC') {
+    try {
+      const response = await axiosInstance.get(`/api/groups/project/${projectId}/paginated`, {
+        params: {
+          page,
+          size,
+          sortBy,
+          sortDirection
+        }
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  
   async getGroupById(id: number) {
     try {
       const response = await axiosInstance.get(`/api/groups/${id}`);

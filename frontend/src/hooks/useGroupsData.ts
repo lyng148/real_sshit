@@ -5,9 +5,25 @@ import groupService, { Group } from '@/services/groupService';
 
 interface UseGroupsDataProps {
   projectId: string | undefined;
+  usePagination?: boolean;
+  initialPageSize?: number;
 }
 
-export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
+interface PaginationData {
+  content: Group[];
+  pagination: {
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrevious: boolean;
+    isFirst: boolean;
+    isLast: boolean;
+  };
+}
+
+export const useGroupsData = ({ projectId, usePagination = false, initialPageSize = 10 }: UseGroupsDataProps) => {
   const { toast } = useToast();
   const { currentUser } = useAuth();
   
@@ -17,6 +33,12 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
   const [userGroup, setUserGroup] = useState<Group | null>(null);
   const [viewedGroup, setViewedGroup] = useState<Group | null>(null);
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(initialPageSize);
+  
   const isAdmin = currentUser?.user.roles?.includes('ADMIN');
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
 
@@ -25,18 +47,42 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
     return ledGroups.some(group => group.projectId === Number(projectId));
   }, [ledGroups]);
 
-  const fetchGroups = useCallback(async () => {
+  const fetchGroups = useCallback(async (page: number = 0) => {
     if (!projectId) return;
     
     try {
       setLoading(true);
-      const response = await groupService.getAllGroups(Number(projectId));
-      if (response.success) {
-        setGroups(response.data || []);
+      let response;
+      
+      if (usePagination) {
+        response = await groupService.getAllGroupsPaginated(
+          Number(projectId),
+          page,
+          pageSize,
+          'name',
+          'ASC'
+        );
         
-        // Check if the user is in any of these groups
+        if (response.success) {
+          const paginatedData = response.data as PaginationData;
+          setGroups(paginatedData.content || []);
+          setTotalPages(paginatedData.pagination.totalPages);
+          setTotalElements(paginatedData.pagination.totalElements);
+          setCurrentPage(page);
+        }
+      } else {
+        response = await groupService.getAllGroups(Number(projectId));
+        
+        if (response.success) {
+          setGroups(response.data || []);
+        }
+      }
+      
+      if (response.success) {
+        // Check if the user is in any of these groups (for non-admin/instructor users)
         if (!isAdmin && !isInstructor && currentUser) {
-          const userGroups = response.data.filter((group: Group) => 
+          const allGroups = usePagination ? (response.data as PaginationData).content : response.data;
+          const userGroups = allGroups.filter((group: Group) => 
             group.members.some(member => member.id === currentUser.user.id)
           );
           
@@ -61,7 +107,7 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
     } finally {
       setLoading(false);
     }
-  }, [projectId, isAdmin, isInstructor, currentUser, toast]);
+  }, [projectId, isAdmin, isInstructor, currentUser, toast, usePagination, pageSize]);
 
   const fetchLedGroups = useCallback(async () => {
     try {
@@ -110,14 +156,18 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
         });
         
         // Refresh groups after joining to update the view
-        const updatedResponse = await groupService.getAllGroups(Number(projectId));
-        if (updatedResponse.success) {
-          setGroups(updatedResponse.data || []);
-          
-          // Find the group user just joined and set it as userGroup
-          const joinedGroup = updatedResponse.data.find((g: Group) => g.id === groupId);
-          if (joinedGroup) {
-            setUserGroup(joinedGroup);
+        if (usePagination) {
+          await fetchGroups(currentPage);
+        } else {
+          const updatedResponse = await groupService.getAllGroups(Number(projectId));
+          if (updatedResponse.success) {
+            setGroups(updatedResponse.data || []);
+            
+            // Find the group user just joined and set it as userGroup
+            const joinedGroup = updatedResponse.data.find((g: Group) => g.id === groupId);
+            if (joinedGroup) {
+              setUserGroup(joinedGroup);
+            }
           }
         }
       } else {
@@ -135,7 +185,7 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [toast, usePagination, currentPage, fetchGroups]);
 
   const handleAutoJoin = useCallback(async () => {
     if (!projectId) return;
@@ -147,7 +197,11 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
           description: "You have been auto-assigned to a group!",
         });
         // Refetch groups to update UI
-        await fetchGroups();
+        if (usePagination) {
+          await fetchGroups(currentPage);
+        } else {
+          await fetchGroups();
+        }
       } else {
         console.error("Error auto-joining group:", response);
         toast({
@@ -164,7 +218,13 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
         variant: "destructive",
       });
     }
-  }, [projectId, fetchGroups, toast]);
+  }, [projectId, fetchGroups, toast, usePagination, currentPage]);
+
+  const handlePageChange = useCallback(async (page: number) => {
+    if (usePagination) {
+      await fetchGroups(page);
+    }
+  }, [fetchGroups, usePagination]);
 
   useEffect(() => {
     // Reset state when projectId changes
@@ -172,8 +232,9 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
     setGroups([]);
     setLoading(true);
     setViewedGroup(null);
+    setCurrentPage(0);
     
-    fetchGroups();
+    fetchGroups(0);
     if (!isAdmin && !isInstructor) {
       fetchLedGroups();
     }
@@ -191,6 +252,13 @@ export const useGroupsData = ({ projectId }: UseGroupsDataProps) => {
     isGroupLeader,
     handleJoinGroup,
     handleAutoJoin,
-    refetchGroups: fetchGroups
+    refetchGroups: () => fetchGroups(usePagination ? currentPage : 0),
+    // Pagination-specific returns
+    currentPage,
+    totalPages,
+    totalElements,
+    pageSize,
+    handlePageChange,
+    usePagination
   };
 };

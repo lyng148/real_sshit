@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
 import { useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
@@ -272,8 +271,8 @@ const TasksPage = () => {
   const completedTasks = tasks.filter(task => task.status === 'completed');
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+    <div>
+      
       <div className="flex-1 overflow-auto p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Project Tasks</h1>
@@ -476,3 +475,4 @@ const TasksPage = () => {
 };
 
 export default TasksPage;
+

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import groupService, { Group, Member } from '@/services/groupService';
 import { useToast } from '@/components/ui/use-toast';
@@ -242,8 +241,8 @@ const GroupManagePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 flex items-center justify-center">
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
@@ -256,8 +255,8 @@ const GroupManagePage: React.FC = () => {
 
   if (!group) {
     return (
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-6 max-w-md">
             <AlertTriangle className="mx-auto h-12 w-12 text-yellow-500" />
@@ -274,8 +273,8 @@ const GroupManagePage: React.FC = () => {
 
   if (!canManageGroup) {
     return (
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-6 max-w-md">
             <AlertTriangle className="mx-auto h-12 w-12 text-red-500" />
@@ -292,7 +291,7 @@ const GroupManagePage: React.FC = () => {
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50">
-      <Sidebar />
+      
       <div className="flex-1 overflow-auto">
         <div className="container mx-auto p-6 max-w-4xl">
           <div className="flex justify-between items-center mb-6">
@@ -611,3 +610,4 @@ const GroupManagePage: React.FC = () => {
 };
 
 export default GroupManagePage;
+

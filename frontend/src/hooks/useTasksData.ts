@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import taskService, { Task as ApiTask } from '@/services/taskService';
 import { Task } from '@/types/task';
@@ -161,6 +160,7 @@ export const useTasksData = ({ groupId, userGroup, viewedGroup }: UseTasksDataPr
     tasksLoading,
     tasksError,
     selectedTask,
+    setSelectedTask,
     taskDetailOpen,
     addTaskDialogOpen,
     setTaskDetailOpen,

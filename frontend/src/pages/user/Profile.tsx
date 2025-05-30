@@ -1,197 +1,383 @@
-
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/contexts/AuthContext";
-import { Edit, User, Mail, MoreHorizontal, Key, Shield } from 'lucide-react';
-import { Group } from '@/services/groupService';
-import { useToast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { User, Mail, Phone, Calendar, MapPin, Edit2, Save, X } from 'lucide-react';
+import { animations } from '@/lib/animations';
 import AvatarUpload from '@/components/user/AvatarUpload';
+import { useToast } from '@/components/ui/use-toast';
+import { userService } from '@/services/userService';
 
 const Profile = () => {
-  const { currentUser, login } = useAuth();
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { currentUser, setCurrentUser } = useAuth();
   const { toast } = useToast();
-  const [myGroups, setMyGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [userAvatar, setUserAvatar] = useState<string | undefined>(currentUser?.user.avatarUrl);
+
+  // Form states
+  const [formData, setFormData] = useState({
+    fullName: currentUser?.user.fullName || '',
+    email: currentUser?.user.email || '',
+    phone: '',
+    bio: '',
+    location: '',
+    dateOfBirth: ''
+  });
 
   useEffect(() => {
-    const fetchMyGroups = async () => {
-      setIsLoading(true);
-      try {
-        // Here you would fetch the user's groups
-        // For now, we'll just simulate some data
-        setMyGroups([]);
-        setIsLoading(false);      } catch (error: any) {
-        console.error('Error fetching groups:', error);
-        toast({
-          title: "Error",
-          description: error.message || error.response?.data?.message || "Failed to load your groups",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-      }
-    };
+    // Page entrance animation
+    animations.page.slideInFromRight('.profile-content', 200);
+    
+    // Cards stagger animation
+    setTimeout(() => {
+      animations.list.staggeredAppear('.profile-card', 100);
+    }, 300);
+  }, []);
 
-    fetchMyGroups();
-  }, [toast]);
+  useEffect(() => {
+    if (currentUser?.user) {
+      setFormData({
+        fullName: currentUser.user.fullName || '',
+        email: currentUser.user.email || '',
+        phone: '', // Fetch from user profile if available
+        bio: '',
+        location: '',
+        dateOfBirth: ''
+      });
+    }
+  }, [currentUser]);
+
+  const handleEditClick = () => {
+    setIsEditing(!isEditing);
+    // Add a subtle animation to editing mode
+    animations.card.pulse('.profile-card');
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!currentUser?.user.id) return;
+
+    setLoading(true);
+    try {
+      // Update user data
+      await userService.updateUser(Number(currentUser.user.id), {
+        fullName: formData.fullName,
+        email: formData.email,
+        // Add other fields as supported by backend
+      });
+
+      // Update local storage and context
+      const updatedUser = {
+        ...currentUser,
+        user: {
+          ...currentUser.user,
+          fullName: formData.fullName,
+          email: formData.email
+        }
+      };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
+
+      toast({
+        title: "Thành công",
+        description: "Cập nhật thông tin thành công!",
+      });
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast({
+        title: "Lỗi",
+        description: "Không thể cập nhật thông tin. Vui lòng thử lại.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form data
+    setFormData({
+      fullName: currentUser?.user.fullName || '',
+      email: currentUser?.user.email || '',
+      phone: '',
+      bio: '',
+      location: '',
+      dateOfBirth: ''
+    });
+    setIsEditing(false);
+  };
+
+  const handleAvatarUpdated = (newAvatarUrl: string) => {
+    if (currentUser) {
+      const updatedUser = {
+        ...currentUser,
+        user: {
+          ...currentUser.user,
+          avatarUrl: newAvatarUrl
+        }
+      };
+      setCurrentUser(updatedUser);
+    }
+  };
 
   const getInitials = (name: string) => {
     return name
       .split(' ')
-      .map((n) => n[0])
+      .map(n => n[0])
       .join('')
       .toUpperCase();
   };
 
+  if (!currentUser?.user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-gray-500">Đang tải thông tin người dùng...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-2xl font-bold mb-6">Profile</h1>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Profile Card */}            <Card className="md:col-span-1">
-              <CardContent className="pt-6 flex flex-col items-center">
-                {currentUser && (
-                  <AvatarUpload 
-                    user={currentUser.user} 
-                    onAvatarUpdated={(url) => setUserAvatar(url)} 
-                    getInitials={getInitials}
-                  />
-                )}
-                <h2 className="text-xl font-bold mt-4">{currentUser?.user.fullName}</h2>
-                <p className="text-gray-500 mb-4">{currentUser?.user.username}</p>
-                
-                <div className="w-full mt-4 space-y-2">
-                  <div className="flex items-center text-sm text-gray-700">
-                    <Mail className="mr-2 h-4 w-4" />
-                    <span>{currentUser?.user.email}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Username: {currentUser?.user.username}</span>
-                  </div>
-                  <div className="flex items-center text-sm text-gray-700">
-                    <Shield className="mr-2 h-4 w-4" />
-                    <span>Roles: {currentUser?.user.roles?.join(', ')}</span>
-                  </div>
-                </div>
-                
-                <Button variant="outline" className="mt-6 w-full">
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Profile
+    <div className="profile-content">
+      <div className="p-6 max-w-6xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-800">Hồ sơ cá nhân</h1>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button 
+                  onClick={handleCancel}
+                  variant="outline"
+                  className="transition-all duration-300 hover:scale-105"
+                  disabled={loading}
+                >
+                  <X size={16} className="mr-2" />
+                  Hủy
                 </Button>
-                <Button variant="outline" className="mt-2 w-full">
-                  <Key className="h-4 w-4 mr-2" />
-                  Change Password
+                <Button 
+                  onClick={handleSave}
+                  className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105"
+                  disabled={loading}
+                >
+                  <Save size={16} className="mr-2" />
+                  {loading ? 'Đang lưu...' : 'Lưu'}
                 </Button>
-              </CardContent>
-            </Card>
-            
-            {/* Activity & Stats */}
-            <div className="md:col-span-2">
-              <Tabs defaultValue="activity">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="activity">Activity</TabsTrigger>
-                  <TabsTrigger value="groups">My Groups</TabsTrigger>
-                  <TabsTrigger value="stats">Statistics</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="activity" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Recent Activity</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-start">
-                          <div className="bg-blue-100 rounded-full p-2 mr-3">
-                            <User className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Joined a new group</p>
-                            <p className="text-sm text-gray-500">2 days ago</p>
-                          </div>
-                        </div>
-                        
-                        <div className="flex items-start">
-                          <div className="bg-green-100 rounded-full p-2 mr-3">
-                            <User className="h-4 w-4 text-green-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">Completed a task</p>
-                            <p className="text-sm text-gray-500">5 days ago</p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="groups" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>My Groups</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {myGroups.length > 0 ? (
-                        <div className="space-y-4">
-                          {myGroups.map((group) => (
-                            <div key={group.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-md">
-                              <div>
-                                <p className="font-medium">{group.name}</p>
-                                <p className="text-sm text-gray-500">{group.projectName}</p>
-                              </div>
-                              <Button variant="outline" size="sm">View</Button>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-6 text-gray-500">
-                          {isLoading ? "Loading your groups..." : "You haven't joined any groups yet."}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="stats" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Performance Statistics</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <p className="text-sm text-gray-500">Completed Tasks</p>
-                          <p className="text-2xl font-bold">24</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <p className="text-sm text-gray-500">Average Contribution</p>
-                          <p className="text-2xl font-bold">87%</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <p className="text-sm text-gray-500">Projects Completed</p>
-                          <p className="text-2xl font-bold">3</p>
-                        </div>
-                        <div className="bg-gray-50 p-4 rounded-md">
-                          <p className="text-sm text-gray-500">Pressure Score</p>
-                          <p className="text-2xl font-bold">Low</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
+              </>
+            ) : (
+              <Button 
+                onClick={handleEditClick}
+                className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105"
+              >
+                <Edit2 size={16} className="mr-2" />
+                Chỉnh sửa
+              </Button>
+            )}
           </div>
         </div>
-      </main>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Avatar and Basic Info */}
+          <Card className="profile-card opacity-0 transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-purple-600">
+                <User className="mr-2" size={20} />
+                Ảnh đại diện
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center space-y-4">
+              <AvatarUpload 
+                user={currentUser.user}
+                onAvatarUpdated={handleAvatarUpdated}
+                getInitials={getInitials}
+              />
+              <div className="text-center">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  {currentUser.user.fullName}
+                </h3>
+                <p className="text-gray-500">{currentUser.user.email}</p>
+                <div className="flex flex-wrap gap-1 mt-2 justify-center">
+                  {currentUser.user.roles?.map((role, index) => (
+                    <span 
+                      key={index}
+                      className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full"
+                    >
+                      {role}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Personal Information */}
+          <Card className="profile-card opacity-0 transition-all duration-300 lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center text-purple-600">
+                <User className="mr-2" size={20} />
+                Thông tin cá nhân
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fullName" className="text-gray-600">Họ và tên</Label>
+                {isEditing ? (
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    className="mt-1"
+                  />
+                ) : (
+                  <p className="text-gray-800 mt-1 p-2 bg-gray-50 rounded">{formData.fullName || 'Chưa cập nhật'}</p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="email" className="text-gray-600">Email</Label>
+                {isEditing ? (
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="mt-1"
+                  />
+                ) : (
+                  <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
+                    <Mail className="mr-2 text-gray-400" size={16} />
+                    <span className="text-gray-800">{formData.email}</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="phone" className="text-gray-600">Số điện thoại</Label>
+                {isEditing ? (
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className="mt-1"
+                    placeholder="Nhập số điện thoại"
+                  />
+                ) : (
+                  <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
+                    <Phone className="mr-2 text-gray-400" size={16} />
+                    <span className="text-gray-800">{formData.phone || 'Chưa cập nhật'}</span>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="dateOfBirth" className="text-gray-600">Ngày sinh</Label>
+                {isEditing ? (
+                  <Input
+                    id="dateOfBirth"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
+                    className="mt-1"
+                  />
+                ) : (
+                  <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
+                    <Calendar className="mr-2 text-gray-400" size={16} />
+                    <span className="text-gray-800">{formData.dateOfBirth || 'Chưa cập nhật'}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="location" className="text-gray-600">Địa chỉ</Label>
+                {isEditing ? (
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    className="mt-1"
+                    placeholder="Nhập địa chỉ"
+                  />
+                ) : (
+                  <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
+                    <MapPin className="mr-2 text-gray-400" size={16} />
+                    <span className="text-gray-800">{formData.location || 'Chưa cập nhật'}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="md:col-span-2">
+                <Label htmlFor="bio" className="text-gray-600">Giới thiệu bản thân</Label>
+                {isEditing ? (
+                  <Textarea
+                    id="bio"
+                    value={formData.bio}
+                    onChange={(e) => handleInputChange('bio', e.target.value)}
+                    className="mt-1"
+                    placeholder="Viết vài dòng giới thiệu về bản thân..."
+                    rows={3}
+                  />
+                ) : (
+                  <p className="text-gray-800 mt-1 p-2 bg-gray-50 rounded min-h-[80px]">
+                    {formData.bio || 'Chưa có thông tin giới thiệu'}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Additional Cards for Statistics/Activity */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <Card className="profile-card opacity-0 transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-purple-600">
+                <User className="mr-2" size={20} />
+                Thống kê hoạt động
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Dự án tham gia:</span>
+                <span className="font-semibold text-gray-800">5</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Nhiệm vụ hoàn thành:</span>
+                <span className="font-semibold text-gray-800">23</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Điểm đánh giá trung bình:</span>
+                <span className="font-semibold text-green-600">4.2/5</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="profile-card opacity-0 transition-all duration-300">
+            <CardHeader>
+              <CardTitle className="flex items-center text-purple-600">
+                <User className="mr-2" size={20} />
+                Cài đặt tài khoản
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-gray-600 text-sm">
+                Để thay đổi mật khẩu hoặc cài đặt bảo mật, vui lòng liên hệ quản trị viên.
+              </p>
+              <Button variant="outline" className="w-full">
+                Liên hệ hỗ trợ
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };

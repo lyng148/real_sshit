@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -189,8 +188,8 @@ const ProjectEdit = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-4xl mx-auto">
             <Card>
@@ -224,8 +223,8 @@ const ProjectEdit = () => {
 
   if (!project) {
     return (
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-4xl mx-auto">
             <Card>
@@ -240,8 +239,8 @@ const ProjectEdit = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+    <div>
+      
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-4xl mx-auto">
           <Card>
@@ -339,3 +338,4 @@ const ProjectEdit = () => {
 };
 
 export default ProjectEdit;
+

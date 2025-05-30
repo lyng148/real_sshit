@@ -407,22 +407,8 @@ const TaskDetailDialog = ({
     }
   };
   
-  if (!task) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>No Task Selected</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-gray-500">Please select a task to view its details.</p>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Close</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    );
+  if (!task || !open) {
+    return null; // Don't render the dialog at all if no task is selected or dialog is not open
   }
 
   return (

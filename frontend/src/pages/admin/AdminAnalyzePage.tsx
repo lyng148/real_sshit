@@ -1,189 +1,141 @@
 import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
-import { useParams, Navigate } from 'react-router-dom';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useAuth } from '@/contexts/AuthContext';
-import axiosInstance from '@/services/axiosInstance';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
+import { useAuth } from "@/contexts/AuthContext";
+import { BarChart3, Users, TrendingUp, AlertCircle, Target } from 'lucide-react';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const AdminAnalyzePage = () => {
-  const { projectId } = useParams();
   const { currentUser } = useAuth();
-  const [taskDistributionData, setTaskDistributionData] = useState([]);
-  const [timelineData, setTimelineData] = useState([]);
-  const [groupPerformanceData, setGroupPerformanceData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [projectSummary, setProjectSummary] = useState({
-    totalGroups: 0,
-    totalMembers: 0,
-    tasksCompleted: 0,
-    projectProgress: 0
-  });
-  
-  // Redirect if not admin
-  if (!currentUser?.user.roles.includes('ADMIN')) {
-    return <Navigate to="/" />;
-  }
-  
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+
+  const isAdmin = currentUser?.user.roles?.includes('ADMIN');
+  const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
+
   useEffect(() => {
-    const fetchData = async () => {
-      if (!projectId) return;
-      
-      setLoading(true);
-      try {
-        // Fetch real data from backend
-        const analyticsResponse = await axiosInstance.get(`/api/admin/analytics/project/${projectId}`);
-        
-        if (analyticsResponse.data && analyticsResponse.data.success) {
-          const data = analyticsResponse.data.data;
-          
-          if (data.taskDistribution) {
-            setTaskDistributionData(data.taskDistribution);
-          }
-          
-          if (data.timeline) {
-            setTimelineData(data.timeline);
-          }
-          
-          if (data.groupPerformance) {
-            setGroupPerformanceData(data.groupPerformance);
-          }
-          
-          if (data.summary) {
-            setProjectSummary(data.summary);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching analytics data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchData();
-  }, [projectId]);
-  
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+    // Simulate loading analytics data
+    setTimeout(() => {
+      setAnalyticsData({
+        totalUsers: 120,
+        activeProjects: 15,
+        totalGroups: 48,
+        averageProgress: 75
+      });
+      setLoading(false);
+    }, 1000);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 overflow-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Admin Analytics</h1>
-          <p className="text-gray-600">Project ID: {projectId}</p>
-        </div>
-        
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h3 className="text-lg font-medium mb-4">Task Distribution by Group</h3>
-                <div className="h-80 flex items-center justify-center">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={taskDistributionData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {taskDistributionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <h3 className="text-lg font-medium mb-4">Group Performance Metrics</h3>
-                <div className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={groupPerformanceData}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="performance" fill="#60a5fa" />
-                      <Bar dataKey="velocity" fill="#f59e0b" />
-                      <Bar dataKey="quality" fill="#34d399" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-              <h3 className="text-lg font-medium mb-4">Progress Timeline</h3>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={timelineData}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    {timelineData.length > 0 && Object.keys(timelineData[0] || {}).filter(key => key !== 'date').map((key, index) => (
-                      <Line 
-                        key={key}
-                        type="monotone" 
-                        dataKey={key} 
-                        stroke={COLORS[index % COLORS.length]} 
-                        activeDot={{ r: 8 }} 
-                      />
-                    ))}
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <h3 className="text-lg font-medium mb-4">Project Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="border border-gray-200 rounded-md p-3">
-                  <div className="text-sm text-gray-500">Total Groups</div>
-                  <div className="text-2xl font-semibold">{projectSummary.totalGroups}</div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-md p-3">
-                  <div className="text-sm text-gray-500">Total Members</div>
-                  <div className="text-2xl font-semibold">{projectSummary.totalMembers}</div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-md p-3">
-                  <div className="text-sm text-gray-500">Tasks Completed</div>
-                  <div className="text-2xl font-semibold">{projectSummary.tasksCompleted}</div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-md p-3">
-                  <div className="text-sm text-gray-500">Project Progress</div>
-                  <div className="text-2xl font-semibold">{projectSummary.projectProgress}%</div>
-                </div>
-              </div>
-            </div>
-          </>
-        )}
+    <div className="p-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-800">Phân tích tổng quan hệ thống</h1>
+        <p className="text-gray-600 mt-2">Thống kê và báo cáo toàn bộ hệ thống</p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tổng người dùng</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.totalUsers}</div>
+            <p className="text-xs text-muted-foreground">+10% so với tháng trước</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Dự án đang hoạt động</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.activeProjects}</div>
+            <p className="text-xs text-muted-foreground">+2 dự án mới tuần này</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tổng số nhóm</CardTitle>
+            <Target className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.totalGroups}</div>
+            <p className="text-xs text-muted-foreground">Trung bình 3.2 nhóm/dự án</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Tiến độ trung bình</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{analyticsData.averageProgress}%</div>
+            <Progress value={analyticsData.averageProgress} className="mt-2" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="overview" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="overview">Tổng quan</TabsTrigger>
+          <TabsTrigger value="performance">Hiệu suất</TabsTrigger>
+          <TabsTrigger value="alerts">Cảnh báo</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Hoạt động gần đây</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Thống kê hoạt động của hệ thống trong 30 ngày qua</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Hiệu suất hệ thống</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Phân tích hiệu suất và tốc độ xử lý</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="alerts" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertCircle className="h-5 w-5 text-orange-500" />
+                Cảnh báo hệ thống
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">Không có cảnh báo nào tại thời điểm này</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
 
 export default AdminAnalyzePage;
+

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -118,8 +117,8 @@ const FreeRiderEvidenceDetailPage = () => {
   
   if (loading) {
     return (
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-6xl mx-auto">
             <Skeleton className="h-10 w-1/2 mb-4" />
@@ -137,8 +136,8 @@ const FreeRiderEvidenceDetailPage = () => {
   
   if (error) {
     return (
-      <div className="flex h-screen bg-gray-50 overflow-hidden">
-        <Sidebar />
+      <div>
+        
         <div className="flex-1 overflow-auto p-6">
           <div className="max-w-6xl mx-auto">
             <div className="bg-red-50 p-4 rounded-md">
@@ -153,15 +152,15 @@ const FreeRiderEvidenceDetailPage = () => {
   }
   
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+    <div>
+      
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center mb-6">
             <Button variant="outline" size="sm" onClick={() => navigate(-1)} className="mr-4">
               <ChevronLeft className="h-4 w-4 mr-2" /> Back
             </Button>
-            <h1 className="text-2xl font-bold">Chi tiết Bằng chứng Free-Rider</h1>
+            <h1 className="text-2xl font-bold">Free-Rider Evidence Details</h1>
           </div>
           
           {user && project && evidence && (
@@ -169,7 +168,7 @@ const FreeRiderEvidenceDetailPage = () => {
               <div className="flex flex-col md:flex-row mb-6 gap-4">
                 <Card className="md:w-1/3">
                   <CardHeader>
-                    <CardTitle>Thông tin Sinh viên</CardTitle>
+                    <CardTitle>Student Information</CardTitle>
                   </CardHeader>
                   <CardContent className="flex flex-col items-center">
                     <Avatar className="h-16 w-16">
@@ -182,33 +181,33 @@ const FreeRiderEvidenceDetailPage = () => {
                       variant={getRiskLevel(evidence.percentageBelowAverage).color}
                       className="mt-2"
                     >
-                      Mức độ rủi ro: {getRiskLevel(evidence.percentageBelowAverage).level}
+                      Risk Level: {getRiskLevel(evidence.percentageBelowAverage).level}
                     </Badge>
                   </CardContent>
                 </Card>
                 
                 <Card className="md:w-2/3">
                   <CardHeader>
-                    <CardTitle>Thống kê Đóng góp</CardTitle>
-                    <CardDescription>Dự án: {project.name}</CardDescription>
+                    <CardTitle>Contribution Statistics</CardTitle>
+                    <CardDescription>Project: {project.name}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between mb-1">
-                          <span className="text-sm font-medium">Điểm đóng góp</span>
+                          <span className="text-sm font-medium">Contribution Score</span>
                           <span className="text-sm font-medium">{evidence.calculatedScore.toFixed(2)} / {evidence.groupAverageScore.toFixed(2)}</span>
                         </div>
                         <Progress value={evidence.calculatedScore / evidence.groupAverageScore * 100} className="h-2" />
                         <p className="text-xs text-gray-500 mt-1">
-                          {evidence.percentageBelowAverage.toFixed(1)}% thấp hơn điểm trung bình nhóm
+                          {evidence.percentageBelowAverage.toFixed(1)}% below group average
                         </p>
                       </div>
                       
                       <div className="grid grid-cols-3 gap-3">
                         <div className="bg-gray-100 p-3 rounded-md">
                           <div className="flex justify-between">
-                            <span className="text-xs">Task đã hoàn thành</span>
+                            <span className="text-xs">Tasks Completed</span>
                             <Badge variant="outline">{evidence.taskEvidence.completedTasks}/{evidence.taskEvidence.totalTasks}</Badge>
                           </div>
                           <Progress value={evidence.taskEvidence.completionPercentage} className="h-1 mt-2" />
@@ -216,7 +215,7 @@ const FreeRiderEvidenceDetailPage = () => {
                         
                         <div className="bg-gray-100 p-3 rounded-md">
                           <div className="flex justify-between">
-                            <span className="text-xs">Số lượng commit</span>
+                            <span className="text-xs">Number of Commits</span>
                             <Badge variant="outline">{evidence.commitEvidence.totalCommits}</Badge>
                           </div>
                           <Progress value={evidence.commitEvidence.percentageOfGroupAverage} className="h-1 mt-2" />
@@ -224,7 +223,7 @@ const FreeRiderEvidenceDetailPage = () => {
                         
                         <div className="bg-gray-100 p-3 rounded-md">
                           <div className="flex justify-between">
-                            <span className="text-xs">Đánh giá từ đồng đội</span>
+                            <span className="text-xs">Peer Review Rating</span>
                             <Badge variant="outline">{evidence.peerReviewEvidence.averageRating.toFixed(1)}/5</Badge>
                           </div>
                           <Progress value={evidence.peerReviewEvidence.averageRating / 5 * 100} className="h-1 mt-2" />
@@ -249,58 +248,58 @@ const FreeRiderEvidenceDetailPage = () => {
                 </TabsList>
                 
                 <TabsContent value="tasks" className="p-4 border rounded-md mt-2">
-                  <h3 className="text-lg font-bold mb-3">Chi tiết công việc</h3>
+                  <h3 className="text-lg font-bold mb-3">Task Details</h3>
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <div>
-                        <p className="font-medium">Hoàn thành: {evidence.taskEvidence.completedTasks}/{evidence.taskEvidence.totalTasks} tasks</p>
-                        <p className="text-sm text-gray-500">Tỷ lệ hoàn thành: {evidence.taskEvidence.completionPercentage}%</p>
+                        <p className="font-medium">Completed: {evidence.taskEvidence.completedTasks}/{evidence.taskEvidence.totalTasks} tasks</p>
+                        <p className="text-sm text-gray-500">Completion Rate: {evidence.taskEvidence.completionPercentage}%</p>
                       </div>
                       <Badge variant={evidence.taskEvidence.completionPercentage < 50 ? "destructive" : "outline"}>
-                        {evidence.taskEvidence.lateTasks} task trễ hạn
+                        {evidence.taskEvidence.lateTasks} late tasks
                       </Badge>
                     </div>
                     
                     <div className="bg-gray-50 p-3 rounded border">
-                      <p className="text-sm">Không có dữ liệu chi tiết về task. Vui lòng kiểm tra trong task manager.</p>
+                      <p className="text-sm">No detailed task data available. Please check in the task manager.</p>
                     </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="commits" className="p-4 border rounded-md mt-2">
-                  <h3 className="text-lg font-bold mb-3">Hoạt động trên GitHub</h3>
+                  <h3 className="text-lg font-bold mb-3">GitHub Activity</h3>
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <div>
-                        <p className="font-medium">Tổng số commit: {evidence.commitEvidence.totalCommits}</p>
-                        <p className="text-sm text-gray-500">Chiếm {evidence.commitEvidence.percentageOfGroupAverage}% so với trung bình nhóm</p>
+                        <p className="font-medium">Total Commits: {evidence.commitEvidence.totalCommits}</p>
+                        <p className="text-sm text-gray-500">Represents {evidence.commitEvidence.percentageOfGroupAverage}% of group average</p>
                       </div>
                       <Badge variant={evidence.commitEvidence.percentageOfGroupAverage < 30 ? "destructive" : "outline"}>
-                        Đóng góp thấp
+                        Low Contribution
                       </Badge>
                     </div>
                     
                     <div className="bg-gray-50 p-3 rounded border">
-                      <p className="text-sm">Không có dữ liệu chi tiết về commit. Vui lòng kiểm tra trên GitHub.</p>
+                      <p className="text-sm">No detailed commit data available. Please check on GitHub.</p>
                     </div>
                   </div>
                 </TabsContent>
                 
                 <TabsContent value="reviews" className="p-4 border rounded-md mt-2">
-                  <h3 className="text-lg font-bold mb-3">Đánh giá từ thành viên khác</h3>
+                  <h3 className="text-lg font-bold mb-3">Reviews from Other Members</h3>
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <div>
-                        <p className="font-medium">Điểm đánh giá trung bình: {evidence.peerReviewEvidence.averageRating.toFixed(1)}/5</p>
-                        <p className="text-sm text-gray-500">Nhận {evidence.peerReviewEvidence.lowRatingCount} đánh giá thấp</p>
+                        <p className="font-medium">Average Rating: {evidence.peerReviewEvidence.averageRating.toFixed(1)}/5</p>
+                        <p className="text-sm text-gray-500">Received {evidence.peerReviewEvidence.lowRatingCount} low ratings</p>
                       </div>
                       <Badge variant={evidence.peerReviewEvidence.averageRating < 3 ? "destructive" : "outline"}>
-                        {evidence.peerReviewEvidence.averageRating < 3 ? "Đánh giá tiêu cực" : "Đánh giá trung bình"}
+                        {evidence.peerReviewEvidence.averageRating < 3 ? "Negative Rating" : "Average Rating"}
                       </Badge>
                     </div>
                     
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm">Phản hồi từ đồng nghiệp:</h4>
+                      <h4 className="font-medium text-sm">Peer Feedback:</h4>
                       {evidence.peerReviewEvidence.feedback.map((feedback, index) => (
                         <div key={index} className="bg-gray-50 p-3 rounded border">
                           <p className="text-sm italic">"{feedback}"</p>
@@ -340,3 +339,4 @@ const FreeRiderEvidenceDetailPage = () => {
 };
 
 export default FreeRiderEvidenceDetailPage;
+

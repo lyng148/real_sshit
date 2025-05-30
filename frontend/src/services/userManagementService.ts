@@ -19,6 +19,22 @@ class UserManagementService {
     }
   }
 
+  async getAllUsersPaginated(page: number = 0, size: number = 10, sortBy: string = 'fullName', sortDirection: string = 'ASC') {
+    try {
+      const response = await axiosInstance.get('/api/users/paginated', {
+        params: {
+          page,
+          size,
+          sortBy,
+          sortDirection
+        }
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async getUserById(id: string): Promise<UserManagementResponse> {    try {
       const response = await axiosInstance.get(`/api/users/${id}`);
       return response.data;

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {AlertTriangle , AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode } from 'lucide-react';
+import {AlertTriangle , AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode, Settings, Shield, UserCog } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import projectService from '@/services/projectService';
@@ -14,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import ProjectAccessCode from '@/components/project/ProjectAccessCode';
 import ManageProjectStudents from '@/components/project/ManageProjectStudents';
 import JoinProject from '@/components/project/JoinProject';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 // Define the Project interface
 interface Project {
@@ -140,7 +140,7 @@ const ProjectDetails: React.FC = () => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
       year: 'numeric',
       month: 'long',
       day: 'numeric'
@@ -148,239 +148,307 @@ const ProjectDetails: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 overflow-auto p-6 relative">
-        {/* Overlay Spinner */}
-        {loading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
+    <div>
+      
+      <main className="flex-1 overflow-auto">
+        {loading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <LoadingSpinner size="lg" variant="spinner" />
+              <p className="text-gray-500 mt-4">Đang tải thông tin dự án...</p>
+            </div>
           </div>
-        )}
-        <div className="max-w-4xl mx-auto">
-          {!loading && project ? (
-            <>
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-800">{project.name}</h1>
-                  <p className="text-gray-600 mt-1">Created by {project.creatorName} on {formatDate(project.createdAt)}</p>
+        ) : project ? (
+          <div className="max-w-7xl mx-auto p-6">
+            {/* Header Section with Edit/Delete buttons */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                    {project.name}
+                  </h1>
+                  <p className="text-lg text-gray-600 mb-3">
+                    {project.description}
+                  </p>
+                  <div className="flex items-center text-sm text-gray-500">
+                    <span>Tạo bởi <strong>{project.creatorName}</strong> vào ngày {formatDate(project.createdAt)}</span>
+                  </div>
                 </div>
                 
+                {/* Edit/Delete buttons in top right */}
                 {canEdit && (
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={() => navigate(`/projects/${projectId}/edit`)}>
-                      <Edit className="h-4 w-4 mr-2" /> Edit
+                  <div className="flex gap-2 ml-6">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/projects/${projectId}/edit`)}
+                      className="flex items-center gap-2"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Chỉnh sửa
                     </Button>
                     
                     <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button size="sm" variant="destructive">
-                          <Trash2 className="h-4 w-4 mr-2" /> Delete
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-red-200 text-red-600 hover:bg-red-50 flex items-center gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Xóa
                         </Button>
                       </DialogTrigger>
-                      <DialogContent>                        <DialogHeader>
-                          <DialogTitle>Delete Project</DialogTitle>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Xóa dự án</DialogTitle>
                           <DialogDescription>
-                            Are you sure you want to delete this project? This action cannot be undone and will permanently delete:
+                            Bạn có chắc chắn muốn xóa dự án này? Hành động này không thể hoàn tác và sẽ xóa vĩnh viễn:
                             <ul className="list-disc pl-5 mt-2">
-                              <li>All groups in this project</li>
-                              <li>All tasks assigned to these groups</li>
-                              <li>All comments on tasks</li>
-                              <li>All commit records for these groups</li>
-                              <li>All peer review data for this project</li>
+                              <li>Tất cả nhóm trong dự án này</li>
+                              <li>Tất cả task được giao cho các nhóm</li>
+                              <li>Tất cả comment trên task</li>
+                              <li>Tất cả dữ liệu commit cho các nhóm này</li>
+                              <li>Tất cả dữ liệu peer review cho dự án này</li>
                             </ul>
                           </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
-                          <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-                          <Button variant="destructive" onClick={handleDeleteProject}>Delete</Button>
+                          <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Hủy</Button>
+                          <Button variant="destructive" onClick={handleDeleteProject}>Xóa</Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
                   </div>
                 )}
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Max Members per Group</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{project.maxMembers}</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Free Rider Detection Threshold</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{project.freeriderThreshold}</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Pressure Score Threshold</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">{project.pressureThreshold}</div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Description</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 whitespace-pre-wrap">
-                      {project.description || "No description provided."}
-                    </p>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Evaluation Criteria</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700 whitespace-pre-wrap">
-                      {project.evaluationCriteria || "No evaluation criteria specified."}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              <Card className="mt-6">
-                <CardHeader>
-                  <CardTitle>Weight Factors</CardTitle>
-                  <CardDescription>Weights used for calculating contribution scores: W1*Task Completion + W2*Peer Review + W3*Commit Count + W4*Task Late Count</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <div className="text-sm font-medium text-gray-500">Task Completion (W1)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW1}</div>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <div className="text-sm font-medium text-gray-500">Peer Review (W2)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW2}</div>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <div className="text-sm font-medium text-gray-500">Commit Count (W3)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW3}</div>
-                    </div>
-                    
-                    <div className="p-4 border rounded-lg bg-gray-50">
-                      <div className="text-sm font-medium text-gray-500">Task Late Count (W4)</div>
-                      <div className="text-xl font-bold mt-1">{project.weightW4}</div>
+            </div>
+
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <Users className="h-8 w-8 text-blue-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Thành viên tối đa</p>
+                      <p className="text-2xl font-bold text-gray-900">{project.maxMembers}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
               
-              {/* Only show Actions section for staff or group leaders */}
-              {(isInstructor || isAdmin || isGroupLeader) && (
-                <div className="mt-8 space-y-4">
-                  <h2 className="text-xl font-bold text-gray-800">Actions</h2>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-8 w-8 text-orange-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Ngưỡng Free-rider</p>
+                      <p className="text-2xl font-bold text-gray-900">{project.freeriderThreshold}%</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+                
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <AlertCircle className="h-8 w-8 text-red-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Ngưỡng áp lực</p>
+                      <p className="text-2xl font-bold text-gray-900">{project.pressureThreshold}%</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-8 w-8 text-green-600" />
+                    <div className="ml-4">
+                      <p className="text-sm font-medium text-gray-600">Trạng thái</p>
+                      <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        Hoạt động
+                      </Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Project Details Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5" />
+                    Chi tiết dự án
+                  </CardTitle>
+                  <CardDescription>
+                    Thông tin cơ bản và tiêu chí đánh giá
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 mb-2">Mô tả:</h4>
+                    <p className="text-gray-600 leading-relaxed whitespace-pre-wrap">
+                      {project.description || "Chưa có mô tả."}
+                    </p>
+                  </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* For instructors and admins: show analyze options */}
-                      <>                        
-                      {(isInstructor || isAdmin) && (
-                          <Button 
-                            variant="default" 
-                            className="w-full" 
-                            onClick={() => navigate(`/projects/${projectId}/project-analyze`)}
-                          >
-                            <BarChart className="h-5 w-5 mr-2" /> Project Analysis
-                          </Button>
-                        )}
-                        {(isInstructor || isAdmin) && (
-                          <Button 
-                            variant="default" 
-                            className="w-full" 
-                            onClick={() => navigate(`/projects/${projectId}/free-rider-detection`)}
-                          >
-                            <AlertTriangle className="h-5 w-5 mr-2" /> Free-Rider Detection
-                          </Button>
-                        )}
-                        <Button 
-                          variant="default" 
-                          className="w-full" 
-                          onClick={() => navigate(`/projects/${projectId}/groups`)}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <h4 className="font-semibold text-blue-800 mb-2">Tiêu chí đánh giá:</h4>
+                    <p className="text-blue-700 leading-relaxed whitespace-pre-wrap">
+                      {project.evaluationCriteria || "Chưa có tiêu chí đánh giá."}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Weight Factors Card */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart className="h-5 w-5" />
+                    Hệ số trọng số
+                  </CardTitle>
+                  <CardDescription>
+                    Cách tính điểm đóng góp của thành viên
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
+                      <span className="font-medium text-green-800">W1: Hoàn thành Task</span>
+                      <Badge variant="secondary" className="bg-green-200 text-green-800">
+                        {project.weightW1}%
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <span className="font-medium text-blue-800">W2: Điểm Peer Review</span>
+                      <Badge variant="secondary" className="bg-blue-200 text-blue-800">
+                        {project.weightW2}%
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border border-purple-200">
+                      <span className="font-medium text-purple-800">W3: Số Commit</span>
+                      <Badge variant="secondary" className="bg-purple-200 text-purple-800">
+                        {project.weightW3}%
+                      </Badge>
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-200">
+                      <span className="font-medium text-red-800">W4: Penalty Task muộn</span>
+                      <Badge variant="secondary" className="bg-red-200 text-red-800">
+                        {project.weightW4}%
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-600 text-center">
+                      <strong>Công thức:</strong> Điểm = W1×Task + W2×Peer Review + W3×Commit - W4×Task muộn
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+              
+            {/* Management Actions */}
+            {(isInstructor || isAdmin || isGroupLeader) && (
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCog className="h-5 w-5" />
+                    Hành động quản lý
+                  </CardTitle>
+                  <CardDescription>
+                    Các công cụ quản lý và phân tích dự án
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {(isInstructor || isAdmin) && (
+                      <>
+                        <Button
+                          variant="outline"
+                          className="h-20 flex flex-col gap-2 border-blue-200 hover:bg-blue-50"
+                          onClick={() => navigate(`/projects/${projectId}/project-analyze`)}
                         >
-                          <ChartBar className="h-5 w-5 mr-2" /> Group Management
+                          <BarChart className="h-6 w-6 text-blue-600" />
+                          <span className="font-medium">Phân tích dự án</span>
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          className="h-20 flex flex-col gap-2 border-orange-200 hover:bg-orange-50"
+                          onClick={() => navigate(`/projects/${projectId}/free-rider-detection`)}
+                        >
+                          <AlertTriangle className="h-6 w-6 text-orange-600" />
+                          <span className="font-medium">Phát hiện Free-rider</span>
                         </Button>
                       </>
-                  </div>
-                </div>
-              )}
-
-              {/* Access Management Section */}
-              <div className="mt-8 space-y-4">
-                {(isAdmin || isInstructor) && (
-                    <h2 className="text-xl font-bold text-gray-800">Access Management</h2>
-                )}
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Show access management for instructors/admins */}
-                  {(isInstructor || isAdmin) && (
-                    <>
-                      <ProjectAccessCode 
-                        projectId={Number(projectId)} 
-                        projectName={project?.name || ""} 
-                      />
-                      
-                      <ManageProjectStudents 
-                        projectId={Number(projectId)} 
-                        projectName={project?.name || ""} 
-                      />
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* For regular students: show join/create group options */}
-              {isStudent && (
-                <div className="mt-8 space-y-4">
-                  <h2 className="text-xl font-bold text-gray-800">Group Options</h2>
-                  
-                  <div className="grid grid-cols-1  gap-4">
-                    <Button 
-                      variant="default" 
-                      className="w-full" 
+                    )}
+                    
+                    <Button
+                      variant="outline"
+                      className="h-20 flex flex-col gap-2 border-purple-200 hover:bg-purple-50"
                       onClick={() => navigate(`/projects/${projectId}/groups`)}
                     >
-                      <Users className="h-5 w-5 mr-2" /> View Groups
+                      <Users className="h-6 w-6 text-purple-600" />
+                      <span className="font-medium">Quản lý nhóm</span>
                     </Button>
-  
                   </div>
-                </div>
-              )}
-            </>
-          ) : !loading && !project ? (
-            <div className="text-center py-12">
-              <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-gray-800">Project Not Found</h2>
-              <p className="text-gray-600 mt-2">The project you're looking for doesn't exist or you don't have permission to view it.</p>
-              <Button variant="outline" className="mt-6" onClick={() => navigate('/')}>
-                Return to Dashboard
-              </Button>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Access Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  Quản lý truy cập
+                </CardTitle>
+                <CardDescription>
+                  Cài đặt quyền truy cập và quản lý thành viên
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6 flex flex-col gap-4">
+                {/* Project Access Code */}
+                {(isInstructor || isAdmin) && (
+                  <ProjectAccessCode projectId={projectId!} />
+                )}
+                
+                {/* Manage Students */}
+                {(isInstructor || isAdmin) && (
+                  <ManageProjectStudents projectId={parseInt(projectId!)} />
+                )}
+
+                {/* Join Project */}
+                {isStudent && (
+                  <JoinProject projectId={parseInt(projectId!)} />
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <div className="text-6xl mb-4">❌</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Không tìm thấy dự án</h2>
+              <p className="text-gray-600">Dự án bạn đang tìm không tồn tại hoặc đã bị xóa.</p>
             </div>
-          ) : null}
-        </div>
-      </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
 
 export default ProjectDetails;
+

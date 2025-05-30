@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Sidebar } from '@/components/Sidebar';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, TrendingUp, Shield, BarChart3, Calendar, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Group } from '@/services/groupService';
 import peerReviewService from '@/services/peerReviewService';
 import PeerReviewModal from '@/components/peer-review/PeerReviewModal';
-import { getInitials } from '@/lib/utils';
 
 // Import custom components
 import GroupsList from '@/components/groups/GroupsList';
@@ -23,17 +23,32 @@ import TaskCalendar from '@/components/tasks/TaskCalendar';
 import { useGroupsData } from '@/hooks/useGroupsData';
 import { useTasksData } from '@/hooks/useTasksData';
 import { useTaskManagement } from '@/hooks/useTaskManagement';
+import { useAuth } from '@/contexts/AuthContext';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
 const GroupsPage = () => {
-  const { projectId, groupId } = useParams();
+  const { projectId, groupId } = useParams<{ projectId: string; groupId?: string }>();
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   
-  // State for member dialog
-  const [viewMembersDialogOpen, setViewMembersDialogOpen] = useState<boolean>(false);
+  const pageRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  
+  // State for showing peer review modal
+  const [showPeerReviewModal, setShowPeerReviewModal] = useState(false);
   const [selectedGroupMembers, setSelectedGroupMembers] = useState<any[]>([]);
-  const [selectedGroupName, setSelectedGroupName] = useState<string>("");  
-  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar' | 'peer-reviews'>('kanban');
-  const [showPeerReviewModal, setShowPeerReviewModal] = useState<boolean>(false);
+  const [selectedGroupName, setSelectedGroupName] = useState<string>('');
+  const [viewMembersDialogOpen, setViewMembersDialogOpen] = useState(false);
+
+  // Authentication role checks
+  const isAdmin = currentUser?.user.roles?.includes('ADMIN');
+  const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
+  const isStudent = currentUser?.user.roles?.includes('STUDENT');
+  const isRegularStudent = isStudent && !isAdmin && !isInstructor;
+
+  // Different view state for different user types
+  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar'>('kanban');
   
   // Use custom hooks
   const { 
@@ -42,15 +57,56 @@ const GroupsPage = () => {
     userGroup,
     viewedGroup, 
     setViewedGroup,
-    isAdmin, 
-    isInstructor, 
     isGroupLeader,
     handleJoinGroup,
-    handleAutoJoin
-  } = useGroupsData({ projectId });
+    handleAutoJoin,
+    // Pagination data
+    currentPage,
+    totalPages,
+    totalElements,
+    pageSize,
+    handlePageChange,
+    usePagination
+  } = useGroupsData({ 
+    projectId, 
+    usePagination: isAdmin || isInstructor, // Enable pagination for admin/instructor
+    initialPageSize: 10 
+  });
 
-  // Check if user is regular student (not admin or instructor)
-  const isRegularStudent = !isAdmin && !isInstructor;
+  const {
+    tasks,
+    tasksLoading,
+    tasksError,
+    todoTasks,
+    inProgressTasks,
+    completedTasks,
+    selectedTask,
+    setSelectedTask,
+    addTaskDialogOpen,
+    setAddTaskDialogOpen,
+    handleTaskClick,
+    handleAddTask,
+    handleTaskUpdated,
+    refreshTasks,
+    setTasks,
+    mapApiStatusToUIStatus,
+    mapUIStatusToApiStatus
+  } = useTasksData({ groupId: userGroup?.id || viewedGroup?.id, userGroup, viewedGroup });
+
+  // Task management functionality
+  const { onDragEnd, moveTaskForward, moveTaskBackward } = useTaskManagement({ 
+    tasks, 
+    setTasks, 
+    mapUIStatusToApiStatus 
+  });
+
+  const handleSaveTask = () => {
+    handleTaskUpdated();
+  };
+
+  const handleDeleteTask = () => {
+    handleTaskUpdated();
+  };
 
   // Check for pending peer reviews when component mounts or projectId changes
   // Only check for regular students
@@ -74,32 +130,6 @@ const GroupsPage = () => {
     
     checkPendingReviews();
   }, [projectId, isRegularStudent]);
-
-  const {
-    tasks,
-    tasksLoading,
-    tasksError,
-    selectedTask,
-    taskDetailOpen,
-    addTaskDialogOpen,
-    setTaskDetailOpen,
-    setAddTaskDialogOpen,
-    todoTasks,
-    inProgressTasks,
-    completedTasks,
-    handleTaskClick,
-    handleAddTask,
-    handleTaskUpdated,
-    refreshTasks,
-    mapUIStatusToApiStatus,
-    setTasks
-  } = useTasksData({ groupId, userGroup, viewedGroup });
-
-  const { onDragEnd, moveTaskForward, moveTaskBackward } = useTaskManagement({ 
-    tasks, 
-    setTasks, 
-    mapUIStatusToApiStatus 
-  });
 
   // Helper functions
   const getInitials = (name: string) => {
@@ -132,6 +162,13 @@ const GroupsPage = () => {
       else setViewedGroup(null);
     }
   }, [isAdmin, isInstructor, groupId, groups, setViewedGroup]);
+
+  // Entrance animations
+  useEffect(() => {
+    if (!loading && pageRef.current && !hasAnimated) {
+      setHasAnimated(true);
+    }
+  }, [loading, hasAnimated]);
 
   // Render group detail view (student or admin/instructor)
   const renderGroupDetailView = (groupParam?: Group) => {
@@ -197,8 +234,11 @@ const GroupsPage = () => {
     // Show spinner when loading
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-[80vh]">
-          <div className="animate-spin w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+        <div className="h-[60vh] flex items-center justify-center bg-gradient-to-br from-white to-purple-50">
+          <div className="text-center">
+            <LoadingSpinner size="lg" variant="spinner" />
+            <p className="text-gray-500 mt-4 text-lg">Đang tải thông tin nhóm...</p>
+          </div>
         </div>
       );
     }
@@ -215,11 +255,18 @@ const GroupsPage = () => {
     // For admins and instructors, show all groups with view option
     if (isAdmin || isInstructor) {
       return (
-        <div>
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Project Groups</h1>
-            <p className="text-gray-600">Project ID: {projectId}</p>
-          </div>
+        <div className="space-y-6">
+          <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Tổng quan dự án</h2>
+                <p className="text-gray-600">Quản lý tất cả các nhóm trong dự án #{projectId}</p>
+              </div>
+              <div className="p-4 bg-white rounded-xl shadow-sm">
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
+            </div>
+          </Card>
           
           <GroupsList
             groups={groups}
@@ -229,6 +276,11 @@ const GroupsPage = () => {
             onViewMembers={handleViewMembers}
             onJoinGroup={handleJoinGroup}
             onViewGroup={handleViewGroup}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalElements={totalElements}
+            onPageChange={handlePageChange}
+            pageSize={pageSize}
           />
         </div>
       );
@@ -236,35 +288,36 @@ const GroupsPage = () => {
     
     // For students who haven't joined a group yet - show available groups
     return (
-      <div>
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Project Groups</h1>
-            <p className="text-gray-600">Project ID: {projectId}</p>
-          </div>
-          
-          {/* Only show Create Group and Auto Join buttons for students who are not admins/instructors */}
-          {!isAdmin && !isInstructor && (
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleCreateGroup} 
-                variant="default"
-                className="flex items-center gap-2"
-              >
-                <Plus size={16} />
-                Create Group
-              </Button>
-              <Button 
-                onClick={handleAutoJoin} 
-                variant="outline" 
-                className="flex items-center gap-2"
-              >
-                <Users size={16} />
-                Auto Join
-              </Button>
+      <div className="space-y-6">
+        <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
+          <div className="flex justify-between items-center">
+            <div className="flex-1">
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Tham gia nhóm</h2>
+              <p className="text-gray-600 mb-4">Chọn nhóm phù hợp hoặc tạo nhóm mới cho dự án #{projectId}</p>
             </div>
-          )}
-        </div>
+            
+            {/* Only show Create Group and Auto Join buttons for students who are not admins/instructors */}
+            {!isAdmin && !isInstructor && (
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleCreateGroup} 
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg"
+                >
+                  <Plus size={16} />
+                  Tạo nhóm mới
+                </Button>
+                <Button 
+                  onClick={handleAutoJoin} 
+                  variant="outline" 
+                  className="border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2"
+                >
+                  <Shield size={16} />
+                  Tham gia tự động
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
 
         <GroupsList
           groups={groups}
@@ -280,79 +333,81 @@ const GroupsPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
-      <div className="flex-1 overflow-auto p-6 relative">
-        {/* Overlay spinner when joined group is loading */}
-        {userGroup && loading && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-            <svg className="animate-spin h-12 w-12 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-            </svg>
-          </div>
-        )}
-        
-        {renderContent()}
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {renderContent()}
 
-        {/* Members Dialog */}
-        <Dialog open={viewMembersDialogOpen} onOpenChange={setViewMembersDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{selectedGroupName} - Members</DialogTitle>
-            </DialogHeader>
-            <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
-              {selectedGroupMembers.map(member => (                <div 
-                  key={member.id} 
-                  className="p-3 bg-gray-50 rounded-md flex items-center"
-                >
-                  <Avatar className="h-8 w-8 mr-3">
-                    {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
-                    <AvatarFallback>{getInitials(member.fullName)}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">{member.fullName}</p>
-                    <p className="text-xs text-gray-500">{member.email}</p>
-                  </div>
+      {/* Enhanced Members Dialog */}
+      <Dialog open={viewMembersDialogOpen} onOpenChange={setViewMembersDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              {selectedGroupName} - Thành viên
+            </DialogTitle>
+          </DialogHeader>
+          <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
+            {selectedGroupMembers.map(member => (
+              <Card 
+                key={member.id}
+                className="p-4 bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg flex items-center hover:shadow-md transition-all duration-300"
+              >
+                <Avatar className="h-10 w-10 mr-3 ring-2 ring-purple-200">
+                  {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
+                  <AvatarFallback className="bg-gradient-to-r from-purple-400 to-pink-400 text-white font-semibold">
+                    {getInitials(member.fullName)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-800">{member.fullName}</p>
+                  <p className="text-sm text-gray-500">{member.email}</p>
                 </div>
-              ))}
-            </div>
-            <DialogClose asChild>
-              <Button variant="outline" className="w-full mt-2">Close</Button>
-            </DialogClose>
-          </DialogContent>
-        </Dialog>
-        
-        {/* Peer Review Modal - Will be automatically shown when there are pending reviews */}
-        {projectId && isRegularStudent && (
-          <PeerReviewModal
-            projectId={parseInt(projectId, 10)}
-            open={showPeerReviewModal}
-            onOpenChange={(open) => {
-              // Only allow closing if all reviews are complete
-              setShowPeerReviewModal(open);
-            }}
-          />
-        )}
-
-        {/* Task Detail Dialog */}
-        <TaskDetailDialog
-          open={taskDetailOpen}
-          onOpenChange={setTaskDetailOpen}
-          task={selectedTask}
-          groupMembers={userGroup?.members || viewedGroup?.members || []}
-          onTaskUpdated={handleTaskUpdated}
-          isGroupLeader={isGroupLeader(Number(projectId))}
+              </Card>
+            ))}
+          </div>
+          <DialogClose asChild>
+            <Button variant="outline" className="w-full mt-4">
+              Đóng
+            </Button>
+          </DialogClose>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Peer Review Modal - Will be automatically shown when there are pending reviews */}
+      {projectId && isRegularStudent && (
+        <PeerReviewModal
+          projectId={parseInt(projectId, 10)}
+          open={showPeerReviewModal}
+          onOpenChange={(open) => {
+            // Only allow closing if all reviews are complete
+            setShowPeerReviewModal(open);
+          }}
         />
+      )}
 
-        {/* Add Task Dialog */}
-        <AddTaskDialog 
-          open={addTaskDialogOpen}
-          onOpenChange={setAddTaskDialogOpen}
-          groupId={userGroup?.id || viewedGroup?.id || 0}
-          onTaskAdded={refreshTasks}
-        />
-      </div>
+      {/* Task Detail Dialog */}
+      <TaskDetailDialog
+        open={!!selectedTask && selectedTask !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedTask(null);
+          }
+        }}
+        task={selectedTask}
+        groupMembers={userGroup?.members || viewedGroup?.members || []}
+        onTaskUpdated={handleSaveTask}
+        onTaskDeleted={handleDeleteTask}
+        isGroupLeader={isGroupLeader(Number(projectId))}
+      />
+
+      {/* Add Task Dialog */}
+      <AddTaskDialog 
+        open={addTaskDialogOpen}
+        onOpenChange={setAddTaskDialogOpen}
+        groupId={userGroup?.id || viewedGroup?.id || 0}
+        onTaskAdded={refreshTasks}
+      />
     </div>
   );
 };

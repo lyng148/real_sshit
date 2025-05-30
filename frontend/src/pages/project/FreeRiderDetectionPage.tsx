@@ -4,7 +4,6 @@ import FreeRiderEvidenceDisplay from '@/components/free-rider-detection/FreeRide
 import FreeRiderCaseManagement from '@/components/free-rider-detection/FreeRiderCaseManagement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Sidebar } from '@/components/Sidebar';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import projectService from '@/services/projectService';
@@ -67,8 +66,8 @@ const FreeRiderDetectionPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 overflow-hidden">
-      <Sidebar />
+    <div>
+      
       <div className="flex-1 overflow-auto p-6">
         <div className="max-w-6xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Free-Rider Detection System</h1>
@@ -133,3 +132,4 @@ const FreeRiderDetectionPage = () => {
 };
 
 export default FreeRiderDetectionPage;
+

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Plus, Users, Check, List, BarChart, Eye, UserCog, Info } from 'lucide-react';
@@ -10,6 +10,9 @@ import groupService, { Group } from '@/services/groupService';
 import { useToast } from '@/components/ui/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { animations, animateOnScroll } from '@/lib/animations';
+import { animate, stagger } from 'animejs';
 
 // Dùng một đối tượng global để cache danh sách dự án
 const cachedProjects = {
@@ -36,6 +39,9 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
   const { toast } = useToast();
   const isAdmin = currentUser?.user.roles?.includes('ADMIN');
   const isInstructor = currentUser?.user.roles?.includes('INSTRUCTOR');
+  
+  const projectListRef = useRef<HTMLDivElement>(null);
+  const animationTriggered = useRef(false); // Add ref to track animation
   
   const [loading, setLoading] = useState(!cachedProjects.isLoaded);
   const [projects, setProjects] = useState<Project[]>(cachedProjects.projects);
@@ -100,7 +106,18 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
   useEffect(() => {
     fetchProjects();
   }, [fetchProjects]);
-  
+
+  // Animation effects
+  useEffect(() => {
+    if (!loading && projects.length > 0 && !animationTriggered.current) {
+      // Entrance animation for project list
+      setTimeout(() => {
+        animations.list.staggeredAppear('.project-list-item', 80);
+      }, 100);
+      animationTriggered.current = true;
+    }
+  }, [loading, projects.length]); // Only depend on loading and projects count
+
   // Fetch led groups
   useEffect(() => {
     const fetchLedGroups = async () => {
@@ -145,6 +162,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
     }
   }, [selectedProject]);
 
+  // Handle project item click animation
   const handleProjectClick = (projectId: number) => {
     setSelectedProject(projectId); // cập nhật state ngay lập tức
     navigate(`/projects/${projectId}/groups`);
@@ -173,58 +191,87 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
   };
 
   return (
-    <div className="mt-1">
+    <div ref={projectListRef} className="mt-1">
       {loading ? (
-        <div className="p-4 text-center text-sm text-gray-500">Loading projects...</div>
+        <div className="p-4 text-center">
+          <LoadingSpinner size="sm" variant="dots" />
+          <p className="text-sm text-gray-500 mt-2">Loading projects...</p>
+        </div>
       ) : projects.length === 0 ? (
         <div className="p-4 text-center text-sm text-gray-500">
-          No projects found
-          <button 
-            onClick={handleRefreshProjects}
-            className="ml-2 text-blue-500 hover:text-blue-700 text-xs"
-          >
-            Refresh
-          </button>
+          <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg p-6 border border-gray-200">
+            <div className="text-gray-400 mb-2">📁</div>
+            <p className="mb-2">No projects found</p>
+            <button 
+              onClick={handleRefreshProjects}
+              className="text-purple-500 hover:text-purple-700 text-xs px-3 py-1 rounded-full bg-purple-50 hover:bg-purple-100 transition-all duration-300 hover:scale-105"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
-      ) : (        projects.map((project) => (
-          <div key={project.id}>
+      ) : (
+        projects.map((project) => (
+          <div key={project.id} className="project-list-item opacity-0">
             <div 
+              data-project-id={project.id}
               onClick={() => handleProjectClick(project.id)}
               className={cn(
-                "flex items-center px-4 py-1.5 my-0.5 text-sm hover:bg-gray-100 cursor-pointer",
-                selectedProject === project.id ? "text-blue-600" : "text-gray-800",
+                "flex items-center px-4 py-2.5 my-1 text-sm cursor-pointer rounded-lg transition-all duration-300 group relative overflow-hidden",
+                selectedProject === project.id 
+                  ? "text-purple-700 bg-gradient-to-r from-purple-100 to-pink-100 shadow-sm border-l-4 border-purple-500" 
+                  : "text-gray-700 hover:text-purple-600 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50",
                 isCollapsed && "justify-center"
               )}
               title={isCollapsed ? project.name : ""}
             >
+              {/* Active indicator glow effect */}
+              {selectedProject === project.id && (
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-lg" />
+              )}
+              
               <div className={cn(
-                "w-4 h-4 rounded-full border flex items-center justify-center",
-                selectedProject === project.id ? "border-blue-500" : "border-gray-300",
+                "w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all duration-300 relative z-10",
+                selectedProject === project.id 
+                  ? "border-purple-500 bg-purple-500 shadow-lg shadow-purple-500/25" 
+                  : "border-gray-300 group-hover:border-purple-400",
                 isCollapsed ? "mr-0" : "mr-3"
               )}>
-                {selectedProject === project.id && <div className="w-2 h-2 rounded-full bg-blue-500"></div>}
+                {selectedProject === project.id && (
+                  <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                )}
               </div>
-              {!isCollapsed && <span className="truncate">{project.name}</span>}
+              
+              {!isCollapsed && (
+                <span className="truncate font-medium relative z-10 group-hover:scale-105 transition-transform duration-300">
+                  {project.name}
+                </span>
+              )}
+              
+              {/* Hover effect background */}
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-400/0 to-pink-400/0 group-hover:from-purple-400/5 group-hover:to-pink-400/5 transition-all duration-300 rounded-lg" />
             </div>
             {!isCollapsed && selectedProject === project.id && (
-              <div className="ml-6 border-l border-gray-200">
-                <div>
+              <div className="ml-6 border-l border-purple-200 bg-gradient-to-r from-purple-50/50 to-pink-50/50 rounded-r-lg">
+                <div className="py-2">
                   {/* Project Info option - available for all users */}
                   <div
-                    className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                    className="flex items-center pl-4 pr-4 py-2 text-sm hover:bg-white/80 w-full text-left cursor-pointer transition-all duration-300 hover:shadow-sm group border-b border-purple-100/50 last:border-b-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(`/projects/${project.id}/details`);
                     }}
                   >
-                    <Info size={14} className="mr-2 text-blue-600" />
-                    <span className="text-blue-600">Project Info</span>
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                      <Info size={12} className="text-white" />
+                    </div>
+                    <span className="text-blue-600 font-medium group-hover:text-blue-700">Project Info</span>
                   </div>
 
                   {/* Manage Group option - available for group leaders, admins, and instructors */}
                   {(isGroupLeader(project.id) || isAdmin || isInstructor) && isGroupMember(project.id) && (
                     <div
-                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      className="flex items-center pl-4 pr-4 py-2 text-sm hover:bg-white/80 w-full text-left cursor-pointer transition-all duration-300 hover:shadow-sm group border-b border-purple-100/50 last:border-b-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         let groupId: number | null = null;
@@ -255,15 +302,17 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
                         }
                       }}
                     >
-                      <UserCog size={14} className="mr-2 text-purple-600" />
-                      <span className="text-purple-600">Manage Group</span>
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                        <UserCog size={12} className="text-white" />
+                      </div>
+                      <span className="text-purple-600 font-medium group-hover:text-purple-700">Manage Group</span>
                     </div>
                   )}
 
                   {/* Group Analysis option */}
                   {(isGroupLeader(project.id) || isAdmin || isInstructor) && (
                     <div
-                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      className="flex items-center pl-4 pr-4 py-2 text-sm hover:bg-white/80 w-full text-left cursor-pointer transition-all duration-300 hover:shadow-sm group border-b border-purple-100/50 last:border-b-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         let groupId: number | null = null;
@@ -285,33 +334,42 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
                         }
                       }}
                     >
-                      <Users size={14} className="mr-2 text-green-600" />
-                      <span className="text-green-600">Group Analysis</span>
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                        <Users size={12} className="text-white" />
+                      </div>
+                      <span className="text-green-600 font-medium group-hover:text-green-700">Group Analysis</span>
                     </div>
                   )}
-                  {/* Other existing options */}
+                  
+                  {/* Project Analysis for admin/instructor */}
                   {(isAdmin || isInstructor) && (
                     <div
-                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      className="flex items-center pl-4 pr-4 py-2 text-sm hover:bg-white/80 w-full text-left cursor-pointer transition-all duration-300 hover:shadow-sm group border-b border-purple-100/50 last:border-b-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/projects/${project.id}/project-analyze`);
                       }}
                     >
-                      <BarChart size={14} className="mr-2 text-blue-600" />
-                      <span className="text-blue-600">Project Analysis</span>
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                        <BarChart size={12} className="text-white" />
+                      </div>
+                      <span className="text-blue-600 font-medium group-hover:text-blue-700">Project Analysis</span>
                     </div>
                   )}
+                  
+                  {/* Manage Project for admin/instructor */}
                   {(isAdmin || isInstructor) && (
                     <div
-                      className="flex items-center pl-3 pr-4 py-1.5 text-sm hover:bg-gray-100 w-full text-left cursor-pointer"
+                      className="flex items-center pl-4 pr-4 py-2 text-sm hover:bg-white/80 w-full text-left cursor-pointer transition-all duration-300 hover:shadow-sm group border-b border-purple-100/50 last:border-b-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/projects/${project.id}/edit`);
                       }}
                     >
-                      <UserCog size={14} className="mr-2 text-orange-500" />
-                      <span className="text-orange-500">Manage Project</span>
+                      <div className="w-6 h-6 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center mr-3 group-hover:scale-110 transition-transform duration-300 shadow-sm">
+                        <UserCog size={12} className="text-white" />
+                      </div>
+                      <span className="text-orange-500 font-medium group-hover:text-orange-600">Manage Project</span>
                     </div>
                   )}
                 </div>
