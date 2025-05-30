@@ -135,10 +135,18 @@ public class SecurityUtils {
      */
     public static User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof User)) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("No authenticated user found");
         }
-        return (User) authentication.getPrincipal();
+        
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof User) {
+            return (User) principal;
+        } else if (principal instanceof UserPrincipal) {
+            return ((UserPrincipal) principal).getUser();
+        } else {
+            throw new IllegalStateException("Unexpected authentication principal type: " + principal.getClass().getName());
+        }
     }
     
     /**
