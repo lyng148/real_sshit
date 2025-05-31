@@ -85,16 +85,16 @@ const GroupsList: React.FC<GroupsListProps> = ({
       </CardHeader>
       
       <CardContent className="p-0">
-        {groups.length === 0 ? (
+      {groups.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
               <Users className="h-8 w-8 text-slate-400" />
             </div>
             <p className="text-xl font-semibold text-slate-600 mb-2">Chưa có nhóm nào</p>
             <p className="text-slate-500">Hãy tạo nhóm đầu tiên cho dự án này</p>
-          </div>
-        ) : (
-          <>
+        </div>
+      ) : (
+        <>
             <div className="divide-y divide-slate-100">
               {groups.map((group, index) => (
                 <div 
@@ -111,14 +111,14 @@ const GroupsList: React.FC<GroupsListProps> = ({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <div>
+                  <div>
                               <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-slate-700 transition-colors">
                                 {group.name}
                               </h3>
                               <p className="text-sm text-slate-500 mt-1">
                                 Nhóm #{group.id} • Tạo {new Date(group.createdAt).toLocaleDateString('vi-VN')}
                               </p>
-                            </div>
+                  </div>
                             <Badge 
                               variant={group.members.length >= 5 ? "default" : "secondary"}
                               className={`flex-shrink-0 ${
@@ -129,11 +129,11 @@ const GroupsList: React.FC<GroupsListProps> = ({
                             >
                               <UserCheck className="h-3 w-3 mr-1" />
                               {group.members.length} thành viên
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      
+                  </Badge>
+                </div>
+                  </div>
+                </div>
+                
                       {/* Group members preview */}
                       <div className="flex items-center gap-3 mb-4">
                         <span className="text-sm font-medium text-slate-600">Thành viên:</span>
@@ -179,67 +179,67 @@ const GroupsList: React.FC<GroupsListProps> = ({
                           Xem chi tiết
                         </Button>
                       ) : (
-                        <Button
-                          size="sm"
+                    <Button
+                      size="sm"
                           onClick={() => onJoinGroup(group.id, parseInt(projectId!))}
                           className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
+                    >
                           <ArrowRight className="h-4 w-4 mr-1" />
                           Tham gia
-                        </Button>
-                      )}
+                    </Button>
+                  )}
                     </div>
-                  </div>
                 </div>
-              ))}
-            </div>
-            
-            {/* Pagination Component */}
-            {onPageChange && totalPages > 1 && (
+              </div>
+            ))}
+          </div>
+          
+          {/* Pagination Component */}
+          {onPageChange && totalPages > 1 && (
               <div className="p-4 border-t border-slate-200 bg-slate-50">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        onClick={() => currentPage > 0 && onPageChange(currentPage - 1)}
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => currentPage > 0 && onPageChange(currentPage - 1)}
                         className={currentPage === 0 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-slate-100"}
-                      />
-                    </PaginationItem>
-                    
-                    {generatePageNumbers().map((pageNum) => (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => onPageChange(pageNum)}
-                          isActive={currentPage === pageNum}
+                    />
+                  </PaginationItem>
+                  
+                  {generatePageNumbers().map((pageNum) => (
+                    <PaginationItem key={pageNum}>
+                      <PaginationLink
+                        onClick={() => onPageChange(pageNum)}
+                        isActive={currentPage === pageNum}
                           className={`cursor-pointer ${
                             currentPage === pageNum 
                               ? "bg-slate-600 text-white hover:bg-slate-700" 
                               : "hover:bg-slate-100"
                           }`}
-                        >
-                          {pageNum + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
-                    
-                    {totalPages > 6 && currentPage < totalPages - 3 && (
-                      <PaginationItem>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    )}
-                    
-                    <PaginationItem>
-                      <PaginationNext 
-                        onClick={() => currentPage < totalPages - 1 && onPageChange(currentPage + 1)}
-                        className={currentPage === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-slate-100"}
-                      />
+                      >
+                        {pageNum + 1}
+                      </PaginationLink>
                     </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
-          </>
-        )}
+                  ))}
+                  
+                  {totalPages > 6 && currentPage < totalPages - 3 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => currentPage < totalPages - 1 && onPageChange(currentPage + 1)}
+                        className={currentPage === totalPages - 1 ? "pointer-events-none opacity-50" : "cursor-pointer hover:bg-slate-100"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
+        </>
+      )}
       </CardContent>
     </Card>
   );

@@ -3,6 +3,7 @@ package com.itss.projectmanagement.security;
 import com.itss.projectmanagement.entity.Task;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.TaskRepository;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -55,13 +56,13 @@ public class TaskSecurityService {
      * @param taskId The task ID to check
      * @return true if the user can view the task, false otherwise
      */
-    public boolean canViewTask(Object user, Long taskId) {
-        if (user == null || taskId == null) {
+    public boolean canViewTask(Long taskId) {
+        if (taskId == null) {
             return false;
         }
         
         try {
-            User authenticatedUser = (User) user;
+            User authenticatedUser = SecurityUtils.getCurrentUser();
             Optional<Task> taskOpt = taskRepository.findById(taskId);
             
             if (taskOpt.isEmpty()) {

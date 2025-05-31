@@ -14,6 +14,7 @@ import Landing from "./pages/landing/Landing";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Admin from "./pages/admin/Admin";
+import Dashboard from "./pages/Dashboard";
 import UserManagement from "./pages/user/UserManagement";
 import UserCreate from "./pages/user/UserCreate";
 import UserEdit from "./pages/user/UserEdit";
@@ -31,6 +32,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProjectAnalyzePage from "./pages/project/ProjectAnalyzePage";
 import FreeRiderDetectionPage from "./pages/project/FreeRiderDetectionPage";
 import FreeRiderEvidenceDetailPage from "./pages/project/FreeRiderEvidenceDetailPage";
+import FinalAssessmentPage from "./pages/project/FinalAssessmentPage";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +70,13 @@ const App = () => (
                 <ProtectedRoute roles={["ADMIN"]}>
                   <Layout>
                     <Admin />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/dashboard" element={
+                <ProtectedRoute roles={["ADMIN"]}>
+                  <Layout>
+                    <Dashboard />
                   </Layout>
                 </ProtectedRoute>
               } />
@@ -182,6 +191,14 @@ const App = () => (
                 <ProtectedRoute roles={["ADMIN", "INSTRUCTOR"]}>
                   <Layout>
                     <AdminAnalyzePage />
+                  </Layout>
+                </ProtectedRoute>
+              } />
+              {/* Final Assessment Route */}
+              <Route path="/projects/:projectId/final-assessment" element={
+                <ProtectedRoute roles={["INSTRUCTOR", "ADMIN"]}>
+                  <Layout>
+                    <FinalAssessmentPage />
                   </Layout>
                 </ProtectedRoute>
               } />

@@ -12,6 +12,7 @@ import {
   Zap,
   Target,
 } from 'lucide-react';
+import { Link} from 'react-router-dom';
 import { 
   animations, 
   createAnimationTimeline, 
@@ -188,7 +189,9 @@ const Landing: React.FC = () => {
               className="cta-button bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-8 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25"
               onClick={handleCTAClick}
             >
-              Khám phá ngay <ArrowRight className="ml-2 w-5 h-5"/>
+              <a href='/login'>              
+              Khám phá ngay
+              </a>
             </Button>
             <Button
               size="lg"

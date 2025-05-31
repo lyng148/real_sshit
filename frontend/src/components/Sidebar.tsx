@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Home, Settings, User, LogOut, UserCog, Plus, AlertTriangle, Menu, X } from 'lucide-react';
+import { Home, Settings, User, LogOut, UserCog, Plus, AlertTriangle, Menu, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import ProjectList from './ProjectList';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -171,11 +171,11 @@ export const Sidebar = () => {
       )}
 
       {/* Main navigation với enhanced styling */}      
-      <nav className="mt-2" ref={navItemsRef}>
+      <nav className="mt-4 px-2">
         <ul className="space-y-1 px-2">
           <NavItem icon={<Home size={18} />} label="Trang chủ" to="/" active={location.pathname === '/'} isCollapsed={isCollapsed} />
           {isAdmin && (
-            <NavItem icon={<UserCog size={18} />} label="Quản trị" to="/admin" active={location.pathname === '/admin'} isCollapsed={isCollapsed} />
+            <NavItem icon={<Users size={18} />} label="Quản lý người dùng" to="/admin/dashboard" active={location.pathname === '/admin/dashboard'} isCollapsed={isCollapsed} />
           )}
           {isInstructor && (
             <NavItem 

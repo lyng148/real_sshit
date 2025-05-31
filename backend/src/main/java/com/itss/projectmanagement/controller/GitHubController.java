@@ -149,7 +149,7 @@ public class GitHubController {    private final IGitHubService gitHubService;
     }
 
     @GetMapping("/commits/task/{taskId}")
-    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @taskSecurityService.canViewTask(authentication.principal, #taskId)")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @taskSecurityService.canViewTask(#taskId)")
     @Operation(summary = "Get all commits for a specific task", 
                description = "Returns all commit records associated with a specific task",
                security = @SecurityRequirement(name = "bearerAuth"))

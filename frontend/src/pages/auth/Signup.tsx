@@ -1,13 +1,14 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Shield, ArrowLeft, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { animations, createAnimationTimeline, DURATION, EASING } from '@/lib/animations';
+import { animate } from 'animejs';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +24,61 @@ const Signup = () => {
   const { signup } = useAuth();
   const { toast } = useToast();
 
+  const formRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Enhanced entrance animation
+    const tl = createAnimationTimeline({
+      easing: EASING.smooth,
+      duration: DURATION.page,
+    });
+
+    tl
+      .add(titleRef.current!, { 
+        translateY: [50, 0], 
+        opacity: [0, 1], 
+        duration: 800, 
+        delay: 200,
+        scale: [0.9, 1]
+      })
+      .add(subtitleRef.current!, { 
+        translateY: [30, 0], 
+        opacity: [0, 1], 
+        duration: 600 
+      }, '-=400')
+      .add(formRef.current!, { 
+        translateY: [40, 0], 
+        opacity: [0, 1], 
+        duration: 800,
+        scale: [0.95, 1]
+      }, '-=500');
+
+    // Background orbs animation
+    animate('.bg-orb', {
+      scale: [1, 1.2, 1],
+      opacity: [0.3, 0.6, 0.3],
+      rotate: [0, 180, 360],
+      duration: 8000,
+      loop: true,
+      easing: EASING.gentle,
+    });
+
+    // Floating elements
+    animate('.floating-element', {
+      translateY: [-15, 15],
+      rotate: [-3, 3],
+      duration: 4000,
+      loop: true,
+      direction: 'alternate',
+      easing: EASING.gentle,
+    });
+
+  }, []);
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -32,8 +88,8 @@ const Signup = () => {
     
     if (password !== confirmPassword) {
       toast({
-        title: "Password mismatch",
-        description: "Passwords do not match. Please try again.",
+        title: "Mật khẩu không khớp",
+        description: "Mật khẩu xác nhận không trùng khớp. Vui lòng thử lại.",
         variant: "destructive",
       });
       return;
@@ -41,8 +97,8 @@ const Signup = () => {
     
     if (!termsAccepted) {
       toast({
-        title: "Terms and Conditions",
-        description: "You must accept the Terms of Service and Privacy Policy to create an account.",
+        title: "Điều khoản sử dụng",
+        description: "Bạn phải đồng ý với Điều khoản dịch vụ và Chính sách bảo mật để tạo tài khoản.",
         variant: "destructive",
       });
       return;
@@ -55,22 +111,22 @@ const Signup = () => {
       const response = await signup(username, email, fullName, password);
       if (response.success) {
         toast({
-          title: "Registration successful",
-          description: "Your account has been created. Please login.",
+          title: "Đăng ký thành công",
+          description: "Tài khoản của bạn đã được tạo. Vui lòng đăng nhập.",
           variant: "default",
         });
         navigate('/login');
       } else {
         toast({
-          title: "Registration failed",
-          description: response.message || "Could not create account",
+          title: "Đăng ký thất bại",
+          description: response.message || "Không thể tạo tài khoản",
           variant: "destructive",
         });
       }    
     } catch (error: any) {
       toast({
-        title: "Registration error",
-        description: error.message || error.response?.data?.message || "An error occurred during registration",
+        title: "Lỗi đăng ký",
+        description: error.message || error.response?.data?.message || "Đã xảy ra lỗi trong quá trình đăng ký",
         variant: "destructive",
       });
     } finally {
@@ -79,24 +135,37 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#050A14] text-white flex flex-col relative overflow-hidden">
-      {/* Background with gradient overlay */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="/wallpaper.png" 
-          alt="Background" 
-          className="w-full h-full object-cover opacity-40"
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-950/90 to-black/40"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white overflow-hidden relative">
+      {/* Enhanced Background orbs */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="bg-orb absolute top-20 left-20 w-72 h-72 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
+        <div className="bg-orb absolute top-40 right-20 w-96 h-96 bg-gradient-to-r from-pink-500 to-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
+        <div className="bg-orb absolute -bottom-20 left-40 w-80 h-80 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
+      </div>
+
+      {/* Floating elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="floating-element absolute top-32 left-10 w-4 h-4 bg-gradient-to-r from-white to-purple-200 rounded-full opacity-30" />
+        <div className="floating-element absolute top-48 right-32 w-6 h-6 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full opacity-40" />
+        <div className="floating-element absolute bottom-40 left-20 w-3 h-3 bg-gradient-to-r from-pink-300 to-blue-300 rounded-full opacity-35" />
+        <div className="floating-element absolute bottom-60 right-10 w-5 h-5 bg-gradient-to-r from-blue-300 to-purple-300 rounded-full opacity-30" />
       </div>
 
       {/* Header with Logo */}
-      <header className="container mx-auto px-6 py-6 relative z-10">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent animate-fade-in">MindTask</Link>
-          <Link to="/login" className="animate-fade-in">
-            <Button variant="outline" className="border-blue-400 text-blue-400 hover:bg-blue-400/10">
-              Login
+      <header className="relative z-10 p-6 backdrop-blur-sm bg-white/5 border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <Link to="/" className="flex items-center space-x-2 group">
+            <div className="relative">
+              <Shield className="w-8 h-8 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-pink-400 to-purple-400 rounded-full opacity-80"></div>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent">
+              ITss
+            </span>
+          </Link>
+          <Link to="/login">
+            <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105">
+              Đăng nhập
             </Button>
           </Link>
         </div>
@@ -104,144 +173,174 @@ const Signup = () => {
 
       {/* Signup Form */}
       <div className="flex-1 flex items-center justify-center px-4 py-8 relative z-10">
-        <div className="w-full max-w-md relative animate-fade-in-up">
+        <div className="w-full max-w-lg relative">
           {/* Animated gradient background effect */}
-          <div className="absolute -z-10 w-full h-full max-w-[30rem] max-h-[30rem] blur-3xl rounded-full bg-gradient-to-br from-blue-600 to-purple-800 opacity-20 animate-pulse"></div>
+          <div className="absolute -z-10 w-full h-full blur-3xl rounded-full bg-gradient-to-br from-purple-600 to-pink-800 opacity-20 animate-pulse"></div>
           
-          <Card className="border border-gray-800 bg-gray-900/50 backdrop-blur-md rounded-xl shadow-xl">
-            <CardHeader className="space-y-1">
-              <div className="text-reveal-container">
-                <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent text-reveal-item animate text-reveal-delay-1 text-white">Create an account</CardTitle>
-              </div>
-              <div className="text-reveal-container text-white">
-                <CardDescription className="text-gray-300 text-center text-reveal-item animate text-reveal-delay-2">
-                  Get started with MindTask
+          <div ref={formRef} className="opacity-0">
+            <Card className="border border-white/20 bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl">
+              <CardHeader className="space-y-4 text-center">
+                <div className="flex justify-center mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                    <UserPlus className="w-8 h-8 text-white" />
+                  </div>
+                </div>
+                <CardTitle ref={titleRef} className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent opacity-0">
+                  Tạo tài khoản
+                </CardTitle>
+                <CardDescription ref={subtitleRef} className="text-gray-300 text-lg opacity-0">
+                  Bắt đầu với hệ thống ITss
                 </CardDescription>
-              </div>
-            </CardHeader>
-            <form onSubmit={handleSignup}>
-              <CardContent className="space-y-4">
-                <div className="space-y-2 animate-fade-in-up">
-                  <Label htmlFor="username" className="text-gray-200">Username</Label>
-                  <Input 
-                    id="username" 
-                    placeholder="johndoe" 
-                    className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 rounded-lg text-white"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4 animate-fade-in-up" style={{animationDelay: '0.1s'}}>
+              </CardHeader>
+              
+              <form onSubmit={handleSignup}>
+                <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="first-name" className="text-gray-200">First name</Label>
+                    <Label htmlFor="username" className="text-gray-200 font-medium">Tên đăng nhập</Label>
                     <Input 
-                      id="first-name" 
-                      placeholder="John" 
-                      className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 rounded-lg text-white"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
+                      id="username" 
+                      placeholder="Nhập tên đăng nhập" 
+                      className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
                       required
                     />
                   </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="first-name" className="text-gray-200 font-medium">Họ</Label>
+                      <Input 
+                        id="first-name" 
+                        placeholder="Nhập họ" 
+                        className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="last-name" className="text-gray-200 font-medium">Tên</Label>
+                      <Input 
+                        id="last-name" 
+                        placeholder="Nhập tên" 
+                        className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="last-name" className="text-gray-200">Last name</Label>
+                    <Label htmlFor="email" className="text-gray-200 font-medium">Email</Label>
                     <Input 
-                      id="last-name" 
-                      placeholder="Doe" 
-                      className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 rounded-lg text-white"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
+                      id="email" 
+                      type="email" 
+                      placeholder="Nhập địa chỉ email" 
+                      className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
-                </div>
-                <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.2s'}}>
-                  <Label htmlFor="email" className="text-gray-200">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="you@example.com" 
-                    className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 rounded-lg text-white"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.3s'}}>
-                  <Label htmlFor="password" className="text-gray-200">Password</Label>
-                  <div className="relative">
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-gray-200 font-medium">Mật khẩu</Label>
+                    <div className="relative">
+                      <Input 
+                        id="password" 
+                        type={showPassword ? "text" : "password"} 
+                        placeholder="Nhập mật khẩu" 
+                        className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 pr-12 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                      />
+                      <button 
+                        type="button" 
+                        onClick={togglePasswordVisibility}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors duration-200"
+                      >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-400">Tối thiểu 8 ký tự</p>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword" className="text-gray-200 font-medium">Xác nhận mật khẩu</Label>
                     <Input 
-                      id="password" 
+                      id="confirmPassword" 
                       type={showPassword ? "text" : "password"} 
-                      placeholder="••••••••" 
-                      className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 pr-10 rounded-lg text-white"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Nhập lại mật khẩu" 
+                      className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       required
-                      minLength={8}
                     />
-                    <button 
-                      type="button" 
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-                    >
-                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </button>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Must be at least 8 characters</p>
-                </div>
-                <div className="space-y-2 animate-fade-in-up" style={{animationDelay: '0.4s'}}>
-                  <Label htmlFor="confirmPassword" className="text-gray-200">Confirm Password</Label>
-                  <Input 
-                    id="confirmPassword" 
-                    type={showPassword ? "text" : "password"} 
-                    placeholder="••••••••" 
-                    className="bg-gray-800/70 border-gray-700 focus:border-blue-500 focus:ring focus:ring-blue-500/50 rounded-lg text-white"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="flex items-center space-x-2 animate-fade-in-up" style={{animationDelay: '0.5s'}}>
-                  <input 
-                    type="checkbox" 
-                    id="terms"
-                    checked={termsAccepted}
-                    onChange={(e) => setTermsAccepted(e.target.checked)}
-                    className="rounded bg-gray-800/70 border-gray-700 text-blue-500 focus:ring-blue-500" 
-                    required
-                  />
-                  <Label htmlFor="terms" className="text-sm text-gray-300">
-                    I agree to the{' '}
-                    <Link to="/terms" className="text-blue-400 hover:text-blue-300">
-                      Terms of Service
+                  
+                  <div className="flex items-start space-x-3">
+                    <input 
+                      type="checkbox" 
+                      id="terms"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      aria-label="Đồng ý với điều khoản dịch vụ và chính sách bảo mật"
+                      className="mt-1 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500 focus:ring-2" 
+                      required
+                    />
+                    <Label htmlFor="terms" className="text-sm text-gray-300 leading-relaxed">
+                      Tôi đồng ý với{' '}
+                      <Link to="/terms" className="text-purple-400 hover:text-purple-300 transition-colors duration-200">
+                        Điều khoản dịch vụ
+                      </Link>
+                      {' '}và{' '}
+                      <Link to="/privacy" className="text-purple-400 hover:text-purple-300 transition-colors duration-200">
+                        Chính sách bảo mật
+                      </Link>
+                    </Label>
+                  </div>
+                </CardContent>
+                
+                <CardFooter className="flex flex-col space-y-4">
+                  <Button 
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium py-3 shadow-lg shadow-purple-500/25 transition-all duration-300 hover:scale-105 hover:shadow-xl" 
+                    type="submit" 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        <span>Đang tạo tài khoản...</span>
+                      </div>
+                    ) : (
+                      "Tạo tài khoản"
+                    )}
+                  </Button>
+                  
+                  <p className="text-center text-gray-400">
+                    Đã có tài khoản?{' '}
+                    <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
+                      Đăng nhập
                     </Link>
-                    {' '}and{' '}
-                    <Link to="/privacy" className="text-blue-400 hover:text-blue-300">
-                      Privacy Policy
+                  </p>
+                  
+                  <div className="text-center">
+                    <Link 
+                      to="/" 
+                      className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
+                    >
+                      <ArrowLeft size={16} />
+                      <span>Quay lại trang chủ</span>
                     </Link>
-                  </Label>
-                </div>
-              </CardContent>
-              <CardFooter className="flex flex-col">
-                <Button 
-                  className="w-full mb-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-medium py-2 shadow-lg shadow-blue-700/30 transition-all duration-300 animate-fade-in-up" 
-                  type="submit" 
-                  disabled={loading}
-                  style={{animationDelay: '0.6s'}}
-                >
-                  {loading ? "Creating account..." : "Create account"}
-                </Button>
-                <p className="text-center text-gray-400 text-sm animate-fade-in-up" style={{animationDelay: '0.7s'}}>
-                  Already have an account?{' '}
-                  <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium">
-                    Sign in
-                  </Link>
-                </p>
-              </CardFooter>
-            </form>
-          </Card>
+                  </div>
+                </CardFooter>
+              </form>
+            </Card>
+          </div>
         </div>
       </div>
     </div>

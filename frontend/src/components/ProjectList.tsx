@@ -117,7 +117,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
       animationTriggered.current = true;
     }
   }, [loading, projects.length]); // Only depend on loading and projects count
-
+  
   // Fetch led groups
   useEffect(() => {
     const fetchLedGroups = async () => {
@@ -202,13 +202,13 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
           <div className="bg-gradient-to-r from-gray-100 to-gray-50 rounded-lg p-6 border border-gray-200">
             <div className="text-gray-400 mb-2">📁</div>
             <p className="mb-2">No projects found</p>
-            <button 
-              onClick={handleRefreshProjects}
+          <button 
+            onClick={handleRefreshProjects}
               className="text-purple-500 hover:text-purple-700 text-xs px-3 py-1 rounded-full bg-purple-50 hover:bg-purple-100 transition-all duration-300 hover:scale-105"
-            >
-              Refresh
-            </button>
-          </div>
+          >
+            Refresh
+          </button>
+        </div>
         </div>
       ) : (
         projects.map((project) => (

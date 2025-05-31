@@ -258,14 +258,14 @@ const GroupsPage = () => {
         <div className="space-y-6">
           <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
             <div className="flex items-center justify-between">
-              <div>
+        <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Tổng quan dự án</h2>
                 <p className="text-gray-600">Quản lý tất cả các nhóm trong dự án #{projectId}</p>
               </div>
               <div className="p-4 bg-white rounded-xl shadow-sm">
                 <Users className="h-8 w-8 text-blue-600" />
               </div>
-            </div>
+          </div>
           </Card>
           
           <GroupsList
@@ -294,29 +294,29 @@ const GroupsPage = () => {
             <div className="flex-1">
               <h2 className="text-2xl font-bold text-gray-800 mb-2">Tham gia nhóm</h2>
               <p className="text-gray-600 mb-4">Chọn nhóm phù hợp hoặc tạo nhóm mới cho dự án #{projectId}</p>
-            </div>
-            
-            {/* Only show Create Group and Auto Join buttons for students who are not admins/instructors */}
-            {!isAdmin && !isInstructor && (
+          </div>
+          
+          {/* Only show Create Group and Auto Join buttons for students who are not admins/instructors */}
+          {!isAdmin && !isInstructor && (
               <div className="flex gap-3">
-                <Button 
-                  onClick={handleCreateGroup} 
+              <Button 
+                onClick={handleCreateGroup} 
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg"
-                >
-                  <Plus size={16} />
+              >
+                <Plus size={16} />
                   Tạo nhóm mới
-                </Button>
-                <Button 
-                  onClick={handleAutoJoin} 
-                  variant="outline" 
+              </Button>
+              <Button 
+                onClick={handleAutoJoin} 
+                variant="outline" 
                   className="border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2"
-                >
+              >
                   <Shield size={16} />
                   Tham gia tự động
-                </Button>
-              </div>
-            )}
-          </div>
+              </Button>
+            </div>
+          )}
+        </div>
         </Card>
 
         <GroupsList
@@ -334,80 +334,80 @@ const GroupsPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {renderContent()}
+        {renderContent()}
 
       {/* Enhanced Members Dialog */}
-      <Dialog open={viewMembersDialogOpen} onOpenChange={setViewMembersDialogOpen}>
+        <Dialog open={viewMembersDialogOpen} onOpenChange={setViewMembersDialogOpen}>
         <DialogContent className="max-w-md">
-          <DialogHeader>
+            <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
                 <Users className="h-5 w-5 text-white" />
               </div>
               {selectedGroupName} - Thành viên
             </DialogTitle>
-          </DialogHeader>
-          <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
+            </DialogHeader>
+            <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
             {selectedGroupMembers.map(member => (
               <Card 
-                key={member.id}
+                  key={member.id} 
                 className="p-4 bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg flex items-center hover:shadow-md transition-all duration-300"
-              >
+                >
                 <Avatar className="h-10 w-10 mr-3 ring-2 ring-purple-200">
-                  {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
+                    {member.avatarUrl && <AvatarImage src={member.avatarUrl} alt={member.fullName} />}
                   <AvatarFallback className="bg-gradient-to-r from-purple-400 to-pink-400 text-white font-semibold">
                     {getInitials(member.fullName)}
                   </AvatarFallback>
-                </Avatar>
+                  </Avatar>
                 <div className="flex-1">
                   <p className="font-semibold text-gray-800">{member.fullName}</p>
                   <p className="text-sm text-gray-500">{member.email}</p>
                 </div>
               </Card>
-            ))}
-          </div>
-          <DialogClose asChild>
+              ))}
+            </div>
+            <DialogClose asChild>
             <Button variant="outline" className="w-full mt-4">
               Đóng
             </Button>
-          </DialogClose>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Peer Review Modal - Will be automatically shown when there are pending reviews */}
-      {projectId && isRegularStudent && (
-        <PeerReviewModal
-          projectId={parseInt(projectId, 10)}
-          open={showPeerReviewModal}
-          onOpenChange={(open) => {
-            // Only allow closing if all reviews are complete
-            setShowPeerReviewModal(open);
-          }}
-        />
-      )}
+            </DialogClose>
+          </DialogContent>
+        </Dialog>
+        
+        {/* Peer Review Modal - Will be automatically shown when there are pending reviews */}
+        {projectId && isRegularStudent && (
+          <PeerReviewModal
+            projectId={parseInt(projectId, 10)}
+            open={showPeerReviewModal}
+            onOpenChange={(open) => {
+              // Only allow closing if all reviews are complete
+              setShowPeerReviewModal(open);
+            }}
+          />
+        )}
 
-      {/* Task Detail Dialog */}
-      <TaskDetailDialog
+        {/* Task Detail Dialog */}
+        <TaskDetailDialog
         open={!!selectedTask && selectedTask !== null}
         onOpenChange={(open) => {
           if (!open) {
             setSelectedTask(null);
           }
         }}
-        task={selectedTask}
-        groupMembers={userGroup?.members || viewedGroup?.members || []}
+          task={selectedTask}
+          groupMembers={userGroup?.members || viewedGroup?.members || []}
         onTaskUpdated={handleSaveTask}
         onTaskDeleted={handleDeleteTask}
-        isGroupLeader={isGroupLeader(Number(projectId))}
-      />
+          isGroupLeader={isGroupLeader(Number(projectId))}
+        />
 
-      {/* Add Task Dialog */}
-      <AddTaskDialog 
-        open={addTaskDialogOpen}
-        onOpenChange={setAddTaskDialogOpen}
-        groupId={userGroup?.id || viewedGroup?.id || 0}
-        onTaskAdded={refreshTasks}
-      />
+        {/* Add Task Dialog */}
+        <AddTaskDialog 
+          open={addTaskDialogOpen}
+          onOpenChange={setAddTaskDialogOpen}
+          groupId={userGroup?.id || viewedGroup?.id || 0}
+          onTaskAdded={refreshTasks}
+        />
     </div>
   );
 };

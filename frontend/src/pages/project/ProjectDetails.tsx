@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {AlertTriangle , AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode, Settings, Shield, UserCog } from 'lucide-react';
+import {AlertTriangle , AlertCircle, CheckCircle, Clock, Edit, Trash2, Users, ChartBar, BarChart, QrCode, Settings, Shield, UserCog, Award } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import projectService from '@/services/projectService';
@@ -371,7 +371,7 @@ const ProjectDetails: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     {(isInstructor || isAdmin) && (
                       <>
                         <Button
@@ -390,6 +390,15 @@ const ProjectDetails: React.FC = () => {
                         >
                           <AlertTriangle className="h-6 w-6 text-orange-600" />
                           <span className="font-medium">Phát hiện Free-rider</span>
+                        </Button>
+
+                        <Button
+                          variant="outline"
+                          className="h-20 flex flex-col gap-2 border-green-200 hover:bg-green-50"
+                          onClick={() => navigate(`/projects/${projectId}/final-assessment`)}
+                        >
+                          <Award className="h-6 w-6 text-green-600" />
+                          <span className="font-medium">Đánh giá cuối kỳ</span>
                         </Button>
                       </>
                     )}
@@ -421,17 +430,17 @@ const ProjectDetails: React.FC = () => {
               <CardContent className="space-y-6 flex flex-col gap-4">
                 {/* Project Access Code */}
                 {(isInstructor || isAdmin) && (
-                  <ProjectAccessCode projectId={projectId!} />
+                  <ProjectAccessCode projectId={parseInt(projectId!)} projectName={project.name} />
                 )}
                 
                 {/* Manage Students */}
                 {(isInstructor || isAdmin) && (
-                  <ManageProjectStudents projectId={parseInt(projectId!)} />
+                  <ManageProjectStudents projectId={parseInt(projectId!)} projectName={project.name} />
                 )}
 
                 {/* Join Project */}
                 {isStudent && (
-                  <JoinProject projectId={parseInt(projectId!)} />
+                  <JoinProject />
                 )}
               </CardContent>
             </Card>
