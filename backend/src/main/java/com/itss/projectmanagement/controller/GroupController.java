@@ -1,6 +1,5 @@
 package com.itss.projectmanagement.controller;
 
-import com.itss.projectmanagement.converter.GroupConverter;
 import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.dto.request.group.GroupAutoAssignRequest;
@@ -8,7 +7,6 @@ import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupJoinRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
-import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.service.IGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,7 +15,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,8 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -178,11 +173,11 @@ public class GroupController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Group or new leader not found"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Not authorized to transfer leadership")
     })
-    @PostMapping("/{id}/transfer-leadership/{newLeaderId}")
+    @PostMapping("/{id}/transfer-leadership")
     @PreAuthorize("hasAuthority('STUDENT')")
     public ResponseEntity<ApiResponse<GroupDTO>> transferLeadership(
             @Parameter(description = "ID of the group") @PathVariable Long id,
-            @Parameter(description = "ID of the new leader") @PathVariable Long newLeaderId) {
+            @RequestBody Long newLeaderId) {
         GroupDTO groupDTO = groupService.transferLeadership(id, newLeaderId);
         ApiResponse<GroupDTO> response = ApiResponse.success(
                 groupDTO,

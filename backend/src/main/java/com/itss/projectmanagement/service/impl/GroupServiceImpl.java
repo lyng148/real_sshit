@@ -17,7 +17,6 @@ import com.itss.projectmanagement.service.IGroupService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,8 +35,7 @@ public class GroupServiceImpl implements IGroupService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
     private final GroupConverter groupConverter;
-    @Autowired
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     /**
      * Create a new group for a project

@@ -135,4 +135,25 @@ public class FreeRiderDetectionController {
                         .build()
         );
     }
+
+    /**
+     * Get free rider evidence for a group or all groups in a project
+     * @param projectId Project ID
+     * @param groupId Group ID (optional)
+     * @return Group evidence data
+     */
+    @GetMapping("/group-evidence")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<Map<String, Object>>> getGroupFreeRiderEvidence(
+            @RequestParam Long projectId,
+            @RequestParam(required = false) Long groupId) {
+        Map<String, Object> evidence = freeRiderDetectionService.getGroupFreeRiderEvidence(projectId, groupId);
+        return ResponseEntity.ok(
+                ApiResponse.<Map<String, Object>>builder()
+                        .success(true)
+                        .message("Group free rider evidence retrieved successfully")
+                        .data(evidence)
+                        .build()
+        );
+    }
 }
