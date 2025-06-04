@@ -111,26 +111,30 @@ const GroupsList: React.FC<GroupsListProps> = ({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                  <div>
-                              <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-slate-700 transition-colors">
-                                {group.name}
-                              </h3>
+                            <div>
+                              <div className='flex'>
+                                <h3 className="text-lg font-bold text-slate-900 truncate group-hover:text-slate-700 transition-colors mr-4">
+                                  {group.name}
+                                </h3>
+                                <Badge 
+                                variant={group.members.length >= 5 ? "default" : "secondary"}
+                                className={`flex-shrink-0 ${
+                                  group.members.length >= 5 
+                                    ? "bg-emerald-100 text-emerald-700 border-emerald-200" 
+                                    : "bg-amber-100 text-amber-700 border-amber-200"
+                                }`}
+                                >
+                                  <UserCheck className="h-3 w-3 mr-1" />
+                                  {group.members.length} members
+                                </Badge>
+                              </div>
+                              
                               <p className="text-sm text-slate-500 mt-1">
                                 Group #{group.id} • Created {new Date(group.createdAt).toLocaleDateString('en-US')}
                               </p>
-                  </div>
-                            <Badge 
-                              variant={group.members.length >= 5 ? "default" : "secondary"}
-                              className={`flex-shrink-0 ${
-                                group.members.length >= 5 
-                                  ? "bg-emerald-100 text-emerald-700 border-emerald-200" 
-                                  : "bg-amber-100 text-amber-700 border-amber-200"
-                              }`}
-                            >
-                              <UserCheck className="h-3 w-3 mr-1" />
-                              {group.members.length} members
-                  </Badge>
-                </div>
+                            </div>
+                            
+                    </div>
                   </div>
                 </div>
                 
