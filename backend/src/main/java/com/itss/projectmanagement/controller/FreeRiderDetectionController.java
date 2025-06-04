@@ -156,4 +156,27 @@ public class FreeRiderDetectionController {
                         .build()
         );
     }
+
+    /**Add commentMore actions
+     * Resolve a free rider case
+     * @param caseId Case ID
+     * @param resolution Resolution method
+     * @param notes Additional notes
+     * @return Updated case
+     */
+    @PostMapping("/resolve/{caseId}")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
+    public ResponseEntity<ApiResponse<FreeRiderCaseDTO>> resolveFreeRiderCase(
+            @PathVariable Long caseId,
+            @RequestParam String resolution,
+            @RequestParam String notes) {
+        FreeRiderCaseDTO updatedCase = freeRiderDetectionService.resolveFreeRiderCase(caseId, resolution, notes);
+        return ResponseEntity.ok(
+                ApiResponse.<FreeRiderCaseDTO>builder()
+                        .success(true)
+                        .message("Free rider case resolved successfully")
+                        .data(updatedCase)
+                        .build()
+        );
+    }
 }
