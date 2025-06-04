@@ -9,6 +9,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { animations, createAnimationTimeline, DURATION, EASING } from '@/lib/animations';
 import { animate } from 'animejs';
+import { displayEnhancedError } from '@/utils/errorHandling';
+import { ValidationErrorDisplay, ValidationErrorInline } from '@/components/ui/ValidationErrorDisplay';
+import { useFormErrors } from '@/hooks/useFormErrors';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +30,8 @@ const Signup = () => {
   const formRef = useRef<HTMLDivElement>(null);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+
+  const { validationErrors, clearErrors, handleError, getFieldErrorClass } = useFormErrors({ toast });
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -86,10 +91,12 @@ const Signup = () => {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    clearErrors();
+    
     if (password !== confirmPassword) {
       toast({
-        title: "Password Mismatch",
-        description: "The confirmed password does not match. Please try again.",
+        title: "Lỗi mật khẩu",
+        description: "Mật khẩu xác nhận không khớp. Vui lòng thử lại.",
         variant: "destructive",
       });
       return;
@@ -97,8 +104,8 @@ const Signup = () => {
     
     if (!termsAccepted) {
       toast({
-        title: "Terms of Service",
-        description: "You must agree to the Terms of Service and Privacy Policy to create an account.",
+        title: "Điều khoản dịch vụ",
+        description: "Bạn phải đồng ý với Điều khoản Dịch vụ và Chính sách Bảo mật để tạo tài khoản.",
         variant: "destructive",
       });
       return;
@@ -111,24 +118,20 @@ const Signup = () => {
       const response = await signup(username, email, fullName, password);
       if (response.success) {
         toast({
-          title: "Registration Successful",
-          description: "Your account has been created. Please sign in.",
+          title: "Đăng ký thành công",
+          description: "Tài khoản của bạn đã được tạo. Vui lòng đăng nhập.",
           variant: "default",
         });
         navigate('/login');
       } else {
         toast({
-          title: "Registration Failed",
-          description: response.message || "Failed to create account",
+          title: "Đăng ký thất bại",
+          description: response.message || "Tạo tài khoản thất bại",
           variant: "destructive",
         });
       }    
     } catch (error: any) {
-      toast({
-        title: "Registration Error",
-        description: error.message || error.response?.data?.message || "An error occurred during registration",
-        variant: "destructive",
-      });
+      handleError(error, 'Lỗi đăng ký');
     } finally {
       setLoading(false);
     }
@@ -195,64 +198,71 @@ const Signup = () => {
               
               <form onSubmit={handleSignup}>
                 <CardContent className="space-y-6">
+                  {/* Display validation errors */}
+                  <ValidationErrorDisplay validationErrors={validationErrors} />
+                  
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-gray-200 font-medium">Username</Label>
+                    <Label htmlFor="username" className="text-gray-200 font-medium">Username <span className="text-red-500">*</span></Label>
                     <Input 
                       id="username" 
                       placeholder="Enter username" 
-                      className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                      className={getFieldErrorClass('username', 'bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm', 'border-red-400 bg-red-50/10')}
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       required
                     />
+                    <ValidationErrorInline fieldName="username" validationErrors={validationErrors} />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="first-name" className="text-gray-200 font-medium">First Name</Label>
+                      <Label htmlFor="first-name" className="text-gray-200 font-medium">First Name <span className="text-red-500">*</span></Label>
                       <Input 
                         id="first-name" 
                         placeholder="Enter first name" 
-                        className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                        className={getFieldErrorClass('firstName', 'bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm', 'border-red-400 bg-red-50/10')}
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         required
                       />
+                      <ValidationErrorInline fieldName="firstName" validationErrors={validationErrors} />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="last-name" className="text-gray-200 font-medium">Last Name</Label>
+                      <Label htmlFor="last-name" className="text-gray-200 font-medium">Last Name <span className="text-red-500">*</span></Label>
                       <Input 
                         id="last-name" 
                         placeholder="Enter last name" 
-                        className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                        className={getFieldErrorClass('lastName', 'bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm', 'border-red-400 bg-red-50/10')}
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
                       />
+                      <ValidationErrorInline fieldName="lastName" validationErrors={validationErrors} />
                     </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-gray-200 font-medium">Email</Label>
+                    <Label htmlFor="email" className="text-gray-200 font-medium">Email <span className="text-red-500">*</span></Label>
                     <Input 
                       id="email" 
                       type="email" 
                       placeholder="Enter email address" 
-                      className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                      className={getFieldErrorClass('email', 'bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm', 'border-red-400 bg-red-50/10')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
                     />
+                    <ValidationErrorInline fieldName="email" validationErrors={validationErrors} />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-gray-200 font-medium">Password</Label>
+                    <Label htmlFor="password" className="text-gray-200 font-medium">Password <span className="text-red-500">*</span></Label>
                     <div className="relative">
                       <Input 
                         id="password" 
                         type={showPassword ? "text" : "password"} 
                         placeholder="Enter password" 
-                        className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 pr-12 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                        className={getFieldErrorClass('password', 'bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 pr-12 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm', 'border-red-400 bg-red-50/10')}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -266,20 +276,22 @@ const Signup = () => {
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
+                    <ValidationErrorInline fieldName="password" validationErrors={validationErrors} />
                     <p className="text-xs text-gray-400">Minimum 8 characters</p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-gray-200 font-medium">Confirm Password</Label>
+                    <Label htmlFor="confirmPassword" className="text-gray-200 font-medium">Confirm Password <span className="text-red-500">*</span></Label>
                     <Input 
                       id="confirmPassword" 
                       type={showPassword ? "text" : "password"} 
                       placeholder="Confirm password" 
-                      className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
+                      className={getFieldErrorClass('confirmPassword', 'bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm', 'border-red-400 bg-red-50/10')}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
                       required
                     />
+                    <ValidationErrorInline fieldName="confirmPassword" validationErrors={validationErrors} />
                   </div>
                   
                   <div className="flex items-start space-x-3">

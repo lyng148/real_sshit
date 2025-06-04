@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Plus, Users, TrendingUp, Shield, BarChart3, Calendar, Clock } from 'lucide-react';
+import { Plus, Users, TrendingUp, Shield, BarChart3, Calendar, Clock, Crown } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -26,6 +26,16 @@ import { useTaskManagement } from '@/hooks/useTaskManagement';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 
+// Enhanced member interface that includes leader information
+interface EnhancedMember {
+  id: number;
+  username: string;
+  fullName: string;
+  email: string;
+  avatarUrl?: string;
+  isLeader: boolean;
+}
+
 const GroupsPage = () => {
   const { projectId, groupId } = useParams<{ projectId: string; groupId?: string }>();
   const navigate = useNavigate();
@@ -37,7 +47,7 @@ const GroupsPage = () => {
   
   // State for showing peer review modal
   const [showPeerReviewModal, setShowPeerReviewModal] = useState(false);
-  const [selectedGroupMembers, setSelectedGroupMembers] = useState<any[]>([]);
+  const [selectedGroupMembers, setSelectedGroupMembers] = useState<EnhancedMember[]>([]);
   const [selectedGroupName, setSelectedGroupName] = useState<string>('');
   const [viewMembersDialogOpen, setViewMembersDialogOpen] = useState(false);
 
@@ -48,7 +58,7 @@ const GroupsPage = () => {
   const isRegularStudent = isStudent && !isAdmin && !isInstructor;
 
   // Different view state for different user types
-  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar'>('kanban');
+  const [currentView, setCurrentView] = useState<'kanban' | 'timeline' | 'calendar' | 'peer-reviews'>('kanban');
   
   // Use custom hooks
   const { 
@@ -141,7 +151,12 @@ const GroupsPage = () => {
   };
 
   const handleViewMembers = (group: Group) => {
-    setSelectedGroupMembers(group.members);
+    // Include the leader in the members list and add leader information
+    const allMembers = [
+      { ...group.leader, isLeader: true },
+      ...group.members.filter(member => member.id !== group.leader.id).map(member => ({ ...member, isLeader: false }))
+    ];
+    setSelectedGroupMembers(allMembers);
     setSelectedGroupName(group.name);
     setViewMembersDialogOpen(true);
   };
@@ -360,7 +375,12 @@ const GroupsPage = () => {
                   </AvatarFallback>
                   </Avatar>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-800">{member.fullName}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-gray-800">{member.fullName}</p>
+                    {member.isLeader && (
+                      <Crown className="h-4 w-4 text-amber-500" />
+                    )}
+                  </div>
                   <p className="text-sm text-gray-500">{member.email}</p>
                 </div>
               </Card>

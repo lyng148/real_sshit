@@ -9,6 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/components/ui/use-toast';
 import { animations, createAnimationTimeline, DURATION, EASING } from '@/lib/animations';
 import { animate } from 'animejs';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { displayEnhancedError } from '@/utils/errorHandling';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -86,24 +88,20 @@ const Login = () => {
       const response = await login(username, password);
       if (response.success) {
         toast({
-          title: "Login Successful",
-          description: "Welcome back to ITss!",
+          title: "Đăng nhập thành công",
+          description: "Chào mừng bạn quay trở lại ITss!",
           variant: "default",
         });
         navigate('/dashboard');
       } else {
         toast({
-          title: "Login Failed",
-          description: response.message || "Login failed. Please check your credentials.",
+          title: "Đăng nhập thất bại",
+          description: response.message || "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập.",
           variant: "destructive",
         });
       }    
     } catch (error: any) {
-      toast({
-        title: "Login Error",
-        description: "An error occurred during login. Please try again.",
-        variant: "destructive",
-      });
+      displayEnhancedError(error, toast, "Lỗi đăng nhập");
     } finally {
       setLoading(false);
     }

@@ -9,11 +9,16 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Users, GitBranch, CheckCircle, XCircle, Loader2, ArrowLeft, Plus } from 'lucide-react';
 import groupService from '@/services/groupService';
+import { displayEnhancedError, getDetailedError, ValidationError } from '@/utils/errorHandling';
+import { ValidationErrorDisplay, ValidationErrorInline } from '@/components/ui/ValidationErrorDisplay';
+import { useFormErrors } from '@/hooks/useFormErrors';
 
 const CreateGroupPage = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { validationErrors, clearErrors, handleError, getFieldErrorClass } = useFormErrors({ toast });
+  
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -37,7 +42,7 @@ const CreateGroupPage = () => {
   };
   const handleCheckConnection = async () => {
     if (!formData.repositoryUrl) {
-      toast({ title: 'Error', description: 'Please enter a repository URL first', variant: 'destructive' });
+      toast({ title: 'Lỗi', description: 'Vui lòng nhập URL repository trước', variant: 'destructive' });
       return;
     }    
     const githubUrlPattern = /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/;
@@ -45,8 +50,8 @@ const CreateGroupPage = () => {
       setRepoConnectionValid(false);
       setConnectionMessage('Invalid GitHub repository URL format. Must be like: https://github.com/username/repository');
       toast({ 
-        title: 'Error', 
-        description: 'Invalid GitHub repository URL format', 
+        title: 'Lỗi', 
+        description: 'URL GitHub repository không đúng định dạng. Phải có dạng: https://github.com/username/repository', 
         variant: 'destructive' 
       });
       return;
@@ -59,19 +64,15 @@ const CreateGroupPage = () => {
       setConnectionMessage(response.message);
       
       if (response.success) {
-        toast({ title: 'Success', description: 'Repository connection successful!' });
+        toast({ title: 'Thành công', description: 'Kết nối repository thành công!' });
       } else {
-        toast({ title: 'Error', description: response.message || 'Repository connection failed', variant: 'destructive' });
+        toast({ title: 'Lỗi', description: response.message || 'Kết nối repository thất bại', variant: 'destructive' });
       }
     } catch (error: any) {
       setRepoConnectionValid(false);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to check repository connection';
-      setConnectionMessage(errorMessage);
-      toast({ 
-        title: 'Error', 
-        description: errorMessage, 
-        variant: 'destructive' 
-      });
+      const { mainMessage } = getDetailedError(error);
+      setConnectionMessage(mainMessage);
+      displayEnhancedError(error, toast, 'Lỗi kết nối repository');
     } finally {
       setIsCheckingRepo(false);
     }
@@ -79,11 +80,14 @@ const CreateGroupPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Clear previous validation errors
+    clearErrors();
+    
     // Check if repository connection has been verified
     if (repoConnectionValid !== true) {
       toast({ 
-        title: 'Error', 
-        description: 'Please verify the repository connection before creating the group', 
+        title: 'Lỗi', 
+        description: 'Vui lòng xác minh kết nối repository trước khi tạo nhóm', 
         variant: 'destructive'
       });
       return;
@@ -92,12 +96,12 @@ const CreateGroupPage = () => {
     setIsSubmitting(true);
     try {
       if (!projectId) {
-        toast({ title: 'Error', description: 'Missing project ID', variant: 'destructive' });
+        toast({ title: 'Lỗi', description: 'Thiếu ID dự án', variant: 'destructive' });
         setIsSubmitting(false);
         return;
       }
       if (!formData.repositoryUrl) {
-        toast({ title: 'Error', description: 'Repository URL is required', variant: 'destructive' });
+        toast({ title: 'Lỗi', description: 'URL Repository là bắt buộc', variant: 'destructive' });
         setIsSubmitting(false);
         return;
       }
@@ -109,17 +113,13 @@ const CreateGroupPage = () => {
       };
       const response = await groupService.createGroup(groupData);
       if (response.success) { 
-        toast({ title: 'Success', description: 'Group created successfully!' });
+        toast({ title: 'Thành công', description: 'Tạo nhóm thành công!' });
         navigate(`/projects/${projectId}/groups`);
       } else {
-        toast({ title: 'Error', description: response.message || 'Failed to create group', variant: 'destructive' });
+        toast({ title: 'Lỗi', description: response.message || 'Tạo nhóm thất bại', variant: 'destructive' });
       }    
     } catch (error: any) {
-      toast({ 
-        title: 'Error', 
-        description: error.response?.data?.message || error.message || 'An unexpected error occurred', 
-        variant: 'destructive' 
-      });
+      handleError(error, 'Lỗi tạo nhóm');
     } finally {
       setIsSubmitting(false);
     }
@@ -183,6 +183,9 @@ const CreateGroupPage = () => {
                 </CardHeader>
                 
                 <CardContent className="p-6">
+                  {/* Display validation errors */}
+                  <ValidationErrorDisplay validationErrors={validationErrors} />
+                  
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {/* Group Name */}
                     <div className="space-y-2">
@@ -195,9 +198,10 @@ const CreateGroupPage = () => {
                         value={formData.name}
                         onChange={handleChange}
                         placeholder="Enter your group name"
-                        className="h-11 border-gray-200 focus:border-purple-400 focus:ring-purple-400"
+                        className={getFieldErrorClass('name', 'h-11 border-gray-200 focus:border-purple-400 focus:ring-purple-400')}
                         required
                       />
+                      <ValidationErrorInline fieldName="name" validationErrors={validationErrors} />
                       <p className="text-xs text-gray-500">Group name will be displayed to all members in the project</p>
                     </div>
                     
@@ -213,8 +217,9 @@ const CreateGroupPage = () => {
                         onChange={handleChange}
                         placeholder="Brief description of the group and work objectives..."
                         rows={4}
-                        className="border-gray-200 focus:border-purple-400 focus:ring-purple-400 resize-none"
+                        className={getFieldErrorClass('description', 'border-gray-200 focus:border-purple-400 focus:ring-purple-400 resize-none')}
                       />
+                      <ValidationErrorInline fieldName="description" validationErrors={validationErrors} />
                       <p className="text-xs text-gray-500">This description will help members understand more about the group</p>
                     </div>
 
@@ -232,8 +237,9 @@ const CreateGroupPage = () => {
                           value={formData.repositoryUrl}
                           onChange={handleChange}
                           className={`flex-1 h-11 ${
-                            repoConnectionValid === true ? 'border-green-400 bg-green-50' : 
-                            repoConnectionValid === false ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                            getFieldErrorClass('repositoryUrl', '', 'border-red-400 bg-red-50') ||
+                            (repoConnectionValid === true ? 'border-green-400 bg-green-50' : 
+                            repoConnectionValid === false ? 'border-red-400 bg-red-50' : 'border-gray-200')
                           } focus:border-purple-400 focus:ring-purple-400`}
                           required
                           placeholder="https://github.com/username/repository"
@@ -264,6 +270,8 @@ const CreateGroupPage = () => {
                           )}
                         </Button>
                       </div>
+                      
+                      <ValidationErrorInline fieldName="repositoryUrl" validationErrors={validationErrors} />
                       
                       {/* Connection Status */}
                       {connectionMessage && (

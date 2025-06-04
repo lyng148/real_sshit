@@ -18,6 +18,10 @@ import AnimatedCard from '@/components/ui/AnimatedCard';
 import AnimatedButton from '@/components/ui/AnimatedButton';
 import { animations } from '@/lib/animations';
 import { animate, stagger } from 'animejs';
+// Enhanced error handling imports
+import { displayEnhancedError, getDetailedError, ValidationError } from '@/utils/errorHandling';
+import { ValidationErrorDisplay, ValidationErrorInline } from '@/components/ui/ValidationErrorDisplay';
+import { useFormErrors } from '@/hooks/useFormErrors';
 
 // Helper component for field labels with tooltips
 const LabelWithTooltip = ({ htmlFor, label, tooltipText }) => (
@@ -41,6 +45,9 @@ const ProjectCreate = () => {
   const { toast } = useToast();
   const pageRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  
+  // Enhanced error handling hook
+  const { validationErrors, clearErrors, handleError, getFieldErrorClass } = useFormErrors({ toast });
   
   const [formData, setFormData] = useState({
     name: '',
@@ -83,6 +90,10 @@ const ProjectCreate = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Clear previous validation errors
+    clearErrors();
+    
     setIsSubmitting(true);
     
     try {
@@ -103,24 +114,20 @@ const ProjectCreate = () => {
       const response = await projectService.createProject(projectData);
       if (response.success) {
         toast({
-          title: "Success",
-          description: "Project created successfully",
+          title: "Thành công",
+          description: "Tạo dự án thành công",
         });
         navigate('/dashboard');
       } else {
         toast({
-          title: "Error",
-          description: response.message || "Failed to create project",
+          title: "Lỗi",
+          description: response.message || "Tạo dự án thất bại",
           variant: "destructive",
         });
       }    
     } catch (error: any) {
       console.error("Error creating project:", error);
-      toast({
-        title: "Error",
-        description: error.message || error.response?.data?.message || "An unexpected error occurred",
-        variant: "destructive",
-      });
+      handleError(error, 'Error creating project');
     } finally {
       setIsSubmitting(false);
     }
@@ -150,6 +157,9 @@ const ProjectCreate = () => {
             delay={200}
             gradient="from-white/95 to-gray-50/95"
           >
+            {/* Display validation errors */}
+            <ValidationErrorDisplay validationErrors={validationErrors} />
+            
             <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
               {/* Basic Information Section */}
               <div className="form-field opacity-0">
@@ -158,7 +168,7 @@ const ProjectCreate = () => {
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Project Name</Label>
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Project Name <span className="text-red-500">*</span></Label>
                     <Input 
                       type="text" 
                       id="name" 
@@ -166,41 +176,44 @@ const ProjectCreate = () => {
                       value={formData.name} 
                       onChange={handleChange} 
                       required 
-                      className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                      className={getFieldErrorClass('name', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       placeholder="Enter project name..."
                     />
+                    <ValidationErrorInline fieldName="name" validationErrors={validationErrors} />
                   </div>
                   
                   <div>
-                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">Describe your project in detail...</Label>
+                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">Project Description <span className="text-red-500">*</span></Label>
                     <Textarea 
                       id="description" 
                       name="description" 
                       value={formData.description} 
                       onChange={handleChange} 
                       required 
-                      className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                      className={getFieldErrorClass('description', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       placeholder="Describe your project in detail..."
                       rows={4}
                     />
+                    <ValidationErrorInline fieldName="description" validationErrors={validationErrors} />
                   </div>
                   
                   <div>
-                    <Label htmlFor="evaluationCriteria" className="text-sm font-medium text-gray-700">Project evaluation criteria...</Label>
+                    <Label htmlFor="evaluationCriteria" className="text-sm font-medium text-gray-700">Evaluation Criteria <span className="text-red-500">*</span></Label>
                     <Textarea 
                       id="evaluationCriteria" 
                       name="evaluationCriteria" 
                       value={formData.evaluationCriteria} 
                       onChange={handleChange} 
                       required 
-                      className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                      className={getFieldErrorClass('evaluationCriteria', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       placeholder="Project evaluation criteria..."
                       rows={3}
                     />
+                    <ValidationErrorInline fieldName="evaluationCriteria" validationErrors={validationErrors} />
                   </div>
                   
                   <div>
-                    <Label htmlFor="maxMembers" className="text-sm font-medium text-gray-700">Maximum Members</Label>
+                    <Label htmlFor="maxMembers" className="text-sm font-medium text-gray-700">Maximum Members <span className="text-red-500">*</span></Label>
                     <Input 
                       type="number" 
                       id="maxMembers" 
@@ -210,8 +223,9 @@ const ProjectCreate = () => {
                       required
                       min="1"
                       max="10"
-                      className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                      className={getFieldErrorClass('maxMembers', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                     />
+                    <ValidationErrorInline fieldName="maxMembers" validationErrors={validationErrors} />
                   </div>
                 </div>
               </div>
@@ -230,7 +244,7 @@ const ProjectCreate = () => {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="weightW1" className="text-sm font-medium text-gray-700">W1: Task Completion (%)</Label>
+                      <Label htmlFor="weightW1" className="text-sm font-medium text-gray-700">W1: Task Completion (%) <span className="text-red-500">*</span></Label>
                       <Input
                         type="number"
                         id="weightW1"
@@ -240,12 +254,13 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
-                        className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={getFieldErrorClass('weightW1', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <ValidationErrorInline fieldName="weightW1" validationErrors={validationErrors} />
                     </div>
 
                     <div>
-                      <Label htmlFor="weightW2" className="text-sm font-medium text-gray-700">W2: Peer Review (%)</Label>
+                      <Label htmlFor="weightW2" className="text-sm font-medium text-gray-700">W2: Peer Review (%) <span className="text-red-500">*</span></Label>
                       <Input
                         type="number"
                         id="weightW2"
@@ -255,12 +270,13 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
-                        className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={getFieldErrorClass('weightW2', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <ValidationErrorInline fieldName="weightW2" validationErrors={validationErrors} />
                     </div>
 
                     <div>
-                      <Label htmlFor="weightW3" className="text-sm font-medium text-gray-700">W3: Commit Count (%)</Label>
+                      <Label htmlFor="weightW3" className="text-sm font-medium text-gray-700">W3: Commit Count (%) <span className="text-red-500">*</span></Label>
                       <Input
                         type="number"
                         id="weightW3"
@@ -270,12 +286,13 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
-                        className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={getFieldErrorClass('weightW3', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <ValidationErrorInline fieldName="weightW3" validationErrors={validationErrors} />
                     </div>            
                     
                     <div>
-                      <Label htmlFor="weightW4" className="text-sm font-medium text-gray-700">W4: Late Task Penalty (%)</Label>
+                      <Label htmlFor="weightW4" className="text-sm font-medium text-gray-700">W4: Late Task Penalty (%) <span className="text-red-500">*</span></Label>
                       <Input
                         type="number"
                         id="weightW4"
@@ -285,8 +302,9 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
-                        className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
+                        className={getFieldErrorClass('weightW4', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <ValidationErrorInline fieldName="weightW4" validationErrors={validationErrors} />
                     </div>
                   </div>
                 </div>
@@ -303,7 +321,7 @@ const ProjectCreate = () => {
                     <div>
                       <LabelWithTooltip
                         htmlFor="freeriderThreshold" 
-                        label="Free-rider Detection Threshold (%)"
+                        label="Free-rider Detection Threshold (%) *"
                         tooltipText="Contribution score below this threshold compared to team average will be marked as potential Free-rider."
                       />
                       <Input
@@ -315,14 +333,15 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
-                        className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300"
+                        className={getFieldErrorClass('freeriderThreshold', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <ValidationErrorInline fieldName="freeriderThreshold" validationErrors={validationErrors} />
                     </div>
 
                     <div>
                       <LabelWithTooltip
                         htmlFor="pressureThreshold"
-                        label="Pressure Score Threshold"
+                        label="Pressure Score Threshold *"
                         tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload."
                       />
                       <Input
@@ -333,8 +352,9 @@ const ProjectCreate = () => {
                         onChange={handleChange}
                         required
                         min="1"
-                        className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300"
+                        className={getFieldErrorClass('pressureThreshold', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <ValidationErrorInline fieldName="pressureThreshold" validationErrors={validationErrors} />
                     </div>
                   </div>
                 </div>
