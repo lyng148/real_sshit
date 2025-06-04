@@ -25,6 +25,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.itss.projectmanagement.exception.GitHubRepositoryException;
+
 @Service
 @Slf4j
 public class GitHubServiceImpl implements IGitHubService {
@@ -70,6 +72,42 @@ public class GitHubServiceImpl implements IGitHubService {
         } catch (IOException e) {
             log.error("Error checking GitHub repository: {}/{}", owner, repo, e);
             return false;
+        }
+    }
+
+    /**
+     * Check repository connection with detailed error handling
+     * @param owner Repository owner/organization
+     * @param repo Repository name
+     * @throws GitHubRepositoryException if repository is not accessible with detailed error message
+     */
+    @Override
+    public void validateRepositoryConnection(String owner, String repo) {
+        try {
+            GHRepository repository = gitHub.getRepository(owner + "/" + repo);
+            if (repository == null) {
+                throw new GitHubRepositoryException("Repository not found or not accessible");
+            }
+            log.info("Successfully validated GitHub repository: {}/{}", owner, repo);
+        } catch (IOException e) {
+            log.error("Error validating GitHub repository: {}/{}", owner, repo, e);
+            
+            // Provide more specific error messages based on the exception
+            String errorMessage = e.getMessage();
+            if (errorMessage != null) {
+                if (errorMessage.contains("404") || errorMessage.contains("Not Found")) {
+                    throw new GitHubRepositoryException("Repository not found. Please check the repository URL and ensure it exists.");
+                } else if (errorMessage.contains("403") || errorMessage.contains("Forbidden")) {
+                    throw new GitHubRepositoryException("Access denied to repository. Please check if the repository is public or verify access permissions.");
+                } else if (errorMessage.contains("401") || errorMessage.contains("Unauthorized")) {
+                    throw new GitHubRepositoryException("Authentication failed. Please check GitHub token configuration.");
+                } else if (errorMessage.contains("rate limit")) {
+                    throw new GitHubRepositoryException("GitHub API rate limit exceeded. Please try again later.");
+                }
+            }
+            
+            // Generic error message for other cases
+            throw new GitHubRepositoryException("Failed to connect to repository. Please check the URL and try again.");
         }
     }
 

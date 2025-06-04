@@ -78,6 +78,18 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(ex.getMessage(), HttpStatus.FORBIDDEN));
     }
 
+    @ExceptionHandler(GitHubRepositoryException.class)
+    public ResponseEntity<ApiResponse<Map<String, Object>>> handleGitHubRepositoryException(GitHubRepositoryException ex) {
+        log.warn("GitHub repository error: {}", ex.getMessage());
+        
+        Map<String, Object> data = Map.of(
+            "success", false,
+            "message", ex.getMessage()
+        );
+        
+        return ResponseEntity.ok(ApiResponse.success(data, "Repository check completed with error"));
+    }
+
     // Standard Argument Exceptions
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Object>> handleIllegalArgumentException(IllegalArgumentException ex) {

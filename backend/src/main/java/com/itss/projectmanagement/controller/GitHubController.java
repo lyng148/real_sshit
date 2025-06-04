@@ -1,11 +1,14 @@
 package com.itss.projectmanagement.controller;
 
 import com.itss.projectmanagement.dto.common.ApiResponse;
+import com.itss.projectmanagement.dto.request.github.RepositoryCheckRequest;
 import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
+import com.itss.projectmanagement.exception.GitHubRepositoryException;
 import com.itss.projectmanagement.service.IGitHubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -79,5 +82,35 @@ public class GitHubController {
         );
         
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/check-repository")
+    @Operation(summary = "Check GitHub repository connection", 
+               description = "Validates if a GitHub repository exists and is accessible",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ApiResponse<Map<String, Object>>> checkRepositoryConnection(
+            @Valid @RequestBody RepositoryCheckRequest request) {
+        
+        // Extract owner and repo from URL
+        String repoUrl = request.getRepoUrl();
+        String urlPattern = "github\\.com/([^/]+)/([^/]+)";
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile(urlPattern);
+        java.util.regex.Matcher matcher = pattern.matcher(repoUrl);
+        
+        if (!matcher.find() || matcher.groupCount() < 2) {
+            throw new GitHubRepositoryException("Invalid GitHub repository URL format");
+        }
+        
+        String owner = matcher.group(1);
+        String repo = matcher.group(2);
+
+        gitHubService.validateRepositoryConnection(owner, repo);
+        
+        Map<String, Object> data = Map.of(
+            "success", true,
+            "message", "Repository connection successful"
+        );
+        
+        return ResponseEntity.ok(ApiResponse.success(data, "Repository is accessible"));
     }
 }

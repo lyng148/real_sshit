@@ -21,7 +21,8 @@ public class GroupCreateRequest {
     
     @Size(max = 500, message = "Description cannot exceed 500 characters")
     private String description;    
-      @NotBlank(message = "GitHub repository URL is required")
+
+    @NotBlank(message = "GitHub repository URL is required")
     @Pattern(regexp = "^https://github\\.com/[^/]+/[^/]+$",
             message = "Invalid GitHub repository URL format. Must be like: https://github.com/username/repository")
     private String repositoryUrl;

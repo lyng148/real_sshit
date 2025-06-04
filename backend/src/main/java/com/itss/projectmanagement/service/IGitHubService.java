@@ -23,6 +23,14 @@ public interface IGitHubService {
     boolean checkRepositoryExists(String owner, String repo);
     
     /**
+     * Check repository connection with detailed error handling
+     * @param owner Repository owner/organization
+     * @param repo Repository name
+     * @throws GitHubRepositoryException if repository is not accessible with detailed error message
+     */
+    void validateRepositoryConnection(String owner, String repo);
+    
+    /**
      * Fetches commits from a GitHub repository and processes them for a specific group
      * @param group The group containing the GitHub repository URL
      * @return Number of new commits processed
