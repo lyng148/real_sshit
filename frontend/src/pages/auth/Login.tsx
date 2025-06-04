@@ -138,7 +138,7 @@ const Login = () => {
               ITss
             </span>
           </Link>
-          <Link to="/signup">
+          <Link to="/auth/signup">
             <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105">
               Sign Up
             </Button>
@@ -215,7 +215,7 @@ const Login = () => {
                       />
                       <Label htmlFor="remember" className="text-sm text-gray-300">Remember me</Label>
                     </div>
-                    <Link to="/forgot-password" className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200">
+                    <Link to="/auth/forgot-password" className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200">
                       Forgot password?
                     </Link>
                   </div>
@@ -239,7 +239,7 @@ const Login = () => {
                   
                   <p className="mt-4 text-center text-gray-300">
                     Don't have an account?{' '}
-                    <Link to="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+                    <Link to="/auth/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
                       Sign Up
                     </Link>
                   </p>

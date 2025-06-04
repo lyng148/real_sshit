@@ -5,15 +5,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { User, Mail, Phone, Calendar, MapPin, Edit2, Save, X } from 'lucide-react';
+import { User, Mail, Phone, Calendar, MapPin, Edit2, Save, X, Lock, Eye, EyeOff } from 'lucide-react';
 import { animations } from '@/lib/animations';
 import AvatarUpload from '@/components/user/AvatarUpload';
 import { useToast } from '@/components/ui/use-toast';
 import { userService } from '@/services/userService';
+import { authService } from '@/services/authService';
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
   const { currentUser, setCurrentUser } = useAuth();
   const { toast } = useToast();
 
@@ -25,6 +28,18 @@ const Profile = () => {
     bio: '',
     location: '',
     dateOfBirth: ''
+  });
+
+  // Password change states
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
   });
 
   useEffect(() => {
@@ -53,7 +68,7 @@ const Profile = () => {
   const handleEditClick = () => {
     setIsEditing(!isEditing);
     // Add a subtle animation to editing mode
-    animations.card.pulse('.profile-card');
+    animations.card.hoverScale('.profile-card');
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -61,6 +76,70 @@ const Profile = () => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handlePasswordInputChange = (field: string, value: string) => {
+    setPasswordData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const togglePasswordVisibility = (field: keyof typeof showPasswords) => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
+  const handleChangePassword = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New password and confirm password do not match.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      await authService.changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword,
+        passwordData.confirmPassword
+      );
+
+      toast({
+        title: "Success",
+        description: "Password changed successfully!",
+      });
+
+      // Reset form and close dialog
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      setShowChangePassword(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to change password. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -363,17 +442,143 @@ const Profile = () => {
           <Card className="profile-card opacity-0 transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center text-purple-600">
-                <User className="mr-2" size={20} />
+                <Lock className="mr-2" size={20} />
                 Account Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-gray-600 text-sm">
-                To change password or security settings, please contact the administrator.
-              </p>
-              <Button variant="outline" className="w-full">
-                Contact Support
-              </Button>
+            <CardContent className="space-y-4">
+              {!showChangePassword ? (
+                <>
+                  <p className="text-gray-600 text-sm">
+                    Manage your account security and password settings.
+                  </p>
+                  <Button 
+                    onClick={() => setShowChangePassword(true)}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    <Lock className="mr-2" size={16} />
+                    Change Password
+                  </Button>
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium text-gray-800">Change Password</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setShowChangePassword(false);
+                        setPasswordData({
+                          currentPassword: '',
+                          newPassword: '',
+                          confirmPassword: ''
+                        });
+                      }}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="currentPassword" className="text-gray-600">Current Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="currentPassword"
+                          type={showPasswords.current ? "text" : "password"}
+                          value={passwordData.currentPassword}
+                          onChange={(e) => handlePasswordInputChange('currentPassword', e.target.value)}
+                          className="mt-1 pr-10"
+                          placeholder="Enter current password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('current')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.current ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="newPassword" className="text-gray-600">New Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="newPassword"
+                          type={showPasswords.new ? "text" : "password"}
+                          value={passwordData.newPassword}
+                          onChange={(e) => handlePasswordInputChange('newPassword', e.target.value)}
+                          className="mt-1 pr-10"
+                          placeholder="Enter new password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('new')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.new ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="confirmPassword" className="text-gray-600">Confirm New Password</Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showPasswords.confirm ? "text" : "password"}
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => handlePasswordInputChange('confirmPassword', e.target.value)}
+                          className="mt-1 pr-10"
+                          placeholder="Confirm new password"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => togglePasswordVisibility('confirm')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPasswords.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowChangePassword(false);
+                        setPasswordData({
+                          currentPassword: '',
+                          newPassword: '',
+                          confirmPassword: ''
+                        });
+                      }}
+                      className="flex-1"
+                      disabled={passwordLoading}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleChangePassword}
+                      className="flex-1 bg-purple-600 hover:bg-purple-700"
+                      disabled={passwordLoading || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                    >
+                      {passwordLoading ? (
+                        <div className="flex items-center space-x-2">
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                          <span>Changing...</span>
+                        </div>
+                      ) : (
+                        "Change Password"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

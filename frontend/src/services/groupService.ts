@@ -158,69 +158,38 @@ export const groupService = {
       throw error;
     }
   },
-    async checkRepositoryConnection(repoUrl: string) {    try {
-      const urlPattern = /github\.com\/([^\/]+)\/([^\/]+)/;
-      const matches = repoUrl.match(urlPattern);
-      
-      if (!matches || matches.length < 3) {
+    async checkRepositoryConnection(repoUrl: string) {
+    try {
+      // Validate URL format on client side first
+      const urlPattern = /^https:\/\/github\.com\/[^\/]+\/[^\/]+$/;
+      if (!urlPattern.test(repoUrl)) {
         return {
           success: false,
-          message: 'Invalid GitHub repository URL format'
+          message: 'Invalid GitHub repository URL format. Must be like: https://github.com/username/repository'
         };
       }
-        const owner = matches[1];
-      const repo = matches[2];
       
-      // Get GitHub token from backend to avoid exposing it in frontend code
-      const tokenResponse = await axiosInstance.get('/api/github/token');
-      const token = tokenResponse.data?.token;
-      
-      // Prepare headers with authentication if token is available
-      const headers: HeadersInit = {
-        'Accept': 'application/vnd.github.v3+json'
-      };
-      
-      if (token) {
-        headers['Authorization'] = `token ${token}`;
-      }
-      
-      // Make authenticated request to GitHub API
-      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-        method: 'GET',
-        headers
+      // Call server-side API to check repository connection
+      const response = await axiosInstance.post('/api/github/check-repository', {
+        repoUrl: repoUrl
       });
       
-      if (response.status === 200) {
+      if (response.data?.success && response.data?.data) {
         return {
-          success: true,
-          message: 'Repository connection successful'
+          success: response.data.data.success,
+          message: response.data.data.message
         };
-      } else if (response.status === 404) {
+      } else {
         return {
           success: false,
-          message: 'Repository not found. Please check the URL or access permissions.'
-        };      } else {
-        // Handle rate limit or other issues
-        const data = await response.json();
-        console.error('GitHub API error:', data);
-        
-        // Check for rate limiting specifically
-        if (response.status === 403 && data.message && data.message.includes('rate limit')) {
-          return {
-            success: false,
-            message: 'GitHub API rate limit exceeded. Please try again later.'
-          };
-        }
-        
-        return {
-          success: false,
-          message: data.message || 'Failed to verify repository. GitHub API error.'
+          message: response.data?.message || 'Failed to check repository connection'
         };
       }
     } catch (error: any) {
+      console.error('Repository connection check error:', error);
       return {
         success: false,
-        message: error.response?.data?.message || 'Failed to connect to repository'
+        message: error.response?.data?.message || error.message || 'Failed to connect to repository'
       };
     }
   }

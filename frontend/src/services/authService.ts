@@ -32,6 +32,52 @@ export const authService = {
       throw error;
     }
   },
+
+  async forgotPassword(email: string) {
+    try {
+      const response = await axiosInstance.post('/api/auth/forgot-password', {
+        email
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async validateResetToken(token: string) {
+    try {
+      const response = await axiosInstance.get(`/api/auth/reset-password/validate?token=${token}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async resetPassword(token: string, newPassword: string, confirmPassword: string) {
+    try {
+      const response = await axiosInstance.post('/api/auth/reset-password', {
+        token,
+        newPassword,
+        confirmPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async changePassword(currentPassword: string, newPassword: string, confirmPassword: string) {
+    try {
+      const response = await axiosInstance.post('/api/auth/change-password', {
+        currentPassword,
+        newPassword,
+        confirmPassword
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
   
   logout() {
     localStorage.removeItem('user');

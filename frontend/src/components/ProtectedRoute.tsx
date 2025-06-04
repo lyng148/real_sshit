@@ -22,7 +22,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   if (!currentUser) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/auth/login" />;
   }
 
   // Kiểm tra quyền nếu được chỉ định

@@ -13,6 +13,9 @@ import NotFound from "./pages/NotFound";
 import Landing from "./pages/landing/Landing";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
+import ChangePassword from "./pages/auth/ChangePassword";
 import Admin from "./pages/admin/Admin";
 import Dashboard from "./pages/Dashboard";
 import UserManagement from "./pages/user/UserManagement";
@@ -219,6 +222,15 @@ const App = () => (
               } />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/signup" element={<Signup />} />
+              <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/auth/change-password" element={
+                <ProtectedRoute>
+                  <ChangePassword />
+                </ProtectedRoute>
+              } />
               <Route path="/" element={<Landing />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

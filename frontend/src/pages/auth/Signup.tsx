@@ -163,7 +163,7 @@ const Signup = () => {
               ITss
             </span>
           </Link>
-          <Link to="/login">
+          <Link to="/auth/login">
             <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105">
               Sign In
             </Button>
@@ -323,7 +323,7 @@ const Signup = () => {
                   
                   <p className="text-center text-gray-400">
                     Already have an account?{' '}
-                    <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
+                    <Link to="/auth/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
                       Sign In
                     </Link>
                   </p>
