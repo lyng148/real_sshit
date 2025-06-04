@@ -244,7 +244,7 @@ const ProjectDetails: React.FC = () => {
                     <AlertTriangle className="h-8 w-8 text-orange-600" />
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Free-rider Threshold</p>
-                      <p className="text-2xl font-bold text-gray-900">{project.freeriderThreshold}%</p>
+                      <p className="text-2xl font-bold text-gray-900">{(project.freeriderThreshold * 100).toFixed(0)}%</p>
                     </div>
                   </div>
                 </CardContent>
@@ -256,7 +256,7 @@ const ProjectDetails: React.FC = () => {
                     <AlertCircle className="h-8 w-8 text-red-600" />
                     <div className="ml-4">
                       <p className="text-sm font-medium text-gray-600">Pressure Threshold</p>
-                      <p className="text-2xl font-bold text-gray-900">{project.pressureThreshold}%</p>
+                      <p className="text-2xl font-bold text-gray-900">{project.pressureThreshold}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -323,28 +323,28 @@ const ProjectDetails: React.FC = () => {
                     <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg border border-green-200">
                       <span className="font-medium text-green-800">W1: Task Completion</span>
                       <Badge variant="secondary" className="bg-green-200 text-green-800">
-                        {project.weightW1}%
+                        {(project.weightW1 * 100).toFixed(1)}%
                       </Badge>
                     </div>
                     
                     <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <span className="font-medium text-blue-800">W2: Peer Review Score</span>
                       <Badge variant="secondary" className="bg-blue-200 text-blue-800">
-                        {project.weightW2}%
+                        {(project.weightW2 * 100).toFixed(1)}%
                       </Badge>
                     </div>
                     
                     <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border border-purple-200">
                       <span className="font-medium text-purple-800">W3: Commit Count</span>
                       <Badge variant="secondary" className="bg-purple-200 text-purple-800">
-                        {project.weightW3}%
+                        {(project.weightW3 * 100).toFixed(1)}%
                       </Badge>
                     </div>
                     
                     <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg border border-red-200">
                       <span className="font-medium text-red-800">W4: Late Task Penalty</span>
                       <Badge variant="secondary" className="bg-red-200 text-red-800">
-                        {project.weightW4}%
+                        {(project.weightW4 * 100).toFixed(1)}%
                       </Badge>
                     </div>
                   </div>

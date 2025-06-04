@@ -80,11 +80,11 @@ const ProjectEdit = () => {
     description: '',
     maxMembers: 4,
     evaluationCriteria: '',
-    weightW1: 0.25,
-    weightW2: 0.25,
-    weightW3: 0.25,
-    weightW4: 0.25,
-    freeriderThreshold: 0.5,
+    weightW1: 25,
+    weightW2: 25,
+    weightW3: 25,
+    weightW4: 25,
+    freeriderThreshold: 50,
     pressureThreshold: 70,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -104,10 +104,10 @@ const ProjectEdit = () => {
             description: response.data.description,
             maxMembers: response.data.maxMembers,
             evaluationCriteria: response.data.evaluationCriteria,
-            weightW1: response.data.weightW1,
-            weightW2: response.data.weightW2,
-            weightW3: response.data.weightW3,
-            weightW4: response.data.weightW4,
+            weightW1: response.data.weightW1 * 100, // Convert from decimal (0-1) to percentage (0-100)
+            weightW2: response.data.weightW2 * 100, // Convert from decimal (0-1) to percentage (0-100)
+            weightW3: response.data.weightW3 * 100, // Convert from decimal (0-1) to percentage (0-100)
+            weightW4: response.data.weightW4 * 100, // Convert from decimal (0-1) to percentage (0-100)
             freeriderThreshold: response.data.freeriderThreshold * 100, // Convert from decimal (0-1) to percentage (0-100)
             pressureThreshold: response.data.pressureThreshold,
           });
@@ -152,10 +152,10 @@ const ProjectEdit = () => {
         description: formData.description,
         maxMembers: formData.maxMembers,
         evaluationCriteria: formData.evaluationCriteria,
-        weightW1: formData.weightW1,
-        weightW2: formData.weightW2,
-        weightW3: formData.weightW3,
-        weightW4: formData.weightW4,
+        weightW1: formData.weightW1 / 100, // Convert from percentage (0-100) to decimal (0-1)
+        weightW2: formData.weightW2 / 100, // Convert from percentage (0-100) to decimal (0-1)
+        weightW3: formData.weightW3 / 100, // Convert from percentage (0-100) to decimal (0-1)
+        weightW4: formData.weightW4 / 100, // Convert from percentage (0-100) to decimal (0-1)
         freeriderThreshold: formData.freeriderThreshold / 100, // Convert from percentage (0-100) to decimal (0-1)
         pressureThreshold: formData.pressureThreshold,
       };
@@ -295,20 +295,20 @@ const ProjectEdit = () => {
                 {/* Additional fields for weight factors and detection thresholds */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="weightW1">Weight Factor W1</Label>
-                    <Input type="number" id="weightW1" name="weightW1" value={formData.weightW1} onChange={handleChange} step="0.01" required />
+                    <Label htmlFor="weightW1">Weight Factor W1 (%)</Label>
+                    <Input type="number" id="weightW1" name="weightW1" value={formData.weightW1} onChange={handleChange} step="0.1" min="0" max="100" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weightW2">Weight Factor W2</Label>
-                    <Input type="number" id="weightW2" name="weightW2" value={formData.weightW2} onChange={handleChange} step="0.01" required />
+                    <Label htmlFor="weightW2">Weight Factor W2 (%)</Label>
+                    <Input type="number" id="weightW2" name="weightW2" value={formData.weightW2} onChange={handleChange} step="0.1" min="0" max="100" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weightW3">Weight Factor W3</Label>
-                    <Input type="number" id="weightW3" name="weightW3" value={formData.weightW3} onChange={handleChange} step="0.01" required />
+                    <Label htmlFor="weightW3">Weight Factor W3 (%)</Label>
+                    <Input type="number" id="weightW3" name="weightW3" value={formData.weightW3} onChange={handleChange} step="0.1" min="0" max="100" required />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="weightW4">Weight Factor W4</Label>
-                    <Input type="number" id="weightW4" name="weightW4" value={formData.weightW4} onChange={handleChange} step="0.01" required />
+                    <Label htmlFor="weightW4">Weight Factor W4 (%)</Label>
+                    <Input type="number" id="weightW4" name="weightW4" value={formData.weightW4} onChange={handleChange} step="0.1" min="0" max="100" required />
                   </div>
                 </div>                <div className="space-y-2">
                   <LabelWithTooltip 
@@ -323,7 +323,7 @@ const ProjectEdit = () => {
                     label="Pressure Score Threshold"
                     tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload. The system monitors task assignments and deadlines to calculate pressure scores."
                   />
-                  <Input type="number" id="pressureThreshold" name="pressureThreshold" value={formData.pressureThreshold} onChange={handleChange} required />
+                  <Input type="number" id="pressureThreshold" name="pressureThreshold" value={formData.pressureThreshold} onChange={handleChange} min="1" required />
                 </div>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Updating..." : "Update Project"}

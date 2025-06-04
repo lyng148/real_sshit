@@ -92,10 +92,10 @@ const ProjectCreate = () => {
         description: formData.description,
         evaluationCriteria: formData.evaluationCriteria,
         maxMembers: formData.maxMembers || 4, // Provide default value
-        weightW1: formData.weightW1,
-        weightW2: formData.weightW2,
-        weightW3: formData.weightW3,
-        weightW4: formData.weightW4,
+        weightW1: formData.weightW1 / 100, // Convert from percentage (0-100) to decimal (0-1)
+        weightW2: formData.weightW2 / 100, // Convert from percentage (0-100) to decimal (0-1)
+        weightW3: formData.weightW3 / 100, // Convert from percentage (0-100) to decimal (0-1)
+        weightW4: formData.weightW4 / 100, // Convert from percentage (0-100) to decimal (0-1)
         freeriderThreshold: formData.freeriderThreshold / 100, // Convert from percentage (0-100) to decimal (0-1)
         pressureThreshold: formData.pressureThreshold
       };
@@ -322,8 +322,8 @@ const ProjectCreate = () => {
                     <div>
                       <LabelWithTooltip
                         htmlFor="pressureThreshold"
-                        label="Pressure Warning Threshold"
-                        tooltipText="When pressure score exceeds this threshold, members will receive warnings about potential overload."
+                        label="Pressure Score Threshold"
+                        tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload."
                       />
                       <Input
                         type="number"
@@ -332,8 +332,7 @@ const ProjectCreate = () => {
                         value={formData.pressureThreshold}
                         onChange={handleChange}
                         required
-                        min="0"
-                        max="100"
+                        min="1"
                         className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-yellow-500 focus:border-yellow-500 transition-all duration-300"
                       />
                     </div>

@@ -20,13 +20,22 @@ const NotificationIcon = ({ type }: { type: string }) => {
     case NotificationType.TASK_UPDATED:
     case NotificationType.TASK_COMPLETED:
       return <span className="text-blue-500">📋</span>;
+    case NotificationType.PEER_REVIEW_ASSIGNED:
+    case NotificationType.PEER_REVIEW_COMPLETED:
     case NotificationType.PEER_REVIEW_REQUIRED:
     case NotificationType.PEER_REVIEW_REMINDER:
       return <span className="text-purple-500">🔄</span>;
+    case NotificationType.GROUP_INVITATION:
+    case NotificationType.PROJECT_INVITATION:
+    case NotificationType.PROJECT_NOTIFICATION:
+      return <span className="text-green-500">👥</span>;
     case NotificationType.FREE_RIDER_ALERT:
       return <span className="text-red-500">⚠️</span>;
     case NotificationType.PRESSURE_SCORE_WARNING:
       return <span className="text-orange-500">📊</span>;
+    case NotificationType.SYSTEM_NOTIFICATION:
+      return <span className="text-gray-500">🔧</span>;
+    case NotificationType.GENERAL:
     default:
       return <span className="text-gray-500">📢</span>;
   }

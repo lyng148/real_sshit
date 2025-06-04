@@ -143,9 +143,7 @@ export const groupService = {
   
   async transferLeadership(groupId: number, newLeaderId: number) {
     try {
-      const response = await axiosInstance.post(`/api/groups/${groupId}/transfer-leadership`, {
-        newLeaderId
-      });
+      const response = await axiosInstance.post(`/api/groups/${groupId}/transfer-leadership`, newLeaderId);
       return response.data;
     } catch (error) {
       throw error;
