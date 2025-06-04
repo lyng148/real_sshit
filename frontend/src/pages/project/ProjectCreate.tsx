@@ -137,10 +137,10 @@ const ProjectCreate = () => {
           {/* Hero Section */}
           <div className="text-center mb-8">
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent mb-4">
-              Tạo dự án mới ✨
+              Create New Project ✨
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Thiết lập dự án với các thông số tối ưu cho team của bạn
+              Set up your project with optimal parameters for your team
             </p>
           </div>
 
@@ -154,11 +154,11 @@ const ProjectCreate = () => {
               {/* Basic Information Section */}
               <div className="form-field opacity-0">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
-                  📝 Thông tin cơ bản
+                  📝 Basic Information
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Tên dự án</Label>
+                    <Label htmlFor="name" className="text-sm font-medium text-gray-700">Project Name</Label>
                     <Input 
                       type="text" 
                       id="name" 
@@ -167,12 +167,12 @@ const ProjectCreate = () => {
                       onChange={handleChange} 
                       required 
                       className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
-                      placeholder="Nhập tên dự án..."
+                      placeholder="Enter project name..."
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">Mô tả</Label>
+                    <Label htmlFor="description" className="text-sm font-medium text-gray-700">Describe your project in detail...</Label>
                     <Textarea 
                       id="description" 
                       name="description" 
@@ -180,13 +180,13 @@ const ProjectCreate = () => {
                       onChange={handleChange} 
                       required 
                       className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
-                      placeholder="Mô tả chi tiết về dự án..."
+                      placeholder="Describe your project in detail..."
                       rows={4}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="evaluationCriteria" className="text-sm font-medium text-gray-700">Tiêu chí đánh giá</Label>
+                    <Label htmlFor="evaluationCriteria" className="text-sm font-medium text-gray-700">Project evaluation criteria...</Label>
                     <Textarea 
                       id="evaluationCriteria" 
                       name="evaluationCriteria" 
@@ -194,13 +194,13 @@ const ProjectCreate = () => {
                       onChange={handleChange} 
                       required 
                       className="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300"
-                      placeholder="Các tiêu chí đánh giá dự án..."
+                      placeholder="Project evaluation criteria..."
                       rows={3}
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="maxMembers" className="text-sm font-medium text-gray-700">Số thành viên tối đa</Label>
+                    <Label htmlFor="maxMembers" className="text-sm font-medium text-gray-700">Maximum Members</Label>
                     <Input 
                       type="number" 
                       id="maxMembers" 
@@ -221,16 +221,16 @@ const ProjectCreate = () => {
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
                   <LabelWithTooltip 
                     htmlFor="weightFactors"
-                    label="⚖️ Cài đặt hệ số trọng số"
-                    tooltipText="Điểm đóng góp = W1*Hoàn thành Task + W2*Điểm Peer Review + W3*Số Commit - W4*Task muộn"
+                    label="⚖️ Weight Factor Configuration"
+                    tooltipText="Contribution Score = W1*Task Completion + W2*Peer Review Score + W3*Commit Count - W4*Late Tasks"
                   />
                   <p className="text-sm text-gray-600 mt-2 mb-4">
-                    Điều chỉnh tầm quan trọng của từng yếu tố trong việc đánh giá đóng góp
+                    Adjust the importance of each factor in evaluating contributions
                   </p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="weightW1" className="text-sm font-medium text-gray-700">W1: Hoàn thành Task (%)</Label>
+                      <Label htmlFor="weightW1" className="text-sm font-medium text-gray-700">W1: Task Completion (%)</Label>
                       <Input
                         type="number"
                         id="weightW1"
@@ -260,7 +260,7 @@ const ProjectCreate = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="weightW3" className="text-sm font-medium text-gray-700">W3: Số Commit (%)</Label>
+                      <Label htmlFor="weightW3" className="text-sm font-medium text-gray-700">W3: Commit Count (%)</Label>
                       <Input
                         type="number"
                         id="weightW3"
@@ -275,7 +275,7 @@ const ProjectCreate = () => {
                     </div>            
                     
                     <div>
-                      <Label htmlFor="weightW4" className="text-sm font-medium text-gray-700">W4: Penalty Task muộn (%)</Label>
+                      <Label htmlFor="weightW4" className="text-sm font-medium text-gray-700">W4: Late Task Penalty (%)</Label>
                       <Input
                         type="number"
                         id="weightW4"
@@ -296,15 +296,15 @@ const ProjectCreate = () => {
               <div className="form-field opacity-0">
                 <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border border-yellow-100">
                   <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                    🔧 Cài đặt nâng cao
+                    🔧 Advanced Settings
                   </h3>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <LabelWithTooltip
                         htmlFor="freeriderThreshold" 
-                        label="Ngưỡng phát hiện Free-rider (%)"
-                        tooltipText="Điểm đóng góp dưới ngưỡng này so với trung bình nhóm sẽ được đánh dấu là Free-rider tiềm năng."
+                        label="Free-rider Detection Threshold (%)"
+                        tooltipText="Contribution score below this threshold compared to team average will be marked as potential Free-rider."
                       />
                       <Input
                         type="number"
@@ -322,8 +322,8 @@ const ProjectCreate = () => {
                     <div>
                       <LabelWithTooltip
                         htmlFor="pressureThreshold"
-                        label="Ngưỡng cảnh báo áp lực"
-                        tooltipText="Khi điểm áp lực vượt ngưỡng này, thành viên sẽ nhận cảnh báo về khả năng quá tải."
+                        label="Pressure Warning Threshold"
+                        tooltipText="When pressure score exceeds this threshold, members will receive warnings about potential overload."
                       />
                       <Input
                         type="number"
@@ -351,7 +351,7 @@ const ProjectCreate = () => {
                   effect="ripple"
                   className="px-12 py-3 shadow-xl hover:shadow-2xl"
                 >
-                  {isSubmitting ? "Đang tạo..." : "🚀 Tạo dự án"}
+                  {isSubmitting ? "Creating..." : "🚀 Create Project"}
                 </AnimatedButton>
               </div>
             </form>

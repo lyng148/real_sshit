@@ -237,7 +237,7 @@ const GroupsPage = () => {
         <div className="h-[60vh] flex items-center justify-center bg-gradient-to-br from-white to-purple-50">
           <div className="text-center">
             <LoadingSpinner size="lg" variant="spinner" />
-            <p className="text-gray-500 mt-4 text-lg">Đang tải thông tin nhóm...</p>
+            <p className="text-gray-500 mt-4 text-lg">Loading group information...</p>
           </div>
         </div>
       );
@@ -259,8 +259,8 @@ const GroupsPage = () => {
           <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
             <div className="flex items-center justify-between">
         <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Tổng quan dự án</h2>
-                <p className="text-gray-600">Quản lý tất cả các nhóm trong dự án #{projectId}</p>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Project Overview</h2>
+                <p className="text-gray-600">Manage all groups in project #{projectId}</p>
               </div>
               <div className="p-4 bg-white rounded-xl shadow-sm">
                 <Users className="h-8 w-8 text-blue-600" />
@@ -292,8 +292,8 @@ const GroupsPage = () => {
         <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200">
           <div className="flex justify-between items-center">
             <div className="flex-1">
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Tham gia nhóm</h2>
-              <p className="text-gray-600 mb-4">Chọn nhóm phù hợp hoặc tạo nhóm mới cho dự án #{projectId}</p>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Join Group</h2>
+              <p className="text-gray-600 mb-4">Choose a suitable group or create a new group for project #{projectId}</p>
           </div>
           
           {/* Only show Create Group and Auto Join buttons for students who are not admins/instructors */}
@@ -304,7 +304,7 @@ const GroupsPage = () => {
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 flex items-center gap-2 shadow-lg"
               >
                 <Plus size={16} />
-                  Tạo nhóm mới
+                  Create New Group
               </Button>
               <Button 
                 onClick={handleAutoJoin} 
@@ -312,7 +312,7 @@ const GroupsPage = () => {
                   className="border-purple-300 text-purple-700 hover:bg-purple-50 flex items-center gap-2"
               >
                   <Shield size={16} />
-                  Tham gia tự động
+                  Auto Join
               </Button>
             </div>
           )}
@@ -344,7 +344,7 @@ const GroupsPage = () => {
               <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
                 <Users className="h-5 w-5 text-white" />
               </div>
-              {selectedGroupName} - Thành viên
+              {selectedGroupName} - Members
             </DialogTitle>
             </DialogHeader>
             <div className="mt-4 space-y-3 max-h-96 overflow-y-auto pr-2">
@@ -368,7 +368,7 @@ const GroupsPage = () => {
             </div>
             <DialogClose asChild>
             <Button variant="outline" className="w-full mt-4">
-              Đóng
+              Close
             </Button>
             </DialogClose>
           </DialogContent>

@@ -150,16 +150,16 @@ const Dashboard: React.FC = () => {
         });
       } else {
         toast({
-          title: "Lỗi",
-          description: response.message || "Không thể tải danh sách người dùng",
+          title: "Error",
+          description: response.message || "Failed to load user list",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Error fetching users:', error);
       toast({
-        title: "Lỗi",
-        description: "Không thể kết nối đến server",
+        title: "Error",
+        description: "Failed to connect to server",
         variant: "destructive",
       });
     } finally {
@@ -212,11 +212,11 @@ const Dashboard: React.FC = () => {
 
   const getRoleLabel = (roles: string[]) => {
     if (roles.includes('ADMIN')) {
-      return 'Quản trị viên';
+      return 'Admin';
     } else if (roles.includes('INSTRUCTOR')) {
-      return 'Giảng viên';
+      return 'Instructor';
     } else {
-      return 'Sinh viên';
+      return 'Student';
     }
   };
 
@@ -227,8 +227,8 @@ const Dashboard: React.FC = () => {
   const handleCreateUser = async () => {
     if (!newUser.username || !newUser.email || !newUser.fullName || !newUser.password) {
       toast({
-        title: "Lỗi",
-        description: "Vui lòng điền đầy đủ thông tin",
+        title: "Error",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -239,8 +239,9 @@ const Dashboard: React.FC = () => {
       const response = await userManagementService.createUser(newUser);
       if (response.success) {
         toast({
-          title: "Thành công",
-          description: "Tạo người dùng thành công",
+          title: "Success",
+          description: "User created successfully",
+          variant: "default",
         });
         setNewUser({
           username: '',
@@ -255,16 +256,16 @@ const Dashboard: React.FC = () => {
         fetchAllUsersForStats(); // Refresh stats
       } else {
         toast({
-          title: "Lỗi",
-          description: response.message || "Không thể tạo người dùng",
+          title: "Error",
+          description: response.message || "Failed to create user",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Error creating user:', error);
       toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || "Không thể tạo người dùng",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to create user",
         variant: "destructive",
       });
     } finally {
@@ -287,8 +288,9 @@ const Dashboard: React.FC = () => {
       
       if (response.success) {
         toast({
-          title: "Thành công",
-          description: "Cập nhật người dùng thành công",
+          title: "Success",
+          description: "User updated successfully",
+          variant: "default",
         });
         setIsEditModalOpen(false);
         setSelectedUser(null);
@@ -296,16 +298,16 @@ const Dashboard: React.FC = () => {
         fetchAllUsersForStats(); // Refresh stats
       } else {
         toast({
-          title: "Lỗi",
-          description: response.message || "Không thể cập nhật người dùng",
+          title: "Error",
+          description: response.message || "Failed to update user",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Error updating user:', error);
       toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || "Không thể cập nhật người dùng",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update user",
         variant: "destructive",
       });
     } finally {
@@ -314,7 +316,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleDeleteUser = async (userId: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+    if (!confirm('Are you sure you want to delete this user?')) {
       return;
     }
 
@@ -322,23 +324,24 @@ const Dashboard: React.FC = () => {
       const response = await userManagementService.deleteUser(userId.toString());
       if (response.success) {
         toast({
-          title: "Thành công",
-          description: "Xóa người dùng thành công",
+          title: "Success",
+          description: "User deleted successfully",
+          variant: "default",
         });
         fetchUsers(); // Refresh the list
         fetchAllUsersForStats(); // Refresh stats
       } else {
         toast({
-          title: "Lỗi",
-          description: response.message || "Không thể xóa người dùng",
+          title: "Error",
+          description: response.message || "Failed to delete user",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Error deleting user:', error);
       toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || "Không thể xóa người dùng",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to delete user",
         variant: "destructive",
       });
     }
@@ -349,23 +352,23 @@ const Dashboard: React.FC = () => {
       const response = await userManagementService.enableDisableUser(userId.toString(), !currentStatus);
       if (response.success) {
         toast({
-          title: "Thành công",
-          description: `${!currentStatus ? 'Kích hoạt' : 'Vô hiệu hóa'} người dùng thành công`,
+          title: "Success",
+          description: `${!currentStatus ? 'Activated' : 'Disabled'} user successfully`,
         });
         fetchUsers(); // Refresh the list
         fetchAllUsersForStats(); // Refresh stats
       } else {
         toast({
-          title: "Lỗi",
-          description: response.message || "Không thể cập nhật trạng thái người dùng",
+          title: "Error",
+          description: response.message || "Failed to update user status",
           variant: "destructive",
         });
       }
     } catch (error: any) {
       console.error('Error toggling user status:', error);
       toast({
-        title: "Lỗi",
-        description: error.response?.data?.message || "Không thể cập nhật trạng thái người dùng",
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update user status",
         variant: "destructive",
       });
     }
@@ -410,7 +413,7 @@ const Dashboard: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-purple-600" />
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
+          <p className="text-gray-600">Loading data...</p>
         </div>
       </div>
     );
@@ -422,10 +425,10 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-            Quản trị hệ thống ITss
+            ITss System Administration
           </h1>
           <p className="text-gray-600 text-lg">
-            Quản lý người dùng và phân quyền hệ thống
+            User management and system permissions
           </p>
         </div>
 
@@ -435,7 +438,7 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-sm font-medium">Tổng người dùng</p>
+                  <p className="text-blue-100 text-sm font-medium">Total Users</p>
                   <p className="text-3xl font-bold">{stats.total}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-200" />
@@ -447,7 +450,7 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm font-medium">Sinh viên</p>
+                  <p className="text-green-100 text-sm font-medium">Students</p>
                   <p className="text-3xl font-bold">{stats.students}</p>
                 </div>
                 <User className="h-8 w-8 text-green-200" />
@@ -459,7 +462,7 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-purple-100 text-sm font-medium">Giảng viên</p>
+                  <p className="text-purple-100 text-sm font-medium">Instructors</p>
                   <p className="text-3xl font-bold">{stats.instructors}</p>
                 </div>
                 <GraduationCap className="h-8 w-8 text-purple-200" />
@@ -471,7 +474,7 @@ const Dashboard: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-red-100 text-sm font-medium">Quản trị viên</p>
+                  <p className="text-red-100 text-sm font-medium">Administrators</p>
                   <p className="text-3xl font-bold">{stats.admins}</p>
                 </div>
                 <Shield className="h-8 w-8 text-red-200" />
@@ -485,15 +488,15 @@ const Dashboard: React.FC = () => {
           <CardHeader className="bg-gradient-to-r from-white to-gray-50 border-b">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
               <div>
-                <CardTitle className="text-2xl font-bold text-gray-900">Quản lý người dùng</CardTitle>
-                <p className="text-gray-600 mt-1">Thêm, sửa, xóa và quản lý tài khoản người dùng</p>
+                <CardTitle className="text-2xl font-bold text-gray-900">User Management</CardTitle>
+                <p className="text-gray-600 mt-1">Add, edit, delete and manage user accounts</p>
               </div>
               <Button 
                 onClick={() => setIsCreateModalOpen(true)}
                 className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg"
               >
                 <UserPlus className="h-4 w-4 mr-2" />
-                Thêm người dùng
+                Add User
               </Button>
             </div>
           </CardHeader>
@@ -504,7 +507,7 @@ const Dashboard: React.FC = () => {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <Input
-                  placeholder="Tìm kiếm theo tên, email hoặc username..."
+                  placeholder="Search by name, email or username..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -513,36 +516,36 @@ const Dashboard: React.FC = () => {
               
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Lọc theo vai trò" />
+                  <SelectValue placeholder="Filter by role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả vai trò</SelectItem>
-                  <SelectItem value="ADMIN">Quản trị viên</SelectItem>
-                  <SelectItem value="INSTRUCTOR">Giảng viên</SelectItem>
-                  <SelectItem value="STUDENT">Sinh viên</SelectItem>
+                  <SelectItem value="all">All roles</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
+                  <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                  <SelectItem value="STUDENT">Student</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
                 <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Lọc theo trạng thái" />
+                  <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Tất cả trạng thái</SelectItem>
-                  <SelectItem value="active">Đang hoạt động</SelectItem>
-                  <SelectItem value="inactive">Đã vô hiệu hóa</SelectItem>
+                  <SelectItem value="all">All status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Disabled</SelectItem>
                 </SelectContent>
               </Select>
 
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="Sắp xếp theo" />
+                  <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fullName">Tên</SelectItem>
+                  <SelectItem value="fullName">Name</SelectItem>
                   <SelectItem value="email">Email</SelectItem>
-                  <SelectItem value="createdAt">Ngày tạo</SelectItem>
-                  <SelectItem value="lastLoginAt">Đăng nhập cuối</SelectItem>
+                  <SelectItem value="createdAt">Created Date</SelectItem>
+                  <SelectItem value="lastLoginAt">Last Login</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -577,15 +580,15 @@ const Dashboard: React.FC = () => {
                               <span className="ml-1">{getRoleLabel(user.roles)}</span>
                             </Badge>
                             <Badge variant={user.enabled ? "default" : "secondary"}>
-                              {user.enabled ? "Hoạt động" : "Vô hiệu hóa"}
+                              {user.enabled ? "Active" : "Disabled"}
                             </Badge>
                           </div>
                           <p className="text-sm text-gray-600">{user.email}</p>
                           <p className="text-xs text-gray-500">@{user.username}</p>
                           <div className="flex items-center space-x-4 text-xs text-gray-500">
-                            <span>Tạo: {new Date(user.createdAt).toLocaleDateString('vi-VN')}</span>
+                            <span>Created: {new Date(user.createdAt).toLocaleDateString('en-US')}</span>
                             {user.lastLoginAt && (
-                              <span>Đăng nhập cuối: {new Date(user.lastLoginAt).toLocaleDateString('vi-VN')}</span>
+                              <span>Last login: {new Date(user.lastLoginAt).toLocaleDateString('en-US')}</span>
                             )}
                           </div>
                         </div>
@@ -600,18 +603,18 @@ const Dashboard: React.FC = () => {
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem onClick={() => openEditModal(user)}>
                             <Edit className="h-4 w-4 mr-2" />
-                            Chỉnh sửa
+                            Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => handleToggleStatus(user.id, user.enabled)}>
                             {user.enabled ? (
                               <>
                                 <EyeOff className="h-4 w-4 mr-2" />
-                                Vô hiệu hóa
+                                Disable
                               </>
                             ) : (
                               <>
                                 <Eye className="h-4 w-4 mr-2" />
-                                Kích hoạt
+                                Enable
                               </>
                             )}
                           </DropdownMenuItem>
@@ -620,7 +623,7 @@ const Dashboard: React.FC = () => {
                             className="text-red-600"
                           >
                             <Trash2 className="h-4 w-4 mr-2" />
-                            Xóa
+                            Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -632,8 +635,8 @@ const Dashboard: React.FC = () => {
               {filteredUsers.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg font-medium">Không tìm thấy người dùng</p>
-                  <p className="text-gray-400 text-sm">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                  <p className="text-gray-500 text-lg font-medium">No users found</p>
+                  <p className="text-gray-400 text-sm">Try changing filters or search keywords</p>
                 </div>
               )}
             </div>
@@ -641,7 +644,7 @@ const Dashboard: React.FC = () => {
             {/* Pagination */}
             <div className="flex flex-col md:flex-row items-center justify-between mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                <span className="text-sm text-gray-600">Hiển thị</span>
+                <span className="text-sm text-gray-600">Display</span>
                 <Select value={pagination.size.toString()} onValueChange={handlePageSizeChange}>
                   <SelectTrigger className="w-20">
                     <SelectValue />
@@ -654,7 +657,7 @@ const Dashboard: React.FC = () => {
                   </SelectContent>
                 </Select>
                 <span className="text-sm text-gray-600">
-                  trên tổng số {pagination.totalElements} người dùng
+                  of total {pagination.totalElements} users
                 </span>
               </div>
 
@@ -667,7 +670,7 @@ const Dashboard: React.FC = () => {
                   className="flex items-center"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Trước
+                  Previous
                 </Button>
 
                 <div className="flex items-center space-x-1">
@@ -704,7 +707,7 @@ const Dashboard: React.FC = () => {
                   disabled={pagination.last}
                   className="flex items-center"
                 >
-                  Sau
+                  Next
                   <ChevronRight className="h-4 w-4 ml-1" />
                 </Button>
               </div>
@@ -717,30 +720,30 @@ const Dashboard: React.FC = () => {
       <Dialog open={isCreateModalOpen} onOpenChange={setIsCreateModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Thêm người dùng mới</DialogTitle>
-            <DialogDescription>
-              Tạo tài khoản mới cho hệ thống ITss
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Create new account for ITss system
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">
             <div>
-              <Label htmlFor="username">Tên đăng nhập</Label>
+              <Label htmlFor="username">Username</Label>
               <Input
                 id="username"
                 value={newUser.username}
                 onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
-                placeholder="Nhập tên đăng nhập"
+                placeholder="Enter username"
               />
             </div>
 
             <div>
-              <Label htmlFor="fullName">Họ và tên</Label>
+              <Label htmlFor="fullName">Full Name</Label>
               <Input
                 id="fullName"
                 value={newUser.fullName}
                 onChange={(e) => setNewUser({ ...newUser, fullName: e.target.value })}
-                placeholder="Nhập họ và tên"
+                placeholder="Enter full name"
               />
             </div>
             
@@ -751,39 +754,39 @@ const Dashboard: React.FC = () => {
                 type="email"
                 value={newUser.email}
                 onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                placeholder="Nhập địa chỉ email"
+                placeholder="Enter email address"
               />
             </div>
             
             <div>
-              <Label htmlFor="role">Vai trò</Label>
+              <Label htmlFor="role">Role</Label>
               <Select value={newUser.roles[0]} onValueChange={(value) => setNewUser({ ...newUser, roles: [value] })}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="STUDENT">Sinh viên</SelectItem>
-                  <SelectItem value="INSTRUCTOR">Giảng viên</SelectItem>
-                  <SelectItem value="ADMIN">Quản trị viên</SelectItem>
+                  <SelectItem value="STUDENT">Student</SelectItem>
+                  <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                  <SelectItem value="ADMIN">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div>
-              <Label htmlFor="password">Mật khẩu</Label>
+              <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
                 type="password"
                 value={newUser.password}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                placeholder="Nhập mật khẩu"
+                placeholder="Enter password"
               />
             </div>
           </div>
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateModalOpen(false)}>
-              Hủy
+              Cancel
             </Button>
             <Button 
               onClick={handleCreateUser}
@@ -793,10 +796,10 @@ const Dashboard: React.FC = () => {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Đang tạo...
+                  Creating...
                 </>
               ) : (
-                'Tạo tài khoản'
+                'Create Account'
               )}
             </Button>
           </DialogFooter>
@@ -807,16 +810,16 @@ const Dashboard: React.FC = () => {
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Chỉnh sửa người dùng</DialogTitle>
-            <DialogDescription>
-              Cập nhật thông tin tài khoản
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Update account information
             </DialogDescription>
           </DialogHeader>
           
           {selectedUser && (
             <div className="space-y-4">
               <div>
-                <Label htmlFor="editUsername">Tên đăng nhập</Label>
+                <Label htmlFor="editUsername">Username</Label>
                 <Input
                   id="editUsername"
                   value={selectedUser.username}
@@ -825,7 +828,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div>
-                <Label htmlFor="editFullName">Họ và tên</Label>
+                <Label htmlFor="editFullName">Full Name</Label>
                 <Input
                   id="editFullName"
                   value={selectedUser.fullName}
@@ -844,15 +847,15 @@ const Dashboard: React.FC = () => {
               </div>
               
               <div>
-                <Label htmlFor="editRole">Vai trò</Label>
+                <Label htmlFor="editRole">Role</Label>
                 <Select value={selectedUser.roles[0]} onValueChange={(value) => setSelectedUser({ ...selectedUser, roles: [value] })}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="STUDENT">Sinh viên</SelectItem>
-                    <SelectItem value="INSTRUCTOR">Giảng viên</SelectItem>
-                    <SelectItem value="ADMIN">Quản trị viên</SelectItem>
+                    <SelectItem value="STUDENT">Student</SelectItem>
+                    <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
+                    <SelectItem value="ADMIN">Admin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -861,7 +864,7 @@ const Dashboard: React.FC = () => {
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>
-              Hủy
+              Cancel
             </Button>
             <Button 
               onClick={handleEditUser}
@@ -871,10 +874,10 @@ const Dashboard: React.FC = () => {
               {submitting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Đang cập nhật...
+                  Updating...
                 </>
               ) : (
-                'Cập nhật'
+                'Update'
               )}
             </Button>
           </DialogFooter>

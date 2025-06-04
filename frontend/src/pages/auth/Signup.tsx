@@ -88,8 +88,8 @@ const Signup = () => {
     
     if (password !== confirmPassword) {
       toast({
-        title: "Mật khẩu không khớp",
-        description: "Mật khẩu xác nhận không trùng khớp. Vui lòng thử lại.",
+        title: "Password Mismatch",
+        description: "The confirmed password does not match. Please try again.",
         variant: "destructive",
       });
       return;
@@ -97,8 +97,8 @@ const Signup = () => {
     
     if (!termsAccepted) {
       toast({
-        title: "Điều khoản sử dụng",
-        description: "Bạn phải đồng ý với Điều khoản dịch vụ và Chính sách bảo mật để tạo tài khoản.",
+        title: "Terms of Service",
+        description: "You must agree to the Terms of Service and Privacy Policy to create an account.",
         variant: "destructive",
       });
       return;
@@ -111,22 +111,22 @@ const Signup = () => {
       const response = await signup(username, email, fullName, password);
       if (response.success) {
         toast({
-          title: "Đăng ký thành công",
-          description: "Tài khoản của bạn đã được tạo. Vui lòng đăng nhập.",
+          title: "Registration Successful",
+          description: "Your account has been created. Please sign in.",
           variant: "default",
         });
         navigate('/login');
       } else {
         toast({
-          title: "Đăng ký thất bại",
-          description: response.message || "Không thể tạo tài khoản",
+          title: "Registration Failed",
+          description: response.message || "Failed to create account",
           variant: "destructive",
         });
       }    
     } catch (error: any) {
       toast({
-        title: "Lỗi đăng ký",
-        description: error.message || error.response?.data?.message || "Đã xảy ra lỗi trong quá trình đăng ký",
+        title: "Registration Error",
+        description: error.message || error.response?.data?.message || "An error occurred during registration",
         variant: "destructive",
       });
     } finally {
@@ -165,7 +165,7 @@ const Signup = () => {
           </Link>
           <Link to="/login">
             <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105">
-              Đăng nhập
+              Sign In
             </Button>
           </Link>
         </div>
@@ -186,20 +186,20 @@ const Signup = () => {
                   </div>
                 </div>
                 <CardTitle ref={titleRef} className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent opacity-0">
-                  Tạo tài khoản
+                  Create Account
                 </CardTitle>
                 <CardDescription ref={subtitleRef} className="text-gray-300 text-lg opacity-0">
-                  Bắt đầu với hệ thống ITss
+                  Start with ITss system
                 </CardDescription>
               </CardHeader>
               
               <form onSubmit={handleSignup}>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-gray-200 font-medium">Tên đăng nhập</Label>
+                    <Label htmlFor="username" className="text-gray-200 font-medium">Username</Label>
                     <Input 
                       id="username" 
-                      placeholder="Nhập tên đăng nhập" 
+                      placeholder="Enter username" 
                       className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -209,10 +209,10 @@ const Signup = () => {
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="first-name" className="text-gray-200 font-medium">Họ</Label>
+                      <Label htmlFor="first-name" className="text-gray-200 font-medium">First Name</Label>
                       <Input 
                         id="first-name" 
-                        placeholder="Nhập họ" 
+                        placeholder="Enter first name" 
                         className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
@@ -220,10 +220,10 @@ const Signup = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="last-name" className="text-gray-200 font-medium">Tên</Label>
+                      <Label htmlFor="last-name" className="text-gray-200 font-medium">Last Name</Label>
                       <Input 
                         id="last-name" 
-                        placeholder="Nhập tên" 
+                        placeholder="Enter last name" 
                         className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
@@ -237,7 +237,7 @@ const Signup = () => {
                     <Input 
                       id="email" 
                       type="email" 
-                      placeholder="Nhập địa chỉ email" 
+                      placeholder="Enter email address" 
                       className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -246,12 +246,12 @@ const Signup = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-gray-200 font-medium">Mật khẩu</Label>
+                    <Label htmlFor="password" className="text-gray-200 font-medium">Password</Label>
                     <div className="relative">
                       <Input 
                         id="password" 
                         type={showPassword ? "text" : "password"} 
-                        placeholder="Nhập mật khẩu" 
+                        placeholder="Enter password" 
                         className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 pr-12 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -266,15 +266,15 @@ const Signup = () => {
                         {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                       </button>
                     </div>
-                    <p className="text-xs text-gray-400">Tối thiểu 8 ký tự</p>
+                    <p className="text-xs text-gray-400">Minimum 8 characters</p>
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-gray-200 font-medium">Xác nhận mật khẩu</Label>
+                    <Label htmlFor="confirmPassword" className="text-gray-200 font-medium">Confirm Password</Label>
                     <Input 
                       id="confirmPassword" 
                       type={showPassword ? "text" : "password"} 
-                      placeholder="Nhập lại mật khẩu" 
+                      placeholder="Confirm password" 
                       className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
@@ -288,18 +288,18 @@ const Signup = () => {
                       id="terms"
                       checked={termsAccepted}
                       onChange={(e) => setTermsAccepted(e.target.checked)}
-                      aria-label="Đồng ý với điều khoản dịch vụ và chính sách bảo mật"
+                      aria-label="I agree to the Terms of Service and Privacy Policy"
                       className="mt-1 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500 focus:ring-2" 
                       required
                     />
                     <Label htmlFor="terms" className="text-sm text-gray-300 leading-relaxed">
-                      Tôi đồng ý với{' '}
+                      I agree to the{' '}
                       <Link to="/terms" className="text-purple-400 hover:text-purple-300 transition-colors duration-200">
-                        Điều khoản dịch vụ
+                        Terms of Service
                       </Link>
-                      {' '}và{' '}
+                      {' '}and{' '}
                       <Link to="/privacy" className="text-purple-400 hover:text-purple-300 transition-colors duration-200">
-                        Chính sách bảo mật
+                        Privacy Policy
                       </Link>
                     </Label>
                   </div>
@@ -314,17 +314,17 @@ const Signup = () => {
                     {loading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        <span>Đang tạo tài khoản...</span>
+                        <span>Creating account...</span>
                       </div>
                     ) : (
-                      "Tạo tài khoản"
+                      "Create Account"
                     )}
                   </Button>
                   
                   <p className="text-center text-gray-400">
-                    Đã có tài khoản?{' '}
+                    Already have an account?{' '}
                     <Link to="/login" className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
-                      Đăng nhập
+                      Sign In
                     </Link>
                   </p>
                   
@@ -334,7 +334,7 @@ const Signup = () => {
                       className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
                     >
                       <ArrowLeft size={16} />
-                      <span>Quay lại trang chủ</span>
+                      <span>Back to home</span>
                     </Link>
                   </div>
                 </CardFooter>

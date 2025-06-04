@@ -179,34 +179,34 @@ const TaskDetailDialog = ({
     
     try {
       setIsAssigning(true);
-      // Gọi API để kiểm tra cảnh báo áp lực
+      // Call API to check pressure warning
       const response = await axiosInstance.put(`/api/tasks/${task.id}/assign/${memberId}`);
       
       if (response.status === 200) {
         const updatedTask = response.data.data;
         
-        // Kiểm tra nếu có cảnh báo áp lực
+        // Check if there's a pressure warning
         if (updatedTask.pressureWarning != null) {
-          // Tìm thông tin thành viên cho dialog cảnh báo
+          // Find member information for warning dialog
           const member = groupMembers.find(m => m.id.toString() === memberId);
-          setWarningMember(member?.fullName || 'Thành viên này');
+          setWarningMember(member?.fullName || 'This member');
           
-          // Lưu ID thành viên để gán nhiệm vụ sau khi xác nhận
+          // Save member ID to assign task after confirmation
           setPendingAssignment(memberId);
           
-          // Hiển thị dialog cảnh báo
+          // Show warning dialog
           setShowPressureWarning(true);
           setIsAssigning(false);
           return;
         }
         
-        // Không có cảnh báo, hiển thị thông báo thành công
+        // No warning, show success notification
         toast({
-          title: "Thành công",
-          description: "Nhiệm vụ đã được gán thành công",
+          title: "Success",
+          description: "Task assigned successfully",
         });
         
-        // Gọi onTaskUpdated để cập nhật dữ liệu nhiệm vụ
+        // Call onTaskUpdated to refresh task data
         if (onTaskUpdated) {
           onTaskUpdated();
         }

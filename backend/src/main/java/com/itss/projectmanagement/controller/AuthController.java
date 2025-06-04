@@ -46,7 +46,7 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401", description = "Authentication failed")
     })
     @PostMapping("/login")
-    public ResponseEntity<com.itss.projectmanagement.dto.common.ApiResponse<AuthResponse>> authenticateUser(@RequestBody AuthRequest loginRequest) {
+    public ResponseEntity<com.itss.projectmanagement.dto.common.ApiResponse<AuthResponse>> authenticateUser(@Valid @RequestBody AuthRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
@@ -89,7 +89,7 @@ public class AuthController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input or username/email already exists")
     })
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponse> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<com.itss.projectmanagement.dto.common.ApiResponse<RegisterResponse>> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         User user = userService.register(
                 registerRequest.getUsername(),
                 registerRequest.getPassword(),
@@ -97,11 +97,17 @@ public class AuthController {
                 registerRequest.getEmail()
         );
         
-        RegisterResponse response = new RegisterResponse(
+        RegisterResponse registerResponse = new RegisterResponse(
                 "User registered successfully",
                 true,
                 user.getUsername()
         );
+        
+        com.itss.projectmanagement.dto.common.ApiResponse<RegisterResponse> response = 
+                com.itss.projectmanagement.dto.common.ApiResponse.success(
+                        registerResponse,
+                        "User registered successfully"
+                );
         
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }

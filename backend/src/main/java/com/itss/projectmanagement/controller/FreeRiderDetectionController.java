@@ -39,23 +39,6 @@ public class FreeRiderDetectionController {
     }
     
     /**
-     * Detect free riders in a project and send notifications (for scheduled jobs)
-     * @param projectId Project ID
-     * @return List of free riders
-     */    @GetMapping("/detect-with-notifications")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
-    public ResponseEntity<ApiResponse<List<UserDTO>>> detectFreeRidersWithNotifications(@RequestParam Long projectId) {
-        List<UserDTO> freeRiderDTOs = freeRiderDetectionService.detectFreeRiders(projectId);
-        return ResponseEntity.ok(
-                ApiResponse.<List<UserDTO>>builder()
-                        .success(true)
-                        .message("Free riders detected and notifications sent successfully")
-                        .data(freeRiderDTOs)
-                        .build()
-        );
-    }
-
-    /**
      * Manually trigger free rider detection with notifications
      * This endpoint is useful for admins to force a check outside the scheduled time
      * @param projectId Project ID
@@ -115,48 +98,6 @@ public class FreeRiderDetectionController {
     }    
     
     /**
-     * Calculate risk score for a specific user in a project
-     * @param projectId Project ID
-     * @param userId User ID
-     * @return Risk score
-     */
-    @GetMapping("/user-risk-score")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")    
-    public ResponseEntity<ApiResponse<Double>> calculateUserRiskScore(
-            @RequestParam Long projectId,
-            @RequestParam Long userId) {
-        Double riskScore = freeRiderDetectionService.calculateFreeRiderRiskScore(userId, projectId);
-        return ResponseEntity.ok(
-                ApiResponse.<Double>builder()
-                        .success(true)
-                        .message("User risk score calculated successfully")
-                        .data(riskScore)
-                        .build()
-        );
-    }
-
-    /**
-     * Get free rider evidence for a group or all groups in a project
-     * @param projectId Project ID
-     * @param groupId Group ID (optional)
-     * @return Group evidence data
-     */
-    @GetMapping("/group-evidence")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")    
-    public ResponseEntity<ApiResponse<Map<String, Object>>> getGroupFreeRiderEvidence(
-            @RequestParam Long projectId,
-            @RequestParam(required = false) Long groupId) {
-        Map<String, Object> evidence = freeRiderDetectionService.getGroupFreeRiderEvidence(projectId, groupId);
-        return ResponseEntity.ok(
-                ApiResponse.<Map<String, Object>>builder()
-                        .success(true)
-                        .message("Group free rider evidence retrieved successfully")
-                        .data(evidence)
-                        .build()
-        );
-    }
-    
-    /**
      * Get all free rider cases for a project
      * @param projectId Project ID
      * @return List of cases
@@ -191,29 +132,6 @@ public class FreeRiderDetectionController {
                         .success(true)
                         .message("Free rider case created successfully")
                         .data(newCase)
-                        .build()
-        );
-    }
-      
-    /**
-     * Resolve a free rider case
-     * @param caseId Case ID
-     * @param resolution Resolution method
-     * @param notes Additional notes
-     * @return Updated case
-     */
-    @PostMapping("/resolve/{caseId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")    
-    public ResponseEntity<ApiResponse<FreeRiderCaseDTO>> resolveFreeRiderCase(
-            @PathVariable Long caseId,
-            @RequestParam String resolution,
-            @RequestParam String notes) {
-        FreeRiderCaseDTO updatedCase = freeRiderDetectionService.resolveFreeRiderCase(caseId, resolution, notes);
-        return ResponseEntity.ok(
-                ApiResponse.<FreeRiderCaseDTO>builder()
-                        .success(true)
-                        .message("Free rider case resolved successfully")
-                        .data(updatedCase)
                         .build()
         );
     }

@@ -87,14 +87,4 @@ public class UserConverter {
     public UserSummaryDTO toSummaryDTO(User user) {
         return toUserSummaryDTO(user);
     }
-
-    /**
-     * Alias for toUserSummaryDTO - Convert a list of User entities to UserSummaryDTOs
-     * This method is added for API consistency
-     * @param users the list of User entities to convert
-     * @return the list of converted UserSummaryDTOs
-     */
-    public List<UserSummaryDTO> toSummaryDTO(List<User> users) {
-        return toUserSummaryDTO(users);
-    }
 }

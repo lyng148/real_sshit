@@ -8,10 +8,11 @@ import com.itss.projectmanagement.dto.response.group.GroupDTO;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.Role;
+import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.UserRepository;
-import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.service.IGroupService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import jakarta.persistence.EntityManager;
@@ -317,18 +318,6 @@ public class GroupServiceImpl implements IGroupService {
     }
 
     /**
-     * Check if a user is the leader of a group
-     * @param groupId the group ID
-     * @param userId the user ID
-     * @return true if the user is the leader
-     */
-    public boolean isGroupLeader(Long groupId, Long userId) {
-        return groupRepository.findById(groupId)
-                .map(group -> group.getLeader() != null && group.getLeader().getId().equals(userId))
-                .orElse(false);
-    }
-
-    /**
      * Leave a group
      * @param groupId the group ID
      */
@@ -519,5 +508,16 @@ public class GroupServiceImpl implements IGroupService {
             }
             throw e;
         }
+    }
+
+    @Override
+    public Group getGroupEntityById(Long groupId) {
+        return groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
+    }
+
+    @Override
+    public List<Group> getGroupsByProject(Project project) {
+        return groupRepository.findByProject(project);
     }
 }

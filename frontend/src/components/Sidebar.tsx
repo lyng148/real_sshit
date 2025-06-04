@@ -21,7 +21,7 @@ export const Sidebar = () => {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const navItemsRef = useRef<HTMLDivElement>(null);
   
-  // Sửa lại việc kiểm tra quyền ADMIN để tránh lỗi khi currentUser là null/undefined 
+  // Fix ADMIN permission check to avoid errors when currentUser is null/undefined
   const isAdmin = currentUser?.user.roles ? currentUser.user.roles.includes('ADMIN') : false;
   const isInstructor = currentUser?.user.roles ? currentUser.user.roles.includes('INSTRUCTOR') : false;
 
@@ -140,7 +140,7 @@ export const Sidebar = () => {
           <button 
             onClick={handleSidebarToggle}
             className="text-gray-400 hover:text-purple-600 p-2 rounded-lg hover:bg-purple-50 transition-all duration-300 hover:scale-110" 
-            title={isCollapsed ? "Mở rộng sidebar" : "Thu gọn sidebar"}
+            title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
           </button>
@@ -158,7 +158,7 @@ export const Sidebar = () => {
             </div>
             <input 
               type="text" 
-              placeholder="Tìm kiếm..." 
+              placeholder="Search..." 
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               className="pl-10 pr-10 py-2 w-full border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm hover:shadow-md transition-all duration-300"
@@ -170,17 +170,17 @@ export const Sidebar = () => {
         </div>
       )}
 
-      {/* Main navigation với enhanced styling */}      
+      {/* Main navigation with enhanced styling */}      
       <nav className="mt-4 px-2">
         <ul className="space-y-1 px-2">
-          <NavItem icon={<Home size={18} />} label="Trang chủ" to="/" active={location.pathname === '/'} isCollapsed={isCollapsed} />
+          <NavItem icon={<Home size={18} />} label="Home" to="/" active={location.pathname === '/'} isCollapsed={isCollapsed} />
           {isAdmin && (
-            <NavItem icon={<Users size={18} />} label="Quản lý người dùng" to="/admin/dashboard" active={location.pathname === '/admin/dashboard'} isCollapsed={isCollapsed} />
+            <NavItem icon={<Users size={18} />} label="User Management" to="/admin/dashboard" active={location.pathname === '/admin/dashboard'} isCollapsed={isCollapsed} />
           )}
           {isInstructor && (
             <NavItem 
               icon={<AlertTriangle size={18} />} 
-              label="Phát hiện Free-Rider" 
+              label="Free-Rider Detection" 
               to="/freerider-detection" 
               active={location.pathname.includes('/freerider-detection')} 
               isCollapsed={isCollapsed}
@@ -189,16 +189,16 @@ export const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* Projects section với enhanced styling */}
+      {/* Projects section with enhanced styling */}
       <div className="mt-6 flex-1">
         <div className="flex items-center justify-between px-4 py-2">
-          {!isCollapsed && <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Dự án</span>}          
+          {!isCollapsed && <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Projects</span>}          
           <div className="flex">
             {isInstructor || isAdmin ? (
               <button 
                 className="create-project-btn text-gray-400 hover:text-purple-600 p-1.5 rounded-lg hover:bg-purple-50 transition-all duration-300 hover:scale-110"
                 onClick={handleCreateProject}
-                title="Tạo dự án mới"
+                title="Create new project"
               >
                 <Plus size={16} />
               </button>
@@ -206,7 +206,7 @@ export const Sidebar = () => {
               <button 
                 className="text-gray-400 hover:text-purple-600 p-1.5 rounded-lg hover:bg-purple-50 transition-all duration-300 hover:scale-110"
                 onClick={() => setJoinDialogOpen(true)}
-                title="Tham gia dự án"
+                title="Join project"
               >
                 <Plus size={16} />
               </button>
@@ -217,11 +217,11 @@ export const Sidebar = () => {
         <ProjectList isCollapsed={isCollapsed} />
       </div>
 
-      {/* Footer navigation với enhanced styling */}
+      {/* Footer navigation with enhanced styling */}
       <div className="mt-auto border-t border-gray-100 bg-white/80 backdrop-blur-sm">
         <ul className="space-y-1 p-2">
-          <NavItem icon={<Settings size={18} />} label="Cài đặt" to="/settings" active={location.pathname === '/settings'} isCollapsed={isCollapsed} />
-          <NavItem icon={<User size={18} />} label="Hồ sơ" to="/profile" active={location.pathname === '/profile'} isCollapsed={isCollapsed} />
+          <NavItem icon={<Settings size={18} />} label="Settings" to="/settings" active={location.pathname === '/settings'} isCollapsed={isCollapsed} />
+          <NavItem icon={<User size={18} />} label="Profile" to="/profile" active={location.pathname === '/profile'} isCollapsed={isCollapsed} />
           <li className="nav-item">
             <button
               onClick={handleLogout}
@@ -229,12 +229,12 @@ export const Sidebar = () => {
                 "flex items-center w-full px-3 py-2.5 text-sm text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-300 group",
                 isCollapsed && "justify-center"
               )}
-              title={isCollapsed ? "Đăng xuất" : ""}
+              title={isCollapsed ? "Logout" : ""}
             >
               <span className={cn("text-gray-500 group-hover:text-red-500 transition-colors duration-300", isCollapsed ? "mr-0" : "mr-3")}>
                 <LogOut size={18} />
               </span>
-              {!isCollapsed && <span className="nav-label">Đăng xuất</span>}
+              {!isCollapsed && <span className="nav-label">Logout</span>}
             </button>
           </li>
         </ul>

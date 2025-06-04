@@ -61,17 +61,17 @@ const PeerReviewForm: React.FC<PeerReviewFormProps> = ({
         comment: data.comment || '',
       });
       
-      // Kiểm tra thêm phản hồi từ API để đảm bảo thành công
+      // Additional check for API response to ensure success
       if (response && response.success) {
         toast({
           title: "Review Submitted",
           description: "Your peer review has been submitted successfully",
         });
         
-        // Chỉ gọi onCompleted khi thực sự thành công
+        // Only call onCompleted when truly successful
         onCompleted();
       } else {
-        // Nếu API trả về thành công = false
+        // If API returns success = false
         toast({
           title: "Submission Failed",
           description: response?.message || "Could not submit your peer review. Please try again.",

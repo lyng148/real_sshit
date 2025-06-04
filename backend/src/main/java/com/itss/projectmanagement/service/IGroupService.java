@@ -5,7 +5,10 @@ import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.dto.request.group.GroupCreateRequest;
 import com.itss.projectmanagement.dto.request.group.GroupUpdateRequest;
 import com.itss.projectmanagement.dto.response.group.GroupDTO;
+import com.itss.projectmanagement.entity.Group;
+import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
@@ -96,4 +99,19 @@ public interface IGroupService {
      */
     @Transactional
     void deleteGroup(Long groupId);
+
+    /**
+     * Get group entity by ID (for internal service use)
+     * @param groupId The group ID
+     * @return The group entity
+     * @throws ResourceNotFoundException if group not found
+     */
+    Group getGroupEntityById(Long groupId);
+
+    /**
+     * Get all groups in a project (for internal service use)
+     * @param project The project entity
+     * @return List of groups in the project
+     */
+    List<Group> getGroupsByProject(Project project);
 }

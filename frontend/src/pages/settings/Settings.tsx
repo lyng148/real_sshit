@@ -3,7 +3,7 @@ import MainContent from '@/components/MainContent';
 
 const Settings = () => {
   return (
-    <MainContent title="Cài đặt" />
+    <MainContent title="Settings" />
   );
 };
 

@@ -70,15 +70,15 @@ const GroupsList: React.FC<GroupsListProps> = ({
             <div className="p-2 bg-gradient-to-r from-slate-600 to-slate-700 rounded-lg">
               <Users className="h-5 w-5 text-white" />
             </div>
-            Danh sách nhóm dự án
+            Project Groups
           </CardTitle>
           <div className="flex items-center gap-4">
             <Badge variant="secondary" className="bg-slate-100 text-slate-700 px-3 py-1">
-              {onPageChange ? `${totalElements} nhóm` : `${groups.length} nhóm`}
+              {onPageChange ? `${totalElements} groups` : `${groups.length} groups`}
             </Badge>
             <div className="flex items-center text-sm text-slate-500 bg-slate-100 rounded-lg px-3 py-1">
               <Clock className="h-4 w-4 mr-1" />
-              Cập nhật mới
+              Recently Updated
             </div>
           </div>
         </div>
@@ -90,8 +90,8 @@ const GroupsList: React.FC<GroupsListProps> = ({
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-slate-100 to-slate-200 rounded-full flex items-center justify-center">
               <Users className="h-8 w-8 text-slate-400" />
             </div>
-            <p className="text-xl font-semibold text-slate-600 mb-2">Chưa có nhóm nào</p>
-            <p className="text-slate-500">Hãy tạo nhóm đầu tiên cho dự án này</p>
+            <p className="text-xl font-semibold text-slate-600 mb-2">No groups yet</p>
+            <p className="text-slate-500">Create the first group for this project</p>
         </div>
       ) : (
         <>
@@ -116,7 +116,7 @@ const GroupsList: React.FC<GroupsListProps> = ({
                                 {group.name}
                               </h3>
                               <p className="text-sm text-slate-500 mt-1">
-                                Nhóm #{group.id} • Tạo {new Date(group.createdAt).toLocaleDateString('vi-VN')}
+                                Group #{group.id} • Created {new Date(group.createdAt).toLocaleDateString('en-US')}
                               </p>
                   </div>
                             <Badge 
@@ -128,7 +128,7 @@ const GroupsList: React.FC<GroupsListProps> = ({
                               }`}
                             >
                               <UserCheck className="h-3 w-3 mr-1" />
-                              {group.members.length} thành viên
+                              {group.members.length} members
                   </Badge>
                 </div>
                   </div>
@@ -136,7 +136,7 @@ const GroupsList: React.FC<GroupsListProps> = ({
                 
                       {/* Group members preview */}
                       <div className="flex items-center gap-3 mb-4">
-                        <span className="text-sm font-medium text-slate-600">Thành viên:</span>
+                        <span className="text-sm font-medium text-slate-600">Members:</span>
                         <div className="flex items-center -space-x-2">
                           {group.members.slice(0, 4).map((member, idx) => (
                             <div
@@ -165,7 +165,7 @@ const GroupsList: React.FC<GroupsListProps> = ({
                         className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
                       >
                         <Eye className="h-4 w-4 mr-1" />
-                        Xem thành viên
+                        View Members
                       </Button>
                       
                       {(isAdmin || isInstructor) ? (
@@ -176,7 +176,7 @@ const GroupsList: React.FC<GroupsListProps> = ({
                           className="border-slate-200 text-slate-600 hover:bg-slate-50 hover:border-slate-300"
                         >
                           <BarChart3 className="h-4 w-4 mr-1" />
-                          Xem chi tiết
+                          View Details
                         </Button>
                       ) : (
                     <Button
@@ -185,7 +185,7 @@ const GroupsList: React.FC<GroupsListProps> = ({
                           className="bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                           <ArrowRight className="h-4 w-4 mr-1" />
-                          Tham gia
+                          Join
                     </Button>
                   )}
                     </div>

@@ -6,18 +6,14 @@ import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.exception.ForbiddenException;
-import com.itss.projectmanagement.exception.ResourceNotFoundException;
-import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.repository.ProjectRepository;
-import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.service.IPressureScoreService;
-import com.itss.projectmanagement.service.IProjectService;
+import com.itss.projectmanagement.service.IGroupService;
+import com.itss.projectmanagement.service.IUserService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -39,8 +35,8 @@ import java.util.Set;
 public class PressureScoreController {
 
     private final IPressureScoreService pressureScoreService;
-    private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
+    private final IUserService userService;
+    private final IGroupService groupService;
 
     @GetMapping("/users/{userId}")
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN', 'STUDENT')")
@@ -59,7 +55,7 @@ public class PressureScoreController {
     }
 
     @GetMapping("/projects/{projectId}")
-    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @projectService.isUserGroupLeaderInProject(#projectId)")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN', 'STUDENT')")
     @Operation(summary = "Get pressure scores for all users in a project", 
                description = "Returns pressure scores for all users in a project. Accessible by instructors, admins, and group leaders of the project.")
     public ResponseEntity<ApiResponse<List<PressureScoreResponse>>> getProjectPressureScores(
@@ -87,13 +83,11 @@ public class PressureScoreController {
     public ResponseEntity<ApiResponse<List<PressureScoreResponse>>> getGroupPressureScores(@PathVariable Long groupId) {
         
         // Validate group existence and access
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new ResourceNotFoundException("Group not found with id: " + groupId));
+        Group group = groupService.getGroupEntityById(groupId);
         
         // Check permissions
         Long currentUserId = SecurityUtils.getCurrentUserId();
-        User currentUser = userRepository.findById(currentUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Current user not found"));
+        User currentUser = userService.getUserEntityById(currentUserId);
         
         boolean hasAccess = false;
         

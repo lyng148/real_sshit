@@ -77,14 +77,14 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
                       className="bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200 px-3 py-1"
                     >
                       <Users className="h-3 w-3 mr-1" />
-                      {group.memberCount}/{group.maxMembers} thành viên
+                      {group.memberCount}/{group.maxMembers} members
                     </Badge>
                     <Badge 
                       variant="outline" 
                       className="bg-blue-50 text-blue-700 border-blue-200"
                     >
                       <Star className="h-3 w-3 mr-1" />
-                      Hoạt động
+                      Active
                     </Badge>
                   </div>
                 </div>
@@ -102,7 +102,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
                 className="border-purple-200 text-purple-600 flex items-center gap-2"
               >
                 <Eye className="h-4 w-4" />
-                Xem thành viên
+                View Members
               </Button>
 
               {isRegularStudent && (
@@ -135,7 +135,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
                 rel="noopener noreferrer" 
                 className="text-blue-600 break-all text-sm font-medium transition-colors"
               >
-                {group.repositoryUrl ? group.repositoryUrl.replace(/^https?:\/\/(www\.)?github\.com\//, '') : "Chưa thiết lập"}
+                {group.repositoryUrl ? group.repositoryUrl.replace(/^https?:\/\/(www\.)?github\.com\//, '') : "Not configured"}
               </a>
             </div>
           </CardContent>
@@ -145,7 +145,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-gray-600 flex items-center gap-2">
               <Users className="h-4 w-4 text-green-500" />
-              Thành viên nhóm
+              Group Members
             </CardTitle>
           </CardHeader>          
           <CardContent>
@@ -166,7 +166,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
                 )}
               </div>
               <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                {group.members.length} người
+                {group.members.length} people
               </span>
             </div>
           </CardContent>
@@ -176,7 +176,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold text-gray-600 flex items-center gap-2">
               <Settings className="h-4 w-4 text-purple-500" />
-              Thông tin dự án
+              Project Information
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -186,7 +186,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
               </div>
               <div className="flex items-center text-xs text-gray-500">
                 <Clock className="h-3 w-3 mr-1" />
-                <span>Tạo ngày {new Date(group.createdAt).toLocaleDateString('vi-VN')}</span>
+                <span>Created on {new Date(group.createdAt).toLocaleDateString('en-US')}</span>
               </div>
             </div>
           </CardContent>
@@ -239,8 +239,8 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
               {renderKanban || (
                 <div className="text-center py-12">
                   <BarChart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg font-medium">Nội dung Kanban chưa có sẵn</p>
-                  <p className="text-gray-400 text-sm">Hãy thêm task đầu tiên để bắt đầu</p>
+                  <p className="text-gray-500 text-lg font-medium">Kanban content not available</p>
+                  <p className="text-gray-400 text-sm">Add the first task to get started</p>
                 </div>
               )}
             </TabsContent>
@@ -249,8 +249,8 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
               {renderTimeline || (
                 <div className="text-center py-12">
                   <Clock className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg font-medium">Nội dung Timeline chưa có sẵn</p>
-                  <p className="text-gray-400 text-sm">Timeline sẽ hiển thị khi có task</p>
+                  <p className="text-gray-500 text-lg font-medium">Timeline content not available</p>
+                  <p className="text-gray-400 text-sm">Timeline will display when tasks are available</p>
                 </div>
               )}
             </TabsContent>
@@ -259,8 +259,8 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
               {renderCalendar || (
                 <div className="text-center py-12">
                   <Calendar className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg font-medium">Nội dung Calendar chưa có sẵn</p>
-                  <p className="text-gray-400 text-sm">Lịch làm việc sẽ hiển thị khi có task</p>
+                  <p className="text-gray-500 text-lg font-medium">Calendar content not available</p>
+                  <p className="text-gray-400 text-sm">Work calendar will display when tasks are available</p>
                 </div>
               )}
             </TabsContent>

@@ -84,7 +84,7 @@ const FreeRiderEvidenceDisplay = ({ projectId, groupId }) => {
     );
   }
 
-  // Tạo dữ liệu cho biểu đồ tròn
+  // Create data for pie chart
   const contributionPieData = evidence.groupMembers.map(member => ({
     name: member.name,
     value: member.contributionScore,

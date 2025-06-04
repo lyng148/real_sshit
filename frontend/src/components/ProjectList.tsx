@@ -14,7 +14,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import { animations, animateOnScroll } from '@/lib/animations';
 import { animate, stagger } from 'animejs';
 
-// Dùng một đối tượng global để cache danh sách dự án
+// Use a global object to cache project list
 const cachedProjects = {
   projects: [],
   isLoaded: false
@@ -164,7 +164,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
 
   // Handle project item click animation
   const handleProjectClick = (projectId: number) => {
-    setSelectedProject(projectId); // cập nhật state ngay lập tức
+    setSelectedProject(projectId); // update state immediately
     navigate(`/projects/${projectId}/groups`);
   };
 
@@ -184,7 +184,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ isCollapsed = false })
     return myGroups.some(group => group.projectId === projectId);
   };
 
-  // Chức năng làm mới danh sách dự án
+  // Function to refresh project list
   const handleRefreshProjects = () => {
     cachedProjects.isLoaded = false;
     fetchProjects();

@@ -2,6 +2,7 @@ package com.itss.projectmanagement.service;
 
 import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -42,4 +43,12 @@ public interface IUserService {
     void deleteUser(Long id);
 
     void updateLastLogin(String username);
+
+    /**
+     * Get user entity by ID (for internal service use)
+     * @param userId The user ID
+     * @return The user entity
+     * @throws ResourceNotFoundException if user not found
+     */
+    User getUserEntityById(Long userId);
 }

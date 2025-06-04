@@ -141,7 +141,7 @@ const CreateGroupPage = () => {
                   className="border-white/20 text-white hover:bg-white/10 hover:border-white/30"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Quay lại
+                  Back
                 </Button>
                 <div className="h-8 w-px bg-white/20"></div>
                 <div className="flex items-center space-x-3">
@@ -149,15 +149,15 @@ const CreateGroupPage = () => {
                     <Plus className="h-6 w-6" />
                   </div>
                   <div>
-                    <h1 className="text-2xl font-bold">Tạo nhóm mới</h1>
-                    <p className="text-purple-100">Dự án #{projectId}</p>
+                    <h1 className="text-2xl font-bold">Create New Group</h1>
+                    <p className="text-purple-100">Project #{projectId}</p>
                   </div>
                 </div>
               </div>
               
               <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
                 <Users className="h-3 w-3 mr-1" />
-                Quản lý nhóm
+                Group Management
               </Badge>
             </div>
           </div>
@@ -174,9 +174,9 @@ const CreateGroupPage = () => {
                       <Users className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl font-bold text-gray-900">Thông tin nhóm</CardTitle>
+                      <CardTitle className="text-xl font-bold text-gray-900">Group Information</CardTitle>
                       <CardDescription className="text-gray-600">
-                        Điền đầy đủ thông tin để tạo nhóm làm việc mới
+                        Fill in complete information to create a new work group
                       </CardDescription>
                     </div>
                   </div>
@@ -187,35 +187,35 @@ const CreateGroupPage = () => {
                     {/* Group Name */}
                     <div className="space-y-2">
                       <Label htmlFor="name" className="text-sm font-semibold text-gray-700">
-                        Tên nhóm <span className="text-red-500">*</span>
+                        Group Name <span className="text-red-500">*</span>
                       </Label>
                       <Input
                         id="name"
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Nhập tên nhóm của bạn"
+                        placeholder="Enter your group name"
                         className="h-11 border-gray-200 focus:border-purple-400 focus:ring-purple-400"
                         required
                       />
-                      <p className="text-xs text-gray-500">Tên nhóm sẽ hiển thị cho tất cả thành viên trong dự án</p>
+                      <p className="text-xs text-gray-500">Group name will be displayed to all members in the project</p>
                     </div>
                     
                     {/* Description */}
                     <div className="space-y-2">
                       <Label htmlFor="description" className="text-sm font-semibold text-gray-700">
-                        Mô tả nhóm
+                        Group Description
                       </Label>
                       <Textarea
                         id="description"
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
-                        placeholder="Mô tả ngắn gọn về nhóm và mục tiêu làm việc..."
+                        placeholder="Brief description of the group and work objectives..."
                         rows={4}
                         className="border-gray-200 focus:border-purple-400 focus:ring-purple-400 resize-none"
                       />
-                      <p className="text-xs text-gray-500">Mô tả này sẽ giúp các thành viên hiểu rõ hơn về nhóm</p>
+                      <p className="text-xs text-gray-500">This description will help members understand more about the group</p>
                     </div>
 
                     {/* Repository URL */}
@@ -252,15 +252,15 @@ const CreateGroupPage = () => {
                           {isCheckingRepo ? (
                             <>
                               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Kiểm tra...
+                              Checking...
                             </>
                           ) : repoConnectionValid === true ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2" />
-                              Đã kết nối
+                              Connected
                             </>
                           ) : (
-                            'Kiểm tra kết nối'
+                            'Check Connection'
                           )}
                         </Button>
                       </div>
@@ -282,7 +282,7 @@ const CreateGroupPage = () => {
                       )}
                       
                       <p className="text-xs text-gray-500">
-                        Repository phải có dạng: https://github.com/username/repository
+                        Repository must be in format: https://github.com/username/repository
                       </p>
                     </div>
 
@@ -296,12 +296,12 @@ const CreateGroupPage = () => {
                         {isSubmitting ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Đang tạo nhóm...
+                            Creating group...
                           </>
                         ) : (
                           <>
                             <Plus className="h-4 w-4 mr-2" />
-                            Tạo nhóm
+                            Create Group
                           </>
                         )}
                       </Button>
@@ -317,7 +317,7 @@ const CreateGroupPage = () => {
                 <CardHeader>
                   <CardTitle className="text-lg text-blue-900 flex items-center gap-2">
                     <GitBranch className="h-5 w-5" />
-                    Hướng dẫn Repository
+                    Repository Guide
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-blue-800">
@@ -325,19 +325,19 @@ const CreateGroupPage = () => {
                     <div className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-bold">1</span>
                     </div>
-                    <p>Tạo repository public trên GitHub</p>
+                    <p>Create a public repository on GitHub</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-bold">2</span>
                     </div>
-                    <p>Copy URL repository đầy đủ</p>
+                    <p>Copy full repository URL</p>
                   </div>
                   <div className="flex items-start gap-2">
                     <div className="w-5 h-5 bg-blue-200 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                       <span className="text-xs font-bold">3</span>
                     </div>
-                    <p>Kiểm tra kết nối trước khi tạo nhóm</p>
+                    <p>Check connection before creating group</p>
                   </div>
                 </CardContent>
               </Card>
@@ -346,14 +346,14 @@ const CreateGroupPage = () => {
                 <CardHeader>
                   <CardTitle className="text-lg text-purple-900 flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    Quy tắc nhóm
+                    Group Rules
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-purple-800">
-                  <p>• Tối đa 6 thành viên mỗi nhóm</p>
-                  <p>• Mỗi thành viên chỉ thuộc 1 nhóm</p>
-                  <p>• Repository phải có quyền public</p>
-                  <p>• Tên nhóm không được trùng lặp</p>
+                  <p>• Maximum 6 members per group</p>
+                  <p>• Each member belongs to only 1 group</p>
+                  <p>• Repository must have public access</p>
+                  <p>• Group name must not be duplicated</p>
                 </CardContent>
               </Card>
             </div>

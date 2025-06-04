@@ -8,17 +8,15 @@ import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.enums.Role;
 import com.itss.projectmanagement.exception.ForbiddenException;
-import com.itss.projectmanagement.exception.ResourceNotFoundException;
-import com.itss.projectmanagement.repository.GroupRepository;
-import com.itss.projectmanagement.repository.ProjectRepository;
-import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.service.IContributionScoreService;
+import com.itss.projectmanagement.service.IGroupService;
+import com.itss.projectmanagement.service.IProjectService;
+import com.itss.projectmanagement.service.IUserService;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.security.SecurityUtil;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,17 +33,16 @@ import java.util.Map;
 public class ContributionScoreController {
 
     private final IContributionScoreService contributionScoreService;
-    private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
-    private final GroupRepository groupRepository;
+    private final IProjectService projectService;
+    private final IUserService userService;
+    private final IGroupService groupService;
 
     @PostMapping("/calculate")
     @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN')")
     @Operation(summary = "Calculate contribution scores for a project",
                description = "Calculates contribution scores for all users in a project. Restricted to instructors and admins.")
     public ResponseEntity<ApiResponse<String>> calculateScores(@RequestParam Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project project = projectService.getProjectEntityById(projectId);
 
         contributionScoreService.calculateScoresForProject(project);
 
@@ -62,8 +59,7 @@ public class ContributionScoreController {
     @Operation(summary = "Get all contribution scores for a project", 
                description = "Returns the latest calculated contribution scores for all users in a project. Restricted to instructors and admins.")
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByProject(@PathVariable Long projectId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project project = projectService.getProjectEntityById(projectId);
         
         List<ContributionScoreResponse> scores = contributionScoreService.getScoresByProject(project);
         
@@ -89,11 +85,9 @@ public class ContributionScoreController {
             @PathVariable Long userId,
             @AuthenticationPrincipal User currentUser) {
         
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project project = projectService.getProjectEntityById(projectId);
         
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        User user = userService.getUserEntityById(userId);
         
         // Check if user has permission to view this score
         if (!hasPermissionToViewScore(currentUser, user, projectId)) {
@@ -116,8 +110,7 @@ public class ContributionScoreController {
                description = "Returns the latest calculated contribution scores for all users in a group. Student can only see scores of his group.")
     public ResponseEntity<ApiResponse<List<ContributionScoreResponse>>> getScoresByGroup(@PathVariable Long groupId) {
         User currentUser = SecurityUtils.getCurrentUser();
-        Group group = groupRepository.findById(groupId)
-                .orElseThrow(() -> new IllegalArgumentException("Group not found"));
+        Group group = groupService.getGroupEntityById(groupId);
 
         // Nếu là student, chỉ cho xem điểm nhóm của mình
         if (currentUser.getRoles().contains(Role.STUDENT)) {
@@ -143,7 +136,7 @@ public class ContributionScoreController {
                description = "Allows instructors to adjust a user's contribution score with a reason. Restricted to instructors and admins.")
     public ResponseEntity<ApiResponse<ContributionScoreResponse>> adjustScore(
             @PathVariable Long id,
-            @RequestBody ScoreAdjustmentRequest request) {
+            @Valid @RequestBody ScoreAdjustmentRequest request) {
         
         ContributionScoreResponse updatedScore = contributionScoreService.adjustScore(
                 id, request.getAdjustedScore(), request.getAdjustmentReason());
@@ -195,10 +188,9 @@ public class ContributionScoreController {
         }
         
         // Case 3: Group leader
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
+        Project project = projectService.getProjectEntityById(projectId);
         
-        List<Group> projectGroups = groupRepository.findByProject(project);
+        List<Group> projectGroups = groupService.getGroupsByProject(project);
         for (Group group : projectGroups) {
             // Check if current user is the leader and target user is a member
             if (group.getLeader() != null && 

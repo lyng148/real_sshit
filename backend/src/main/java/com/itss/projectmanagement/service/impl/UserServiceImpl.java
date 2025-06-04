@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.itss.projectmanagement.exception.ResourceNotFoundException;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -129,10 +130,17 @@ public class UserServiceImpl implements IUserService {
         userRepository.deleteById(id);
     }
 
+    @Override
     public void updateLastLogin(String username) {
         userRepository.findByUsername(username).ifPresent(user -> {
             user.setLastLoginAt(LocalDateTime.now());
             userRepository.save(user);
         });
+    }
+
+    @Override
+    public User getUserEntityById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
     }
 }

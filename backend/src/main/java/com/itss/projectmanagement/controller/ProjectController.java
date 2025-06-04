@@ -1,15 +1,10 @@
 package com.itss.projectmanagement.controller;
 
-import com.itss.projectmanagement.converter.ProjectConverter;
 import com.itss.projectmanagement.converter.UserConverter;
 import com.itss.projectmanagement.dto.common.ApiResponse;
-import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectAccessRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectInviteRequest;
-import com.itss.projectmanagement.dto.response.chart.CommitCountChartDTO;
-import com.itss.projectmanagement.dto.response.chart.ContributionPieChartDTO;
-import com.itss.projectmanagement.dto.response.chart.ProgressTimelineChartDTO;
 import com.itss.projectmanagement.dto.response.project.ProjectDTO;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.dto.response.project.ProjectStatisticsDTO;
@@ -17,7 +12,6 @@ import com.itss.projectmanagement.dto.response.report.ProjectReportDTO;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.exception.ForbiddenException;
 import com.itss.projectmanagement.exception.NotFoundException;
-import com.itss.projectmanagement.service.IChartService;
 import com.itss.projectmanagement.service.IProjectService;
 import com.itss.projectmanagement.service.IReportService;
 import com.itss.projectmanagement.service.IStatisticsService;
@@ -25,8 +19,6 @@ import com.itss.projectmanagement.utils.QRCodeGenerator;
 import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -49,7 +41,6 @@ import java.util.stream.Collectors;
 public class ProjectController {
     private final IProjectService projectService;
     private final UserConverter userConverter;
-    private final IChartService chartService;
     private final IReportService reportService;
     private final IStatisticsService statisticsService;
     private final QRCodeGenerator qrCodeGenerator;
@@ -168,105 +159,6 @@ public class ProjectController {
         ApiResponse<Void> response = ApiResponse.success(
                 null,
                 "Project deleted successfully"
-        );
-        
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Update pressure score configuration", description = "Updates the pressure score configuration for a project")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Configuration updated successfully",
-                    content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = ProjectDTO.class))),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400", description = "Invalid input data"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Not authorized to update this project"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
-    })
-    @PutMapping("/{id}/pressure-score-config")
-    @PreAuthorize("hasAuthority('INSTRUCTOR')")
-    public ResponseEntity<ApiResponse<ProjectDTO>> updatePressureScoreConfig(
-            @Parameter(description = "ID of the project to update") @PathVariable Long id,
-            @Valid @RequestBody PressureScoreConfigRequest request) {
-        ProjectDTO projectDTO = projectService.updatePressureScoreConfig(id, request);
-
-        ApiResponse<ProjectDTO> response = ApiResponse.success(
-                projectDTO,
-                "Pressure score configuration updated successfully"
-        );
-        
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get commit count chart data", description = "Retrieves commit count chart data for a project")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved chart data"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
-    })
-    @GetMapping("/{id}/charts/commit-counts")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<CommitCountChartDTO>> getCommitCountChart(
-            @Parameter(description = "ID of the project") @PathVariable Long id,
-            @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
-        // Check if the student is a leader of any group in this project
-        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-            throw new ForbiddenException("Only group leaders or instructors can access this chart data");
-        }
-        
-        CommitCountChartDTO chartData = chartService.getCommitCountChart(id, rangeType);
-        
-        ApiResponse<CommitCountChartDTO> response = ApiResponse.success(
-                chartData,
-                "Commit count chart data retrieved successfully"
-        );
-        
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get progress timeline chart data", description = "Retrieves progress timeline chart data for a project")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved chart data"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
-    })
-    @GetMapping("/{id}/charts/progress-timeline")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<ProgressTimelineChartDTO>> getProgressTimelineChart(
-            @Parameter(description = "ID of the project") @PathVariable Long id,
-            @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
-        // Check if the student is a leader of any group in this project
-        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-            throw new ForbiddenException("Only group leaders or instructors can access this chart data");
-        }
-        
-        ProgressTimelineChartDTO chartData = chartService.getProgressTimelineChart(id, rangeType);
-        
-        ApiResponse<ProgressTimelineChartDTO> response = ApiResponse.success(
-                chartData,
-                "Progress timeline chart data retrieved successfully"
-        );
-        
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get contribution pie chart data", description = "Retrieves contribution percentage pie chart data for a project")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved chart data"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Project not found")
-    })
-    @GetMapping("/{id}/charts/contribution")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<ContributionPieChartDTO>> getContributionPieChart(
-            @Parameter(description = "ID of the project") @PathVariable Long id,
-            @Parameter(description = "Range type (week, month, all)") @RequestParam(defaultValue = "all") String rangeType) {
-        // Check if the student is a leader of any group in this project
-        if (SecurityUtils.isStudent() && !projectService.isUserGroupLeaderInProject(id)) {
-            throw new ForbiddenException("Only group leaders or instructors can access this chart data");
-        }
-        
-        ContributionPieChartDTO chartData = chartService.getContributionPieChart(id, rangeType);
-        
-        ApiResponse<ContributionPieChartDTO> response = ApiResponse.success(
-                chartData,
-                "Contribution pie chart data retrieved successfully"
         );
         
         return ResponseEntity.ok(response);

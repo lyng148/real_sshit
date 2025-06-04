@@ -4,13 +4,15 @@ import com.itss.projectmanagement.converter.UserConverter;
 import com.itss.projectmanagement.dto.common.ApiResponse;
 import com.itss.projectmanagement.dto.common.PaginationResponse;
 import com.itss.projectmanagement.dto.request.user.RoleAssignmentRequest;
+import com.itss.projectmanagement.dto.request.user.UserCreateRequest;
+import com.itss.projectmanagement.dto.request.user.UserUpdateRequest;
 import com.itss.projectmanagement.dto.response.user.RoleAssignmentResponse;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.exception.ForbiddenException;
 import com.itss.projectmanagement.exception.NotFoundException;
-import com.itss.projectmanagement.utils.SecurityUtils;
 import com.itss.projectmanagement.service.IUserService;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,10 +20,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -31,6 +36,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "User Management", description = "APIs for managing users")
+@Validated
 public class UserController {
 
     @Autowired
@@ -72,10 +78,14 @@ public class UserController {
     @GetMapping("/paginated")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
     public ResponseEntity<ApiResponse<PaginationResponse<UserDTO>>> getAllUsersPaginated(
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size,
-            @Parameter(description = "Sort field") @RequestParam(defaultValue = "fullName") String sortBy,
-            @Parameter(description = "Sort direction (ASC or DESC)") @RequestParam(defaultValue = "ASC") String sortDirection) {
+            @Parameter(description = "Page number (0-based)") 
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @Parameter(description = "Page size") 
+            @RequestParam(defaultValue = "10") @Min(1) int size,
+            @Parameter(description = "Sort field") 
+            @RequestParam(defaultValue = "fullName") @Size(max = 50) String sortBy,
+            @Parameter(description = "Sort direction (ASC or DESC)") 
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
         
         PaginationResponse<User> userPaginationResponse = userService.getAllUsersPaginated(page, size, sortBy, sortDirection);
         
@@ -104,7 +114,7 @@ public class UserController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('INSTRUCTOR')")
     public ResponseEntity<ApiResponse<UserDTO>> getUserById(
-            @Parameter(description = "ID of the user to retrieve") @PathVariable Long id) {
+            @Parameter(description = "ID of the user to retrieve") @PathVariable @Min(1) Long id) {
         // Check if the user is the current user
         if (!SecurityUtils.isAdmin() && !SecurityUtils.isCurrentUser(id) && !SecurityUtils.isInstructor()) {
             throw new ForbiddenException("Access denied");
@@ -121,25 +131,6 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get user by username", description = "Retrieves a user by their username")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "User found"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @GetMapping("/username/{username}")
-    public ResponseEntity<ApiResponse<UserDTO>> getUserByUsername(
-            @Parameter(description = "Username of the user to retrieve") @PathVariable String username) {
-        User user = userService.getUserByUsername(username)
-                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
-        
-        UserDTO userDTO = userConverter.toDTO(user);
-        ApiResponse<UserDTO> response = ApiResponse.success(
-                userDTO,
-                "User retrieved successfully"
-        );
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "Create a new user", description = "Creates a new user in the system")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "201", description = "User created successfully"),
@@ -147,7 +138,18 @@ public class UserController {
     })
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<ApiResponse<UserDTO>> createUser(@RequestBody User user) {
+    public ResponseEntity<ApiResponse<UserDTO>> createUser(@Valid @RequestBody UserCreateRequest request) {
+        // Convert request to entity
+        User user = User.builder()
+                .username(request.getUsername())
+                .password(request.getPassword())
+                .fullName(request.getFullName())
+                .email(request.getEmail())
+                .roles(request.getRoles())
+                .avatarUrl(request.getAvatarUrl())
+                .enabled(request.getEnabled())
+                .build();
+        
         User createdUser = userService.createUser(user);
         UserDTO userDTO = userConverter.toDTO(createdUser);
         
@@ -167,8 +169,8 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'INSTRUCTOR', 'STUDENT')")
     public ResponseEntity<ApiResponse<UserDTO>> updateUser(
-            @Parameter(description = "ID of the user to update") @PathVariable Long id,
-            @RequestBody User userRequest) {
+            @Parameter(description = "ID of the user to update") @PathVariable @Min(1) Long id,
+            @Valid @RequestBody UserUpdateRequest request) {
         // Check if the user is the current user
         if (!SecurityUtils.isAdmin() && !SecurityUtils.isCurrentUser(id)) {
             throw new ForbiddenException("Access denied");
@@ -178,28 +180,26 @@ public class UserController {
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
         
         // Only update fields that are provided in the request
-        if (userRequest.getUsername() != null) {
-            existingUser.setUsername(userRequest.getUsername());
+        if (request.getUsername() != null) {
+            existingUser.setUsername(request.getUsername());
         }
-        if (userRequest.getFullName() != null) {
-            existingUser.setFullName(userRequest.getFullName());
+        if (request.getFullName() != null) {
+            existingUser.setFullName(request.getFullName());
         }
-        if (userRequest.getEmail() != null) {
-            existingUser.setEmail(userRequest.getEmail());
+        if (request.getEmail() != null) {
+            existingUser.setEmail(request.getEmail());
         }
-        if (userRequest.getRoles() != null) {
-            existingUser.setRoles(userRequest.getRoles());
-        }
-        if (userRequest.getPassword() != null) {
+        if (request.getPassword() != null) {
             // Password will be encoded in the service
-            existingUser.setPassword(userRequest.getPassword());
+            existingUser.setPassword(request.getPassword());
         }
-        if (userRequest.getAvatarUrl() != null) {
-            existingUser.setAvatarUrl(userRequest.getAvatarUrl());
+        if (request.getAvatarUrl() != null) {
+            existingUser.setAvatarUrl(request.getAvatarUrl());
         }
-        // Update enabled status if explicitly set in the request
-        existingUser.setEnabled(userRequest.isEnabled());
-        
+        if (request.getEnabled() != null) {
+            existingUser.setEnabled(request.getEnabled());
+        }
+
         User updatedUser = userService.updateUser(existingUser);
         UserDTO userDTO = userConverter.toDTO(updatedUser);
         
@@ -220,9 +220,9 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<Void>> deleteUser(
             @Parameter(description = "ID of the user to delete") @PathVariable Long id) {
-        User user = userService.getUserById(id)
+        userService.getUserById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + id));
-        
+
         userService.deleteUser(id);
         
         ApiResponse<Void> response = ApiResponse.success(

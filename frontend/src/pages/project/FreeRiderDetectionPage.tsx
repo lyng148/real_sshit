@@ -83,7 +83,7 @@ const FreeRiderDetectionPage = () => {
                 disabled={loading}
               >
                 <SelectTrigger className="w-full md:w-1/2">
-                  <SelectValue placeholder="Chọn dự án để phân tích..." />
+                  <SelectValue placeholder="Select project to analyze..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>

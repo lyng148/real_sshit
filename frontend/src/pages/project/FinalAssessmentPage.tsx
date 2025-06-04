@@ -211,9 +211,9 @@ const FinalAssessmentPage: React.FC = () => {
   })) || [];
 
   const pieData = [
-    { name: 'Xuất sắc (8-10)', value: assessment?.students.filter(s => s.finalScore >= 8).length || 0, color: '#10b981' },
-    { name: 'Tốt (6-8)', value: assessment?.students.filter(s => s.finalScore >= 6 && s.finalScore < 8).length || 0, color: '#f59e0b' },
-    { name: 'Cần cải thiện (<6)', value: assessment?.students.filter(s => s.finalScore < 6).length || 0, color: '#ef4444' }
+    { name: 'Outstanding (8-10)', value: assessment?.students.filter(s => s.finalScore >= 8).length || 0, color: '#10b981' },
+    { name: 'Good (6-8)', value: assessment?.students.filter(s => s.finalScore >= 6 && s.finalScore < 8).length || 0, color: '#f59e0b' },
+    { name: 'Need Improvement (<6)', value: assessment?.students.filter(s => s.finalScore < 6).length || 0, color: '#ef4444' }
   ];
 
   const radarData = assessment?.students.map(s => ({
@@ -246,7 +246,7 @@ const FinalAssessmentPage: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <LoadingSpinner size="lg" variant="spinner" />
-          <p className="text-gray-500 mt-4">Đang tải dữ liệu đánh giá...</p>
+          <p className="text-gray-500 mt-4">Loading assessment data...</p>
         </div>
       </div>
     );
@@ -257,11 +257,11 @@ const FinalAssessmentPage: React.FC = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="text-6xl mb-4">❌</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Không tìm thấy dữ liệu</h2>
-          <p className="text-gray-600">Không thể tải dữ liệu đánh giá cho dự án này.</p>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Data not found</h2>
+          <p className="text-gray-600">Unable to load assessment data for this project.</p>
           <Button onClick={() => navigate(-1)} className="mt-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Quay lại
+            Go back
           </Button>
         </div>
       </div>
@@ -281,14 +281,14 @@ const FinalAssessmentPage: React.FC = () => {
               className="text-gray-600 hover:bg-gray-100"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Quay lại
+              Go back
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                Đánh giá cuối kỳ
+                Final Assessment
               </h1>
               <p className="text-gray-600 mt-1">
-                {assessment.projectName} • {assessment.students.length} sinh viên
+                {assessment.projectName} • {assessment.students.length} students
               </p>
             </div>
           </div>
@@ -297,12 +297,12 @@ const FinalAssessmentPage: React.FC = () => {
             {assessment.assessmentStatus === 'FINALIZED' ? (
               <Badge variant="default" className="bg-green-600 text-white">
                 <Lock className="w-4 h-4 mr-1" />
-                Đã hoàn thành
+                Completed
               </Badge>
             ) : (
               <Badge variant="secondary" className="bg-yellow-500 text-white">
                 <Unlock className="w-4 h-4 mr-1" />
-                Đang soạn thảo
+                In Progress
               </Badge>
             )}
             
@@ -311,7 +311,7 @@ const FinalAssessmentPage: React.FC = () => {
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Download className="w-4 h-4 mr-2" />
-              Xuất báo cáo
+              Export Report
             </Button>
             
             {assessment.assessmentStatus !== 'FINALIZED' && (
@@ -323,12 +323,12 @@ const FinalAssessmentPage: React.FC = () => {
                 {finalizing ? (
                   <>
                     <Clock className="w-4 h-4 mr-2 animate-spin" />
-                    Đang xử lý...
+                    Processing...
                   </>
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2" />
-                    Hoàn thành đánh giá
+                    Complete Assessment
                   </>
                 )}
               </Button>
@@ -342,7 +342,7 @@ const FinalAssessmentPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium">Tổng sinh viên</p>
+                  <p className="text-gray-600 text-sm font-medium">Total Students</p>
                   <p className="text-3xl font-bold text-gray-900">{stats.totalStudents}</p>
                 </div>
                 <div className="p-3 bg-blue-50 rounded-lg">
@@ -356,7 +356,7 @@ const FinalAssessmentPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium">Điểm trung bình</p>
+                  <p className="text-gray-600 text-sm font-medium">Average Score</p>
                   <p className="text-3xl font-bold text-gray-900">{(stats.averageScore || 0).toFixed(1)}</p>
                 </div>
                 <div className="p-3 bg-green-50 rounded-lg">
@@ -370,7 +370,7 @@ const FinalAssessmentPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium">Xuất sắc</p>
+                  <p className="text-gray-600 text-sm font-medium">Outstanding</p>
                   <p className="text-3xl font-bold text-gray-900">{stats.highPerformers}</p>
                 </div>
                 <div className="p-3 bg-yellow-50 rounded-lg">
@@ -384,7 +384,7 @@ const FinalAssessmentPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-gray-600 text-sm font-medium">Cần hỗ trợ</p>
+                  <p className="text-gray-600 text-sm font-medium">Need Support</p>
                   <p className="text-3xl font-bold text-gray-900">{stats.atRiskStudents}</p>
                 </div>
                 <div className="p-3 bg-red-50 rounded-lg">
@@ -400,15 +400,15 @@ const FinalAssessmentPage: React.FC = () => {
           <TabsList className="bg-white border border-gray-200 shadow-sm">
             <TabsTrigger value="overview" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white">
               <BarChart3 className="w-4 h-4 mr-2" />
-              Tổng quan
+              Overview
             </TabsTrigger>
             <TabsTrigger value="analytics" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white">
               <PieChartIcon className="w-4 h-4 mr-2" />
-              Phân tích
+              Analytics
             </TabsTrigger>
             <TabsTrigger value="students" className="data-[state=active]:bg-gray-900 data-[state=active]:text-white">
               <Users className="w-4 h-4 mr-2" />
-              Danh sách sinh viên
+              Student List
             </TabsTrigger>
           </TabsList>
 
@@ -419,10 +419,10 @@ const FinalAssessmentPage: React.FC = () => {
                 <CardHeader className="border-b border-gray-100">
                   <CardTitle className="text-gray-900 flex items-center">
                     <AlertTriangle className="w-5 h-5 mr-2 text-red-600" />
-                    Sinh viên cần chú ý
+                    Students at Risk
                   </CardTitle>
                   <CardDescription className="text-gray-600">
-                    Những sinh viên có điểm số thấp cần hỗ trợ thêm
+                    Students with low scores who need additional support
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -450,7 +450,7 @@ const FinalAssessmentPage: React.FC = () => {
                         </div>
                       ))}
                     {assessment.students.filter(s => s.finalScore < 6).length === 0 && (
-                      <p className="text-gray-500 text-center py-4">Không có sinh viên nào cần chú ý đặc biệt</p>
+                      <p className="text-gray-500 text-center py-4">No students need special attention</p>
                     )}
                   </div>
                 </CardContent>
@@ -461,10 +461,10 @@ const FinalAssessmentPage: React.FC = () => {
                 <CardHeader className="border-b border-gray-100">
                   <CardTitle className="text-gray-900 flex items-center">
                     <Award className="w-5 h-5 mr-2 text-yellow-600" />
-                    Sinh viên xuất sắc
+                    Outstanding Students
                   </CardTitle>
                   <CardDescription className="text-gray-600">
-                    Những sinh viên có thành tích cao nhất
+                    Students with the highest achievements
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -492,7 +492,7 @@ const FinalAssessmentPage: React.FC = () => {
                         </div>
                       ))}
                     {assessment.students.filter(s => s.finalScore >= 8).length === 0 && (
-                      <p className="text-gray-500 text-center py-4">Chưa có sinh viên nào đạt mức xuất sắc</p>
+                      <p className="text-gray-500 text-center py-4">No outstanding students yet</p>
                     )}
                   </div>
                 </CardContent>
@@ -502,9 +502,9 @@ const FinalAssessmentPage: React.FC = () => {
             {/* Score Distribution Chart */}
             <Card className="bg-white border border-gray-200 shadow-sm">
               <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-gray-900">Phân bố điểm số</CardTitle>
+                <CardTitle className="text-gray-900">Score Distribution</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Biểu đồ thể hiện điểm số của tất cả sinh viên
+                  Chart showing scores of all students
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -524,7 +524,7 @@ const FinalAssessmentPage: React.FC = () => {
                         }} 
                       />
                       <Legend />
-                      <Bar dataKey="finalScore" fill="#1f2937" name="Điểm cuối kỳ" />
+                      <Bar dataKey="finalScore" fill="#1f2937" name="Final Score" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -537,9 +537,9 @@ const FinalAssessmentPage: React.FC = () => {
               {/* Pie Chart */}
               <Card className="bg-white border border-gray-200 shadow-sm">
                 <CardHeader className="border-b border-gray-100">
-                  <CardTitle className="text-gray-900">Phân loại thành tích</CardTitle>
+                  <CardTitle className="text-gray-900">Performance Classification</CardTitle>
                   <CardDescription className="text-gray-600">
-                    Tỷ lệ sinh viên theo mức độ thành tích
+                    Student ratio by performance level
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -577,9 +577,9 @@ const FinalAssessmentPage: React.FC = () => {
               {/* Radar Chart */}
               <Card className="bg-white border border-gray-200 shadow-sm">
                 <CardHeader className="border-b border-gray-100">
-                  <CardTitle className="text-gray-900">Phân tích đa chiều</CardTitle>
+                  <CardTitle className="text-gray-900">Multi-dimensional Analysis</CardTitle>
                   <CardDescription className="text-gray-600">
-                    So sánh các tiêu chí đánh giá
+                    Compare evaluation criteria
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -590,7 +590,7 @@ const FinalAssessmentPage: React.FC = () => {
                         <PolarAngleAxis dataKey="name" tick={{ fill: '#6b7280' }} />
                         <PolarRadiusAxis tick={{ fill: '#6b7280' }} />
                         <Radar
-                          name="Điểm số"
+                          name="Score"
                           dataKey="taskCompletion"
                           stroke="#1f2937"
                           fill="#1f2937"
@@ -615,9 +615,9 @@ const FinalAssessmentPage: React.FC = () => {
           <TabsContent value="students">
             <Card className="bg-white border border-gray-200 shadow-sm">
               <CardHeader className="border-b border-gray-100">
-                <CardTitle className="text-gray-900">Danh sách sinh viên</CardTitle>
+                <CardTitle className="text-gray-900">Student List</CardTitle>
                 <CardDescription className="text-gray-600">
-                  Chi tiết điểm số và thông tin của từng sinh viên
+                  Detailed scores and information for each student
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6">
@@ -625,15 +625,15 @@ const FinalAssessmentPage: React.FC = () => {
                   <Table>
                     <TableHeader>
                       <TableRow className="border-gray-200">
-                        <TableHead className="text-gray-700 font-semibold">Sinh viên</TableHead>
-                        <TableHead className="text-gray-700 font-semibold">Nhóm</TableHead>
+                        <TableHead className="text-gray-700 font-semibold">Student</TableHead>
+                        <TableHead className="text-gray-700 font-semibold">Group</TableHead>
                         <TableHead className="text-gray-700 font-semibold">Task</TableHead>
                         <TableHead className="text-gray-700 font-semibold">Peer Review</TableHead>
                         <TableHead className="text-gray-700 font-semibold">Commit</TableHead>
                         <TableHead className="text-gray-700 font-semibold">Penalty</TableHead>
-                        <TableHead className="text-gray-700 font-semibold">Điểm cuối kỳ</TableHead>
-                        <TableHead className="text-gray-700 font-semibold">Trạng thái</TableHead>
-                        {assessment.assessmentStatus !== 'FINALIZED' && <TableHead className="text-gray-700 font-semibold">Thao tác</TableHead>}
+                        <TableHead className="text-gray-700 font-semibold">Final Score</TableHead>
+                        <TableHead className="text-gray-700 font-semibold">Status</TableHead>
+                        {assessment.assessmentStatus !== 'FINALIZED' && <TableHead className="text-gray-700 font-semibold">Actions</TableHead>}
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -676,7 +676,7 @@ const FinalAssessmentPage: React.FC = () => {
                             ) : (
                               <Badge variant="default" className="bg-green-600 text-xs">
                                 <CheckCircle className="w-3 h-3 mr-1" />
-                                Bình thường
+                                Normal
                               </Badge>
                             )}
                           </TableCell>
@@ -696,7 +696,7 @@ const FinalAssessmentPage: React.FC = () => {
                                 className="text-gray-700 border-gray-300 hover:bg-gray-50"
                               >
                                 <Edit className="w-3 h-3 mr-1" />
-                                Chỉnh sửa
+                                Edit
                               </Button>
                             </TableCell>
                           )}
@@ -714,14 +714,14 @@ const FinalAssessmentPage: React.FC = () => {
         <Dialog open={adjustmentDialog} onOpenChange={setAdjustmentDialog}>
           <DialogContent className="bg-white border border-gray-200 text-gray-900">
             <DialogHeader>
-              <DialogTitle className="text-gray-900">Chỉnh sửa điểm số</DialogTitle>
+              <DialogTitle className="text-gray-900">Edit Score</DialogTitle>
               <DialogDescription className="text-gray-600">
-                Điều chỉnh điểm số cho sinh viên: {selectedStudent?.studentName || 'Unknown'}
+                Adjust score for student: {selectedStudent?.studentName || 'Unknown'}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label htmlFor="newScore" className="text-gray-700">Điểm số mới</Label>
+                <Label htmlFor="newScore" className="text-gray-700">New Score</Label>
                 <Input
                   id="newScore"
                   type="number"
@@ -734,25 +734,25 @@ const FinalAssessmentPage: React.FC = () => {
                 />
               </div>
               <div>
-                <Label htmlFor="reason" className="text-gray-700">Lý do điều chỉnh</Label>
+                <Label htmlFor="reason" className="text-gray-700">Reason for Adjustment</Label>
                 <Textarea
                   id="reason"
                   value={adjustmentForm.reason}
                   onChange={(e) => setAdjustmentForm(prev => ({ ...prev, reason: e.target.value }))}
                   className="bg-white border-gray-300 text-gray-900 focus:border-gray-500"
-                  placeholder="Nhập lý do điều chỉnh điểm số..."
+                  placeholder="Enter reason for score adjustment..."
                 />
               </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setAdjustmentDialog(false)} className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                Hủy
+                Cancel
               </Button>
               <Button 
                 onClick={handleScoreAdjustment}
                 className="bg-gray-900 hover:bg-gray-800 text-white"
               >
-                Lưu thay đổi
+                Save Changes
               </Button>
             </DialogFooter>
           </DialogContent>

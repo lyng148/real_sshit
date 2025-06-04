@@ -78,7 +78,7 @@ public class NotificationServiceImpl implements INotificationService {
             notificationDTO.setUserId(instructor.getId());
             notificationDTO.setTitle(title);
             notificationDTO.setMessage(message);
-            notificationDTO.setType(NotificationType.FREE_RIDER_DETECTED.name());
+            notificationDTO.setType(NotificationType.FREE_RIDER_ALERT.name());
             notificationDTO.setLink(link);
             notificationDTO.setData(jsonData);
             

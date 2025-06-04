@@ -1,10 +1,10 @@
 package com.itss.projectmanagement.service;
 
-import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
 import com.itss.projectmanagement.dto.response.project.ProjectDTO;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.Optional;
@@ -40,11 +40,6 @@ public interface IProjectService {
      * Delete a project and all related entities
      */
     void deleteProject(Long projectId);
-      
-    /**
-     * Update pressure score configuration for a project
-     */
-    ProjectDTO updatePressureScoreConfig(Long projectId, PressureScoreConfigRequest request);
     
     /**
      * Check if the current user is a leader of any group in the project
@@ -75,14 +70,6 @@ public interface IProjectService {
     List<ProjectDTO> getStudentProjects();
     
     /**
-     * Check if a student can access a project
-     * @param projectId The project ID to check
-     * @param studentId The student ID to check
-     * @return True if the student has access to the project
-     */
-    boolean canStudentAccessProject(Long projectId, Long studentId);
-    
-    /**
      * Remove a student from a project
      * @param projectId The project ID
      * @param studentId The student ID to remove
@@ -95,4 +82,12 @@ public interface IProjectService {
      * @return List of students in the project
      */
     List<User> getProjectStudents(Long projectId);
+
+    /**
+     * Get project entity by ID (for internal service use)
+     * @param projectId The project ID
+     * @return The project entity
+     * @throws ResourceNotFoundException if project not found
+     */
+    Project getProjectEntityById(Long projectId);
 }

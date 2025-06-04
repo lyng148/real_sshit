@@ -86,22 +86,22 @@ const Login = () => {
       const response = await login(username, password);
       if (response.success) {
         toast({
-          title: "Đăng nhập thành công",
-          description: "Chào mừng bạn trở lại ITss!",
+          title: "Login Successful",
+          description: "Welcome back to ITss!",
           variant: "default",
         });
         navigate('/dashboard');
       } else {
         toast({
-          title: "Đăng nhập thất bại",
-          description: response.message || "Thông tin đăng nhập không chính xác",
+          title: "Login Failed",
+          description: response.message || "Login failed. Please check your credentials.",
           variant: "destructive",
         });
       }    
     } catch (error: any) {
       toast({
-        title: "Lỗi đăng nhập",
-        description: "Vui lòng kiểm tra thông tin và thử lại.",
+        title: "Login Error",
+        description: "An error occurred during login. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -140,7 +140,7 @@ const Login = () => {
           </Link>
           <Link to="/signup">
             <Button variant="outline" className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105">
-              Đăng ký
+              Sign Up
             </Button>
           </Link>
         </div>
@@ -161,21 +161,21 @@ const Login = () => {
                   </div>
                 </div>
                 <CardTitle ref={titleRef} className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent opacity-0">
-                  Chào mừng trở lại
+                  Welcome Back
                 </CardTitle>
                 <CardDescription ref={subtitleRef} className="text-gray-300 text-lg opacity-0">
-                  Đăng nhập vào hệ thống ITss
+                  Sign in to your ITss account
                 </CardDescription>
               </CardHeader>
               
               <form onSubmit={handleLogin}>
                 <CardContent className="space-y-6">
                   <div className="space-y-2">
-                    <Label htmlFor="username" className="text-gray-200 font-medium">Tên đăng nhập</Label>
+                    <Label htmlFor="username" className="text-gray-200 font-medium">Username</Label>
                     <Input 
                       id="username" 
                       type="text" 
-                      placeholder="Nhập tên đăng nhập" 
+                      placeholder="Enter your username" 
                       className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
@@ -184,12 +184,12 @@ const Login = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-gray-200 font-medium">Mật khẩu</Label>
+                    <Label htmlFor="password" className="text-gray-200 font-medium">Password</Label>
                     <div className="relative">
                       <Input 
                         id="password" 
                         type={showPassword ? "text" : "password"} 
-                        placeholder="Nhập mật khẩu" 
+                        placeholder="Enter your password" 
                         className="bg-white/10 border-white/20 focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 pr-12 rounded-lg p-3 text-white placeholder-gray-400 backdrop-blur-sm"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -210,13 +210,13 @@ const Login = () => {
                       <input 
                         type="checkbox" 
                         id="remember" 
-                        aria-label="Ghi nhớ đăng nhập"
+                        aria-label="Remember me"
                         className="rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500 focus:ring-2" 
                       />
-                      <Label htmlFor="remember" className="text-sm text-gray-300">Ghi nhớ đăng nhập</Label>
+                      <Label htmlFor="remember" className="text-sm text-gray-300">Remember me</Label>
                     </div>
                     <Link to="/forgot-password" className="text-sm text-purple-400 hover:text-purple-300 transition-colors duration-200">
-                      Quên mật khẩu?
+                      Forgot password?
                     </Link>
                   </div>
                 </CardContent>
@@ -230,17 +230,17 @@ const Login = () => {
                     {loading ? (
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                        <span>Đang đăng nhập...</span>
+                        <span>Signing in...</span>
                       </div>
                     ) : (
-                      "Đăng nhập"
+                      "Sign In"
                     )}
                   </Button>
                   
-                  <p className="text-center text-gray-400">
-                    Chưa có tài khoản?{' '}
-                    <Link to="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-200">
-                      Đăng ký ngay
+                  <p className="mt-4 text-center text-gray-300">
+                    Don't have an account?{' '}
+                    <Link to="/signup" className="text-purple-400 hover:text-purple-300 font-medium transition-colors">
+                      Sign Up
                     </Link>
                   </p>
                   
@@ -250,7 +250,7 @@ const Login = () => {
                       className="inline-flex items-center space-x-2 text-gray-400 hover:text-white transition-colors duration-200"
                     >
                       <ArrowLeft size={16} />
-                      <span>Quay lại trang chủ</span>
+                      <span>Back to home</span>
                     </Link>
                   </div>
                 </CardFooter>

@@ -88,16 +88,16 @@ const Profile = () => {
       setCurrentUser(updatedUser);
 
       toast({
-        title: "Thành công",
-        description: "Cập nhật thông tin thành công!",
+        title: "Success",
+        description: "Profile updated successfully!",
       });
 
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
-        title: "Lỗi",
-        description: "Không thể cập nhật thông tin. Vui lòng thử lại.",
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -142,7 +142,7 @@ const Profile = () => {
   if (!currentUser?.user) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <p className="text-gray-500">Đang tải thông tin người dùng...</p>
+        <p className="text-gray-500">Loading user information...</p>
       </div>
     );
   }
@@ -151,7 +151,7 @@ const Profile = () => {
     <div className="profile-content">
       <div className="p-6 max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">Hồ sơ cá nhân</h1>
+          <h1 className="text-3xl font-bold text-gray-800">Personal Profile</h1>
           <div className="flex gap-2">
             {isEditing ? (
               <>
@@ -162,7 +162,7 @@ const Profile = () => {
                   disabled={loading}
                 >
                   <X size={16} className="mr-2" />
-                  Hủy
+                  Cancel
                 </Button>
                 <Button 
                   onClick={handleSave}
@@ -170,7 +170,7 @@ const Profile = () => {
                   disabled={loading}
                 >
                   <Save size={16} className="mr-2" />
-                  {loading ? 'Đang lưu...' : 'Lưu'}
+                  {loading ? 'Saving...' : 'Save'}
                 </Button>
               </>
             ) : (
@@ -179,7 +179,7 @@ const Profile = () => {
                 className="bg-purple-600 hover:bg-purple-700 transition-all duration-300 hover:scale-105"
               >
                 <Edit2 size={16} className="mr-2" />
-                Chỉnh sửa
+                Edit
               </Button>
             )}
           </div>
@@ -191,7 +191,7 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-purple-600">
                 <User className="mr-2" size={20} />
-                Ảnh đại diện
+                Avatar
               </CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center space-y-4">
@@ -224,12 +224,12 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-purple-600">
                 <User className="mr-2" size={20} />
-                Thông tin cá nhân
+                Personal Information
               </CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="fullName" className="text-gray-600">Họ và tên</Label>
+                <Label htmlFor="fullName" className="text-gray-600">Full Name</Label>
                 {isEditing ? (
                   <Input
                     id="fullName"
@@ -238,7 +238,7 @@ const Profile = () => {
                     className="mt-1"
                   />
                 ) : (
-                  <p className="text-gray-800 mt-1 p-2 bg-gray-50 rounded">{formData.fullName || 'Chưa cập nhật'}</p>
+                  <p className="text-gray-800 mt-1 p-2 bg-gray-50 rounded">{formData.fullName || 'Not updated'}</p>
                 )}
               </div>
 
@@ -261,25 +261,25 @@ const Profile = () => {
               </div>
 
               <div>
-                <Label htmlFor="phone" className="text-gray-600">Số điện thoại</Label>
+                <Label htmlFor="phone" className="text-gray-600">Phone</Label>
                 {isEditing ? (
                   <Input
                     id="phone"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
                     className="mt-1"
-                    placeholder="Nhập số điện thoại"
+                    placeholder="Enter phone number"
                   />
                 ) : (
                   <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
                     <Phone className="mr-2 text-gray-400" size={16} />
-                    <span className="text-gray-800">{formData.phone || 'Chưa cập nhật'}</span>
+                    <span className="text-gray-800">{formData.phone || 'Not updated'}</span>
                   </div>
                 )}
               </div>
 
               <div>
-                <Label htmlFor="dateOfBirth" className="text-gray-600">Ngày sinh</Label>
+                <Label htmlFor="dateOfBirth" className="text-gray-600">Date of Birth</Label>
                 {isEditing ? (
                   <Input
                     id="dateOfBirth"
@@ -291,43 +291,43 @@ const Profile = () => {
                 ) : (
                   <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
                     <Calendar className="mr-2 text-gray-400" size={16} />
-                    <span className="text-gray-800">{formData.dateOfBirth || 'Chưa cập nhật'}</span>
+                    <span className="text-gray-800">{formData.dateOfBirth || 'Not updated'}</span>
                   </div>
                 )}
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="location" className="text-gray-600">Địa chỉ</Label>
+                <Label htmlFor="location" className="text-gray-600">Location</Label>
                 {isEditing ? (
                   <Input
                     id="location"
                     value={formData.location}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                     className="mt-1"
-                    placeholder="Nhập địa chỉ"
+                    placeholder="Enter location"
                   />
                 ) : (
                   <div className="flex items-center mt-1 p-2 bg-gray-50 rounded">
                     <MapPin className="mr-2 text-gray-400" size={16} />
-                    <span className="text-gray-800">{formData.location || 'Chưa cập nhật'}</span>
+                    <span className="text-gray-800">{formData.location || 'Not updated'}</span>
                   </div>
                 )}
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="bio" className="text-gray-600">Giới thiệu bản thân</Label>
+                <Label htmlFor="bio" className="text-gray-600">Biography</Label>
                 {isEditing ? (
                   <Textarea
                     id="bio"
                     value={formData.bio}
                     onChange={(e) => handleInputChange('bio', e.target.value)}
                     className="mt-1"
-                    placeholder="Viết vài dòng giới thiệu về bản thân..."
+                    placeholder="Write a few lines about yourself..."
                     rows={3}
                   />
                 ) : (
                   <p className="text-gray-800 mt-1 p-2 bg-gray-50 rounded min-h-[80px]">
-                    {formData.bio || 'Chưa có thông tin giới thiệu'}
+                    {formData.bio || 'No biography available'}
                   </p>
                 )}
               </div>
@@ -341,20 +341,20 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-purple-600">
                 <User className="mr-2" size={20} />
-                Thống kê hoạt động
+                Activity Statistics
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-gray-600">Dự án tham gia:</span>
+                <span className="text-gray-600">Joined projects:</span>
                 <span className="font-semibold text-gray-800">5</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Nhiệm vụ hoàn thành:</span>
+                <span className="text-gray-600">Tasks completed:</span>
                 <span className="font-semibold text-gray-800">23</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Điểm đánh giá trung bình:</span>
+                <span className="text-gray-600">Average rating:</span>
                 <span className="font-semibold text-green-600">4.2/5</span>
               </div>
             </CardContent>
@@ -364,15 +364,15 @@ const Profile = () => {
             <CardHeader>
               <CardTitle className="flex items-center text-purple-600">
                 <User className="mr-2" size={20} />
-                Cài đặt tài khoản
+                Account Settings
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-gray-600 text-sm">
-                Để thay đổi mật khẩu hoặc cài đặt bảo mật, vui lòng liên hệ quản trị viên.
+                To change password or security settings, please contact the administrator.
               </p>
               <Button variant="outline" className="w-full">
-                Liên hệ hỗ trợ
+                Contact Support
               </Button>
             </CardContent>
           </Card>

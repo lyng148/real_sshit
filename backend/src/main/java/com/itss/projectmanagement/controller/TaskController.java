@@ -116,30 +116,6 @@ public class TaskController {
         return ResponseEntity.ok(response);
     }
 
-    @Operation(summary = "Get tasks by assignee", description = "Retrieves all tasks assigned to a specific user")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved tasks"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @GetMapping("/assignee/{assigneeId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('STUDENT')")
-    public ResponseEntity<ApiResponse<List<TaskResponse>>> getTasksByAssignee(
-            @Parameter(description = "ID of the assignee") @PathVariable Long assigneeId) {
-        List<TaskResponse> tasks = taskService.getTasksByAssignee(assigneeId);
-        
-        // Add metadata
-        Map<String, Object> metadata = new HashMap<>();
-        metadata.put("count", tasks.size());
-        
-        ApiResponse<List<TaskResponse>> response = ApiResponse.success(
-                tasks,
-                "Tasks retrieved successfully",
-                metadata
-        );
-        
-        return ResponseEntity.ok(response);
-    }
-
     @Operation(summary = "Delete task", description = "Deletes an existing task")
     @ApiResponses(value = {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Task deleted successfully"),
@@ -198,25 +174,6 @@ public class TaskController {
         ApiResponse<TaskResponse> response = ApiResponse.success(
                 updatedTask,
                 "Task status updated successfully"
-        );
-        
-        return ResponseEntity.ok(response);
-    }
-
-    @Operation(summary = "Get pressure score for a user", description = "Calculates and returns the pressure score for a specific user")
-    @ApiResponses(value = {
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "Successfully retrieved pressure score"),
-            @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "User not found")
-    })
-    @GetMapping("/pressure-score/{userId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @groupSecurityService.isLeaderOfUserGroup(authentication.principal, #userId)")
-    public ResponseEntity<ApiResponse<Double>> getPressureScore(
-            @Parameter(description = "ID of the user") @PathVariable Long userId) {
-        Double pressureScore = taskService.calculatePressureScore(userId);
-        
-        ApiResponse<Double> response = ApiResponse.success(
-                pressureScore,
-                "Pressure score retrieved successfully"
         );
         
         return ResponseEntity.ok(response);

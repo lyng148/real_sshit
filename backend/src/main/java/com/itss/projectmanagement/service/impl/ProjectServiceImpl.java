@@ -1,6 +1,5 @@
 package com.itss.projectmanagement.service.impl;
 
-import com.itss.projectmanagement.dto.request.project.PressureScoreConfigRequest;
 import com.itss.projectmanagement.dto.request.project.ProjectCreateRequest;
 import com.itss.projectmanagement.dto.response.project.ProjectDTO;
 import com.itss.projectmanagement.converter.ProjectConverter;
@@ -8,6 +7,7 @@ import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.ProjectStudent;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.exception.ResourceNotFoundException;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
 import com.itss.projectmanagement.repository.ProjectStudentRepository;
@@ -163,26 +163,7 @@ public class ProjectServiceImpl implements IProjectService {
         // 4. Delete all commit records for those groups
         // 5. Delete all peer reviews for the project
         projectRepository.delete(project);
-    }    
-    
-    /**
-     * Update pressure score configuration for a project
-     */
-    @Transactional
-    public ProjectDTO updatePressureScoreConfig(Long projectId, PressureScoreConfigRequest request) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
-
-        // Verify the current user is the instructor of this project
-        User currentUser = getCurrentUser();
-        if (!Objects.equals(project.getInstructor().getId(), currentUser.getId())) {
-            throw new IllegalArgumentException("Only the instructor who created the project can update its configuration");
-        }
-
-        project.setPressureThreshold(request.getPressureThreshold());
-        Project updatedProject = projectRepository.save(project);
-        return projectConverter.toDTO(updatedProject);
-    }    
+    }
     
     /**
      * Check if the current user is a leader of any group in the project
@@ -227,13 +208,6 @@ public class ProjectServiceImpl implements IProjectService {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userService.getUserByUsername(username)
                 .orElseThrow(() -> new IllegalStateException("Current user not found"));
-    }
-
-    /**
-     * Validate if a GitHub URL is in the correct format
-     */
-    public boolean isValidGithubUrl(String url) {
-        return url != null && url.matches("^https://github\\.com/[\\w-]+/[\\w-]+(\\.[\\w-]+)*$");
     }
 
     /**
@@ -294,7 +268,7 @@ public class ProjectServiceImpl implements IProjectService {
         // Validate all users have STUDENT role
         List<User> nonStudentUsers = studentsToInvite.stream()
                 .filter(user -> !user.getRoles().contains(Role.STUDENT))
-                .collect(Collectors.toList());
+                .toList();
 
         if (!nonStudentUsers.isEmpty()) {
             throw new IllegalArgumentException(
@@ -376,22 +350,6 @@ public class ProjectServiceImpl implements IProjectService {
     }
 
     /**
-     * Check if a student can access a project
-     * @param projectId The project ID to check
-     * @param studentId The student ID to check
-     * @return True if the student has access to the project
-     */
-    public boolean canStudentAccessProject(Long projectId, Long studentId) {
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new IllegalArgumentException("Project not found"));
-
-        User student = userRepository.findById(studentId)
-                .orElseThrow(() -> new IllegalArgumentException("Student not found"));
-
-        return projectStudentRepository.existsByProjectAndStudent(project, student);
-    }
-
-    /**
      * Remove a student from a project
      * @param projectId The project ID
      * @param studentId The student ID to remove
@@ -430,10 +388,16 @@ public class ProjectServiceImpl implements IProjectService {
     public List<User> getProjectStudents(Long projectId) {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() -> new IllegalArgumentException("Project not found with id: " + projectId));
-
+        
         List<ProjectStudent> projectStudents = projectStudentRepository.findByProject(project);
         return projectStudents.stream()
                 .map(ProjectStudent::getStudent)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Project getProjectEntityById(Long projectId) {
+        return projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found with id: " + projectId));
     }
 }

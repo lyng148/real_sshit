@@ -30,9 +30,9 @@ const Landing: React.FC = () => {
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return; // guard cho SSR
+    if (typeof window === 'undefined') return; // guard for SSR
 
-    // 1. Timeline entrance animation với styling mới
+    // 1. Timeline entrance animation with new styling
     const tl = createAnimationTimeline({
       easing: EASING.smooth,
       duration: DURATION.page,
@@ -69,7 +69,7 @@ const Landing: React.FC = () => {
       delay: stagger(200),
     });
 
-    // 3. Background orbs với animation phức tạp hơn
+    // 3. Background orbs with more complex animation
     animate('.bg-orb', {
       scale: [1, 1.3, 1],
       opacity: [0.2, 0.7, 0.2],
@@ -80,12 +80,12 @@ const Landing: React.FC = () => {
       delay: stagger(1500),
     });
 
-    // 4. Grid items animate on scroll với hiệu ứng đẹp hơn
+    // 4. Grid items animate on scroll with better effects
     animateOnScroll('.grid-item', () => {
       animations.card.staggerIn('.grid-item', 120);
     });
 
-    // 5. Continuous floating animation cho nav
+    // 5. Continuous floating animation for nav
     animate('.nav-logo', {
       translateY: [-2, 2],
       duration: 2000,
@@ -128,7 +128,7 @@ const Landing: React.FC = () => {
         <div className="bg-orb absolute -bottom-20 left-40 w-80 h-80 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-30" />
       </div>
 
-      {/* Enhanced Floating elements với sparkles */}
+      {/* Enhanced Floating elements with sparkles */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="floating-element absolute top-32 left-10 w-4 h-4 bg-gradient-to-r from-white to-purple-200 rounded-full opacity-30" />
         <div className="floating-element absolute top-48 right-32 w-6 h-6 bg-gradient-to-r from-purple-300 to-pink-300 rounded-full opacity-40" />
@@ -141,7 +141,7 @@ const Landing: React.FC = () => {
         <div className="sparkle absolute top-1/2 left-3/4 w-2 h-2 bg-pink-300 rounded-full" />
       </div>
 
-      {/* Navigation với enhanced styling */}
+      {/* Navigation with enhanced styling */}
       <nav className="relative z-10 p-6 backdrop-blur-sm bg-white/5 border-b border-white/10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="nav-logo flex items-center space-x-2">
@@ -154,34 +154,34 @@ const Landing: React.FC = () => {
             </span>
           </div>
           <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Tính năng</a>
+            <a href="#features" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Features</a>
             <a href="#demo" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Demo</a>
-            <a href="#docs" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Hướng dẫn</a>
+            <a href="#docs" className="hover:text-purple-400 transition-all duration-300 hover:scale-105">Documentation</a>
             <Button 
               variant="outline" 
               className="border-purple-400 text-purple-400 hover:bg-purple-400 hover:text-white transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-400/25"
             >
-              Bắt đầu
+              Get Started
             </Button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Section với enhanced effects */}
+      {/* Hero Section with enhanced effects */}
       <section ref={heroRef} className="relative z-10 px-6 pt-20 pb-32">
         <div className="max-w-6xl mx-auto text-center">
           <h1 ref={titleRef} className="text-5xl md:text-7xl font-bold mb-8 opacity-0">
             <span className="bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent drop-shadow-2xl">
-              ITss - Thiên Mệnh
+              ITss - Project Destiny
             </span>
             <br/>
             <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-purple-600 bg-clip-text text-transparent drop-shadow-2xl">
-              Dự Án Sinh Viên
+              Student Project
             </span>
           </h1>
           <p ref={subtitleRef} className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto opacity-0 leading-relaxed drop-shadow-lg">
-            Hệ thống quản lý dự án thông minh với tích hợp GitHub, theo dõi tiến độ thời gian thực và phát hiện Free-rider tự động. 
-            Nâng cao hiệu quả teamwork và đảm bảo công bằng trong đánh giá.
+            Smart project management system with GitHub integration, real-time progress tracking and automatic Free-rider detection. 
+            Comprehensive solution for student project management with modern technology
           </p>
           <div ref={ctaRef} className="flex flex-col sm:flex-row gap-4 justify-center items-center opacity-0">
             <Button
@@ -190,7 +190,7 @@ const Landing: React.FC = () => {
               onClick={handleCTAClick}
             >
               <a href='/login'>              
-              Khám phá ngay
+              Explore Now
               </a>
             </Button>
             <Button
@@ -198,59 +198,59 @@ const Landing: React.FC = () => {
               variant="outline"
               className="border-gray-400 text-gray-300 hover:bg-white hover:text-gray-900 px-8 py-4 text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-white/25"
             >
-              <Github className="mr-2 w-5 h-5"/> Xem GitHub
+              <Github className="mr-2 w-5 h-5"/> View on GitHub
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Features Section với enhanced animations */}
+      {/* Features Section with enhanced animations */}
       <section id="features" className="relative z-10 px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
-              Tại sao chọn ITss?
+              Why choose ITss?
             </h2>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-              Giải pháp toàn diện cho quản lý dự án sinh viên với công nghệ hiện đại
+              Comprehensive solution for student project management with modern technology
             </p>
           </div>
           <div ref={gridRef} className="grid md:grid-cols-3 gap-8">
             {[
               { 
                 icon: <GitBranch className="w-6 h-6 text-white"/>, 
-                title: 'Tích hợp GitHub', 
-                text: 'Đồng bộ tự động với repository, theo dõi commit và đóng góp real-time của từng thành viên.',
+                title: 'GitHub Integration', 
+                text: 'Automatically sync with repository, track commits and real-time contributions of each member.',
                 gradient: 'from-purple-500 to-blue-500'
               },
               { 
                 icon: <TrendingUp className="w-6 h-6 text-white"/>, 
-                title: 'Theo dõi tiến độ', 
-                text: 'Dashboard trực quan với biểu đồ progress, timeline và phân tích hiệu suất team.',
+                title: 'Progress Tracking', 
+                text: 'Dashboard with real-time progress, timeline and performance analysis.',
                 gradient: 'from-green-500 to-teal-500'
               },
               { 
                 icon: <Shield className="w-6 h-6 text-white"/>, 
-                title: 'Phát hiện Free-rider', 
-                text: 'AI phân tích pattern làm việc, cảnh báo thành viên không đóng góp và đảm bảo công bằng.',
+                title: 'Free-rider Detection', 
+                text: 'AI analyzes work patterns, warns non-contributing members and ensures fairness.',
                 gradient: 'from-red-500 to-pink-500'
               },
               { 
                 icon: <Users className="w-6 h-6 text-white"/>, 
-                title: 'Quản lý nhóm', 
-                text: 'Tạo nhóm, phân chia task, giao việc và theo dõi workload của từng member.',
+                title: 'Team Management', 
+                text: 'Create teams, assign tasks, delegate work and track workload of each member.',
                 gradient: 'from-orange-500 to-yellow-500'
               },
               { 
                 icon: <Target className="w-6 h-6 text-white"/>, 
                 title: 'Pressure Score', 
-                text: 'Hệ thống tính điểm áp lực thông minh, cân bằng workload và tối ưu hiệu suất.',
+                text: 'Smart system to calculate stress score, balance workload and optimize performance.',
                 gradient: 'from-indigo-500 to-purple-500'
               },
               { 
                 icon: <BookOpen className="w-6 h-6 text-white"/>, 
-                title: 'Đánh giá đa chiều', 
-                text: 'Peer review, tự đánh giá và đánh giá của giảng viên với báo cáo chi tiết.',
+                title: 'Multi-dimensional Evaluation', 
+                text: 'Peer review, self-assessment and instructor evaluation with detailed reports.',
                 gradient: 'from-pink-500 to-rose-500'
               },
             ].map((item, i) => (
@@ -271,14 +271,14 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Demo Section với enhanced styling */}
+      {/* Demo Section with enhanced styling */}
       <section id="demo" className="relative z-10 px-6 py-20">
         <div className="max-w-6xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-8 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
-            Xem ITss hoạt động
+            Watch ITss in action
           </h2>
           
-          {/* GitHub Integration Demo với enhanced styling */}
+          {/* GitHub Integration Demo with enhanced styling */}
           <div className="grid md:grid-cols-2 gap-8 mb-12">
             <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:border-purple-400/30 transition-all duration-500">
               <div className="flex items-center justify-between mb-4">
@@ -290,9 +290,9 @@ const Landing: React.FC = () => {
               </div>
               <div className="space-y-3">
                 {[
-                  { user: 'Nguyễn A', action: 'pushed 3 commits', time: '2 phút trước', task: 'TASK-001', color: 'text-green-400' },
-                  { user: 'Trần B', action: 'created pull request', time: '15 phút trước', task: 'TASK-003', color: 'text-blue-400' },
-                  { user: 'Lê C', action: 'merged branch', time: '1 giờ trước', task: 'TASK-002', color: 'text-purple-400' },
+                  { user: 'Nguyễn A', action: 'pushed 3 commits', time: '2 minutes ago', task: 'TASK-001', color: 'text-green-400' },
+                  { user: 'Trần B', action: 'created pull request', time: '15 minutes ago', task: 'TASK-003', color: 'text-blue-400' },
+                  { user: 'Lê C', action: 'merged branch', time: '1 hour ago', task: 'TASK-002', color: 'text-purple-400' },
                 ].map((activity, i) => (
                   <div key={i} className="flex items-center justify-between text-sm bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-all duration-300">
                     <div>
@@ -338,7 +338,7 @@ const Landing: React.FC = () => {
             </div>
           </div>
 
-          {/* Free-rider Detection với enhanced styling */}
+          {/* Free-rider Detection with enhanced styling */}
           <div className="bg-gradient-to-r from-yellow-500/10 to-red-500/10 backdrop-blur-sm rounded-2xl p-8 border border-yellow-500/30 max-w-2xl mx-auto hover:border-yellow-400/50 transition-all duration-500">
             <div className="flex items-center justify-center mb-6">
               <Shield className="w-6 h-6 mr-2 text-yellow-400" />
@@ -347,7 +347,7 @@ const Landing: React.FC = () => {
             <div className="bg-yellow-500/20 border border-yellow-500/40 rounded-lg p-4 mb-4 backdrop-blur-sm">
               <div className="flex items-center">
                 <div className="w-2 h-2 bg-yellow-400 rounded-full mr-3 animate-pulse shadow-lg shadow-yellow-400/50"></div>
-                <span className="text-yellow-300">⚠️ Cảnh báo: Phạm D có mức đóng góp thấp (45%)</span>
+                <span className="text-yellow-300">⚠️ Warning: Phạm D has low contribution (45%)</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -357,27 +357,27 @@ const Landing: React.FC = () => {
               </div>
               <div className="text-center bg-white/5 rounded-lg p-4">
                 <div className="text-3xl font-bold text-yellow-400">65%</div>
-                <div className="text-gray-400">So với team</div>
+                <div className="text-gray-400">Compared to team</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Roles Section với enhanced styling */}
+      {/* Roles Section with enhanced styling */}
       <section className="relative z-10 px-6 py-20">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent drop-shadow-lg">
-              Dành cho mọi vai trò
+              Available for all roles
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { title: '🌱 Sinh viên', desc: 'Tham gia nhóm, thực hiện task, đánh giá đồng môn', gradient: 'from-green-500/20 to-teal-500/20' },
-              { title: '🐉 Nhóm trưởng', desc: 'Quản lý team, phân chia công việc, theo dõi tiến độ', gradient: 'from-blue-500/20 to-indigo-500/20' },
-              { title: '🧓 Giảng viên', desc: 'Tạo dự án, giám sát nhóm, đánh giá kết quả', gradient: 'from-purple-500/20 to-pink-500/20' },
-              { title: '🛡️ Admin', desc: 'Quản trị hệ thống, phân quyền, báo cáo tổng thể', gradient: 'from-red-500/20 to-orange-500/20' },
+              { title: '🌱 Student', desc: 'Join teams, perform tasks, evaluate peers', gradient: 'from-green-500/20 to-teal-500/20' },
+              { title: '🐉 Team Leader', desc: 'Manage team, assign work, track progress', gradient: 'from-blue-500/20 to-indigo-500/20' },
+              { title: '🧓 Instructor', desc: 'Create projects, supervise teams, evaluate results', gradient: 'from-purple-500/20 to-pink-500/20' },
+              { title: '🛡️ Admin', desc: 'System administration, authorization, overall reports', gradient: 'from-red-500/20 to-orange-500/20' },
             ].map((role, i) => (
               <div 
                 key={i} 
@@ -391,13 +391,13 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
-      {/* Footer với enhanced styling */}
+      {/* Footer with enhanced styling */}
       <footer className="relative z-10 px-6 py-12 border-t border-white/10 bg-white/5 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2 mb-4 md:mb-0">
             <Shield className="w-6 h-6 text-purple-400"/>
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              ITss - Thiên Mệnh Dự Án
+              ITss - Project Destiny
             </span>
           </div>
           <div className="flex items-center space-x-6">
