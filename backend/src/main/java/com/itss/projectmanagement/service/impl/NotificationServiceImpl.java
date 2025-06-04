@@ -4,6 +4,7 @@ import com.itss.projectmanagement.dto.response.notification.NotificationDTO;
 import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.NotificationType;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.service.INotificationCrudService;
 import com.itss.projectmanagement.service.INotificationService;
@@ -47,7 +48,7 @@ public class NotificationServiceImpl implements INotificationService {
 
         String link = "/projects/" + project.getId() + "/details";
         for (User leader : leaders) {
-            notifyUser(leader, title, message, "PROJECT_NOTIFICATION", link);
+            notifyUser(leader, title, message, NotificationType.PROJECT_INVITATION.name(), link);
         }
 
         log.info("Sent '{}' notification to {} group leaders for project {}",
@@ -77,7 +78,7 @@ public class NotificationServiceImpl implements INotificationService {
             notificationDTO.setUserId(instructor.getId());
             notificationDTO.setTitle(title);
             notificationDTO.setMessage(message);
-            notificationDTO.setType("FREE_RIDER_ALERT");
+            notificationDTO.setType(NotificationType.FREE_RIDER_DETECTED.name());
             notificationDTO.setLink(link);
             notificationDTO.setData(jsonData);
             
@@ -98,7 +99,7 @@ public class NotificationServiceImpl implements INotificationService {
      * @param message Notification message
      */    
     public void notifyUser(User user, String title, String message) {
-        notifyUser(user, title, message, "GENERAL", null);
+        notifyUser(user, title, message, NotificationType.GENERAL.name(), null);
     }
       
     /**

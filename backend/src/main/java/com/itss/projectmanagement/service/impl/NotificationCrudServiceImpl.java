@@ -4,6 +4,7 @@ import com.itss.projectmanagement.dto.response.notification.NotificationDTO;
 import com.itss.projectmanagement.dto.response.notification.NotificationResponseDTO;
 import com.itss.projectmanagement.entity.Notification;
 import com.itss.projectmanagement.entity.User;
+import com.itss.projectmanagement.enums.NotificationType;
 import com.itss.projectmanagement.repository.NotificationRepository;
 import com.itss.projectmanagement.repository.UserRepository;
 import com.itss.projectmanagement.service.INotificationCrudService;
@@ -115,7 +116,9 @@ public class NotificationCrudServiceImpl implements INotificationCrudService {
             log.error("Error deleting notification {}: {}", notificationId, e.getMessage(), e);
             return false;
         }
-    }    @Override
+    }
+
+    @Override
     @Transactional
     public NotificationDTO createNotification(NotificationDTO notificationDTO) {
         try {
@@ -128,13 +131,22 @@ public class NotificationCrudServiceImpl implements INotificationCrudService {
             
             User user = userOpt.get();
             
+            // Parse the notification type string to enum, default to SYSTEM_NOTIFICATION if invalid
+            NotificationType notificationType;
+            try {
+                notificationType = NotificationType.valueOf(notificationDTO.getType());
+            } catch (IllegalArgumentException e) {
+                log.warn("Invalid notification type '{}', defaulting to SYSTEM_NOTIFICATION", notificationDTO.getType());
+                notificationType = NotificationType.SYSTEM_NOTIFICATION;
+            }
+            
             Notification notification = Notification.builder()
                     .user(user)
                     .title(notificationDTO.getTitle())
                     .message(notificationDTO.getMessage())
                     .isRead(false)
                     .createdAt(LocalDateTime.now())
-                    .type(notificationDTO.getType())
+                    .type(notificationType)
                     .link(notificationDTO.getLink())
                     .data(notificationDTO.getData())
                     .build();
@@ -160,7 +172,7 @@ public class NotificationCrudServiceImpl implements INotificationCrudService {
                 .message(notification.getMessage())
                 .isRead(notification.isRead())
                 .createdAt(notification.getCreatedAt())
-                .type(notification.getType())
+                .type(notification.getType().name())
                 .link(notification.getLink())
                 .data(notification.getData())
                 .build();

@@ -1,0 +1,14 @@
+package com.itss.projectmanagement.enums;
+
+public enum NotificationType {
+    TASK_ASSIGNED,
+    TASK_COMPLETED,
+    PEER_REVIEW_ASSIGNED,
+    PEER_REVIEW_COMPLETED,
+    GROUP_INVITATION,
+    PROJECT_INVITATION,
+    FREE_RIDER_DETECTED,
+    PRESSURE_SCORE_WARNING,
+    GENERAL,
+    SYSTEM_NOTIFICATION
+} 

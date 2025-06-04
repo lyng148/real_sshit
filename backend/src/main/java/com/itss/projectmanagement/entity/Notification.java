@@ -1,6 +1,10 @@
 package com.itss.projectmanagement.entity;
 
+import com.itss.projectmanagement.enums.NotificationType;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,9 +28,13 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
+    @NotBlank(message = "Title is required")
+    @Size(max = 255, message = "Title cannot exceed 255 characters")
     @Column(nullable = false, length = 255)
     private String title;
     
+    @NotBlank(message = "Message is required")
+    @Size(max = 1000, message = "Message cannot exceed 1000 characters")
     @Column(nullable = false, length = 1000)
     private String message;
     
@@ -36,9 +44,12 @@ public class Notification {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     
+    @NotNull(message = "Notification type is required")
+    @Enumerated(EnumType.STRING)
     @Column(name = "notification_type", nullable = false)
-    private String type;
+    private NotificationType type;
     
+    @Size(max = 255, message = "Link cannot exceed 255 characters")
     @Column(length = 255)
     private String link;
     

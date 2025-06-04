@@ -28,8 +28,8 @@ public class FreeRiderCaseConverter {
 
         FreeRiderCaseDTO dto = new FreeRiderCaseDTO();
         dto.setId(freeRiderCase.getId());
-        dto.setStatus(freeRiderCase.getStatus());
-        dto.setResolution(freeRiderCase.getResolution());
+        dto.setStatus(freeRiderCase.getStatus() != null ? freeRiderCase.getStatus().name() : null);
+        dto.setResolution(freeRiderCase.getResolution() != null ? freeRiderCase.getResolution().name() : null);
         dto.setNotes(freeRiderCase.getNotes());
         dto.setDetectedAt(freeRiderCase.getDetectedAt());
         dto.setContactedAt(freeRiderCase.getContactedAt());

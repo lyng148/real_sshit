@@ -7,6 +7,8 @@ import com.itss.projectmanagement.dto.response.freerider.FreeRiderCaseDTO;
 import com.itss.projectmanagement.dto.response.user.UserDTO;
 import com.itss.projectmanagement.entity.*;
 import com.itss.projectmanagement.enums.TaskStatus;
+import com.itss.projectmanagement.enums.FreeRiderStatus;
+import com.itss.projectmanagement.enums.FreeRiderResolution;
 import com.itss.projectmanagement.exception.NotFoundException;
 import com.itss.projectmanagement.repository.*;
 import com.itss.projectmanagement.service.IFreeRiderDetectionService;
@@ -443,7 +445,7 @@ public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService
                     .student(student)
                     .project(project)
                     .group(group)
-                    .status("pending")
+                    .status(FreeRiderStatus.PENDING)
                     .detectedAt(LocalDateTime.now())
                     .evidenceJson(evidenceJson)
                     .build();
@@ -463,8 +465,13 @@ public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService
                 .orElseThrow(() -> new NotFoundException("Free rider case not found"));
         
         // Update case
-        freeRiderCase.setStatus("resolved");
-        freeRiderCase.setResolution(resolution);
+        freeRiderCase.setStatus(FreeRiderStatus.RESOLVED);
+        // Parse resolution string to enum, default to OTHER if invalid
+        try {
+            freeRiderCase.setResolution(FreeRiderResolution.valueOf(resolution.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            freeRiderCase.setResolution(FreeRiderResolution.OTHER);
+        }
         freeRiderCase.setNotes(notes);
         freeRiderCase.setResolvedAt(LocalDateTime.now());
         

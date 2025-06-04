@@ -1,6 +1,10 @@
 package com.itss.projectmanagement.entity;
 
+import com.itss.projectmanagement.enums.FreeRiderStatus;
+import com.itss.projectmanagement.enums.FreeRiderResolution;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -31,13 +35,15 @@ public class FreeRiderCase {
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 
-    // Status: pending, contacted, resolved
+    @NotNull(message = "Status is required")
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private FreeRiderStatus status;
 
-    // Resolution: warning, reassignment, penalty, other
-    private String resolution;
+    @Enumerated(EnumType.STRING)
+    private FreeRiderResolution resolution;
 
+    @Size(max = 1000, message = "Notes cannot exceed 1000 characters")
     @Column(length = 1000)
     private String notes;
 
