@@ -1,11 +1,11 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 // Create an Axios instance with default configuration
 const axiosInstance = axios.create({
   baseURL: API_URL,
-  timeout: 15000,
+  timeout: parseInt(import.meta.env.VITE_API_TIMEOUT) || 15000,
   headers: {
     'Content-Type': 'application/json; charset=utf-8',
     'Accept': 'application/json',
