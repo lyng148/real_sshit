@@ -21,9 +21,6 @@ public class CommitRecord extends BaseEntity {
     @Column(nullable = false)
     private String message;
     
-    @Column(name = "task_id_string")
-    private String taskId;
-    
     @Column(nullable = false)
     private String authorName;
     
@@ -42,4 +39,14 @@ public class CommitRecord extends BaseEntity {
     private Task task;
     
     private boolean isValid;
+    
+    // New fields for code line statistics
+    @Column(name = "additions", nullable = true)
+    private Integer additions; // Number of lines added
+    
+    @Column(name = "deletions", nullable = true)
+    private Integer deletions; // Number of lines deleted
+    
+    @Column(name = "changed_files", nullable = true)
+    private Integer changedFiles; // Number of files changed
 }

@@ -28,9 +28,6 @@ public class PeerReview extends BaseEntity {
     @JoinColumn(name = "project_id", nullable = false)
     private Project project;
 
-    @Column(name = "score", nullable = false)
-    private Double score;
-
     @Min(value = 1, message = "Completion score must be at least 1")
     @Max(value = 5, message = "Completion score must be at most 5")
     @Column(name = "completion_score", nullable = false)
@@ -66,5 +63,12 @@ public class PeerReview extends BaseEntity {
     protected void onCreate() {
         super.onCreate();
         this.assignedAt = LocalDateTime.now();
+    }
+
+    public Double getCalculatedScore() {
+        if (completionScore == null || cooperationScore == null) {
+            return null;
+        }
+        return (completionScore + cooperationScore) / 2.0;
     }
 }
