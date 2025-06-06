@@ -3,8 +3,10 @@ import { useParams } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { ProjectStatisticsResponse } from '@/types/statistics';
 import projectService from '@/services/projectService';
+import contributionScoreService from '@/services/contributionScoreService';
 import {
   Bar,
   BarChart,
@@ -21,76 +23,116 @@ import {
   YAxis,
 } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Calculator, RefreshCw } from 'lucide-react';
 import ContributionTab from '@/components/project/ContributionTab';
 
 const ProjectAnalyzePage: React.FC = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { toast } = useToast();
   const [loading, setLoading] = useState<boolean>(true);
+  const [calculatingScores, setCalculatingScores] = useState<boolean>(false);
   const [statistics, setStatistics] = useState<ProjectStatisticsResponse | null>(null);
   const [progress, setProgress] = useState<number>(0);
   const [analyzing, setAnalyzing] = useState<boolean>(false);
-  // Fetch project statistics
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        setLoading(true);
-        setProgress(25); // Start with 25% to indicate request is being made
-        setAnalyzing(true);
+
+  // Manual calculate contribution scores
+  const handleCalculateScores = async () => {
+    if (!projectId) return;
+    
+    try {
+      setCalculatingScores(true);
+      const response = await contributionScoreService.calculateScores(Number(projectId));
+      
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Contribution scores have been calculated successfully. Refreshing statistics...",
+        });
         
-        // Set a timeout for the API call
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => {
-          controller.abort();
-        }, 30000); // 30s timeout
-        
-        try {
-          // Increase progress to show request is in progress
-          setProgress(50);
-          
-          // Make the API call with abort signal
-          const response = await projectService.getProjectStatistics(Number(projectId));
-          
-          // API call successful, update progress
-          setProgress(100);
-          setAnalyzing(false);
-          
-          if (response.success) {
-            setStatistics(response.data);
-          } else {
-            toast({
-              title: "Error",
-              description: response.message || "Failed to load project statistics",
-              variant: "destructive",
-            });
-          }
-          
-          // Clear the timeout since the API call is complete
-          clearTimeout(timeoutId);
-        } catch (apiError) {
-          if (apiError.name === 'AbortError') {
-            toast({
-              title: "Timeout",
-              description: "Phân tích quá lâu, vui lòng thử lại sau.",
-              variant: "destructive",
-            });
-          } else {
-            throw apiError; // Re-throw for the outer catch block
-          }
-        }
-      } catch (error) {
-        setAnalyzing(false);
-        setProgress(100);
-        console.error("Error fetching project statistics:", error);
+        // Refresh the statistics to show updated scores
+        await fetchStatistics();
+      } else {
         toast({
           title: "Error",
-          description: "An unexpected error occurred while loading statistics",
+          description: response.message || "Failed to calculate contribution scores",
           variant: "destructive",
         });
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (error: any) {
+      console.error("Error calculating contribution scores:", error);
+      toast({
+        title: "Error",
+        description: error?.response?.data?.message || "Failed to calculate contribution scores",
+        variant: "destructive",
+      });
+    } finally {
+      setCalculatingScores(false);
+    }
+  };
+
+  // Fetch project statistics
+  const fetchStatistics = async () => {
+    try {
+      setLoading(true);
+      setProgress(25); // Start with 25% to indicate request is being made
+      setAnalyzing(true);
+      
+      // Set a timeout for the API call
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+      }, 30000); // 30s timeout
+      
+      try {
+        // Increase progress to show request is in progress
+        setProgress(50);
+        
+        // Make the API call with abort signal
+        const response = await projectService.getProjectStatistics(Number(projectId));
+        
+        // API call successful, update progress
+        setProgress(100);
+        setAnalyzing(false);
+        
+        if (response.success) {
+          setStatistics(response.data);
+        } else {
+          toast({
+            title: "Error",
+            description: response.message || "Failed to load project statistics",
+            variant: "destructive",
+          });
+        }
+        
+        // Clear the timeout since the API call is complete
+        clearTimeout(timeoutId);
+      } catch (apiError) {
+        if (apiError.name === 'AbortError') {
+          toast({
+            title: "Timeout",
+            description: "Phân tích quá lâu, vui lòng thử lại sau.",
+            variant: "destructive",
+          });
+        } else {
+          throw apiError; // Re-throw for the outer catch block
+        }
+      }
+    } catch (error) {
+      setAnalyzing(false);
+      setProgress(100);
+      console.error("Error fetching project statistics:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while loading statistics",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch project statistics
+  useEffect(() => {
     fetchStatistics();
   }, [projectId, toast]);
 
@@ -346,6 +388,38 @@ const ProjectAnalyzePage: React.FC = () => {
                     </CardContent>
                   </Card>
                 </div>
+                
+                {/* Manual Calculate Contribution Scores */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Calculator className="h-5 w-5" />
+                      Manual Score Calculation
+                    </CardTitle>
+                    <CardDescription>
+                      Recalculate contribution scores for all project members using current data
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-4">
+                      <Button
+                        onClick={handleCalculateScores}
+                        disabled={calculatingScores}
+                        className="flex items-center gap-2"
+                      >
+                        {calculatingScores ? (
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Calculator className="h-4 w-4" />
+                        )}
+                        {calculatingScores ? "Calculating..." : "Calculate Scores"}
+                      </Button>
+                      <div className="text-sm text-gray-600">
+                        This will recalculate all contribution scores using the latest task completions, peer reviews, and code contributions.
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
                 
                 {/* Import and use the Contribution Tab component */}
                 {projectId && <ContributionTab projectId={Number(projectId)} />}

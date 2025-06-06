@@ -54,10 +54,10 @@ const ProjectCreate = () => {
     description: '',
     evaluationCriteria: '',
     maxMembers: 4,
-    weightW1: 25,
-    weightW2: 25,
-    weightW3: 25,
-    weightW4: 25,
+    weightW1: 50,  // 50% (0.5 normalized)
+    weightW2: 30,  // 30% (0.3 normalized)
+    weightW3: 20,  // 20% (0.2 normalized)
+    weightW4: 10,  // 10% penalty (0.1 normalized)
     freeriderThreshold: 30,
     pressureThreshold: 70
   });
@@ -88,11 +88,47 @@ const ProjectCreate = () => {
       [name]: value
     }));
   };
+  
+  // Validation helper for weight sum
+  const validateWeightSum = () => {
+    const w1 = parseFloat(formData.weightW1) || 0;
+    const w2 = parseFloat(formData.weightW2) || 0;
+    const w3 = parseFloat(formData.weightW3) || 0;
+    const sum = w1 + w2 + w3;
+    return !isNaN(sum) && Math.abs(sum - 100) < 0.1; // Allow small floating point tolerance
+  };
+  
+  const getWeightSumError = () => {
+    const w1 = parseFloat(formData.weightW1) || 0;
+    const w2 = parseFloat(formData.weightW2) || 0;
+    const w3 = parseFloat(formData.weightW3) || 0;
+    const sum = w1 + w2 + w3;
+    
+    if (isNaN(sum)) {
+      return "Invalid weight values detected";
+    }
+    
+    if (Math.abs(sum - 100) >= 0.1) {
+      return `W1 + W2 + W3 must equal 100% (current: ${sum.toFixed(1)}%)`;
+    }
+    return null;
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Clear previous validation errors
     clearErrors();
+    
+    // Validate weight sum before submission
+    if (!validateWeightSum()) {
+      toast({
+        title: "Validation Error",
+        description: getWeightSumError(),
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsSubmitting(true);
     
@@ -235,12 +271,37 @@ const ProjectCreate = () => {
                 <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
                   <LabelWithTooltip 
                     htmlFor="weightFactors"
-                    label="⚖️ Weight Factor Configuration"
-                    tooltipText="Contribution Score = W1*Task Completion + W2*Peer Review Score + W3*Commit Count - W4*Late Tasks"
+                    label="⚖️ Normalized Weight Configuration"
+                    tooltipText="Each component is normalized to 0-10 scale, then weighted. Final Score = W1*TaskCompletion + W2*PeerReview + W3*CodeContribution - W4*LateTasks (0-10 scale)"
                   />
                   <p className="text-sm text-gray-600 mt-2 mb-4">
-                    Adjust the importance of each factor in evaluating contributions
+                    <strong>Important:</strong> W1 + W2 + W3 must equal 100% for normalized scoring. Each component is scaled to 0-10 within the project.
                   </p>
+                  
+                  {/* Weight Sum Indicator */}
+                  <div className={`mb-4 p-3 rounded-lg border ${
+                    validateWeightSum() 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        Weight Sum: {(() => {
+                          const w1 = parseFloat(formData.weightW1) || 0;
+                          const w2 = parseFloat(formData.weightW2) || 0;
+                          const w3 = parseFloat(formData.weightW3) || 0;
+                          const sum = w1 + w2 + w3;
+                          return isNaN(sum) ? '0.0' : sum.toFixed(1);
+                        })()}%
+                      </span>
+                      <span className="text-sm">
+                        {validateWeightSum() ? '✅ Valid' : '❌ Must equal 100%'}
+                      </span>
+                    </div>
+                    {!validateWeightSum() && (
+                      <p className="text-sm mt-1">{getWeightSumError()}</p>
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -254,8 +315,10 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
+                        step="0.1"
                         className={getFieldErrorClass('weightW1', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <p className="text-xs text-gray-500 mt-1">Weighted by task difficulty (Easy=1, Medium=2, Hard=3)</p>
                       <ValidationErrorInline fieldName="weightW1" validationErrors={validationErrors} />
                     </div>
 
@@ -270,13 +333,15 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
+                        step="0.1"
                         className={getFieldErrorClass('weightW2', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <p className="text-xs text-gray-500 mt-1">Average peer evaluation score</p>
                       <ValidationErrorInline fieldName="weightW2" validationErrors={validationErrors} />
                     </div>
 
                     <div>
-                      <Label htmlFor="weightW3" className="text-sm font-medium text-gray-700">W3: Commit Count (%) <span className="text-red-500">*</span></Label>
+                      <Label htmlFor="weightW3" className="text-sm font-medium text-gray-700">W3: Code Contribution (%) <span className="text-red-500">*</span></Label>
                       <Input
                         type="number"
                         id="weightW3"
@@ -286,8 +351,10 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
+                        step="0.1"
                         className={getFieldErrorClass('weightW3', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <p className="text-xs text-gray-500 mt-1">Line-based: (additions×1.0) + (deletions×1.25)</p>
                       <ValidationErrorInline fieldName="weightW3" validationErrors={validationErrors} />
                     </div>            
                     
@@ -302,10 +369,19 @@ const ProjectCreate = () => {
                         required
                         min="0"
                         max="100"
+                        step="0.1"
                         className={getFieldErrorClass('weightW4', 'mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 transition-all duration-300', 'border-red-400 bg-red-50')}
                       />
+                      <p className="text-xs text-gray-500 mt-1">Independent penalty factor (per late task)</p>
                       <ValidationErrorInline fieldName="weightW4" validationErrors={validationErrors} />
                     </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>🔍 How it works:</strong> Each component (Task, Peer, Code) is normalized to 0-10 scale within your project using Min-Max scaling. 
+                      Then weighted according to your percentages. Final scores range 0-10.
+                    </p>
                   </div>
                 </div>
               </div>

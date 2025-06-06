@@ -15,18 +15,9 @@ public interface IGitHubService {
     String getGitHubToken();
     
     /**
-     * Check if a GitHub repository exists and is accessible
-     * @param owner Repository owner/organization
-     * @param repo Repository name
-     * @return true if repository exists and is accessible, false otherwise
-     */
-    boolean checkRepositoryExists(String owner, String repo);
-    
-    /**
      * Check repository connection with detailed error handling
      * @param owner Repository owner/organization
      * @param repo Repository name
-     * @throws GitHubRepositoryException if repository is not accessible with detailed error message
      */
     void validateRepositoryConnection(String owner, String repo);
     

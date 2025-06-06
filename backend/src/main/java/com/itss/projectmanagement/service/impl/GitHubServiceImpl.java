@@ -55,25 +55,6 @@ public class GitHubServiceImpl implements IGitHubService {
     public String getGitHubToken() {
         return gitHubToken;
     }
-    
-    /**
-     * Check if a GitHub repository exists and is accessible
-     * @param owner Repository owner/organization
-     * @param repo Repository name
-     * @return true if repository exists and is accessible, false otherwise
-     */
-    @Override
-    public boolean checkRepositoryExists(String owner, String repo) {
-        try {
-            // Try to get repository info using GitHub API
-            GHRepository repository = gitHub.getRepository(owner + "/" + repo);
-            // If we get here without exception, the repository exists and is accessible
-            return repository != null;
-        } catch (IOException e) {
-            log.error("Error checking GitHub repository: {}/{}", owner, repo, e);
-            return false;
-        }
-    }
 
     /**
      * Check repository connection with detailed error handling
@@ -191,17 +172,29 @@ public class GitHubServiceImpl implements IGitHubService {
             }
         }
 
+        // Get commit statistics (additions, deletions)
+        Integer additions = null;
+        Integer deletions = null;
+        
+        try {
+            additions = commit.getLinesAdded();
+            deletions = commit.getLinesDeleted();
+        } catch (IOException e) {
+            log.warn("Failed to get commit stats for commit {}: {}", commit.getSHA1(), e.getMessage());
+        }
+
         // Create commit record
         CommitRecord commitRecord = CommitRecord.builder()
                 .commitId(commit.getSHA1())
                 .message(message)
-                .taskId(taskId)
                 .authorName(info.getAuthor().getName())
                 .authorEmail(info.getAuthor().getEmail())
                 .timestamp(convertToLocalDateTime(info.getCommitDate()))
                 .group(group)
                 .task(task)
-                .isValid(isValid)
+                .valid(isValid)
+                .additions(additions)
+                .deletions(deletions)
                 .build();
 
         commitRecordRepository.save(commitRecord);
@@ -315,12 +308,21 @@ public class GitHubServiceImpl implements IGitHubService {
         dto.setId(commitRecord.getId());
         dto.setCommitId(commitRecord.getCommitId());
         dto.setMessage(commitRecord.getMessage());
-        dto.setTaskId(commitRecord.getTaskId());
+        // Set taskId from task object if available, or extract from message
+        if (commitRecord.getTask() != null) {
+            dto.setTaskId(commitRecord.getTask().getId().toString());
+        } else {
+            dto.setTaskId(extractTaskId(commitRecord.getMessage()));
+        }
         dto.setAuthorName(commitRecord.getAuthorName());
         dto.setAuthorEmail(commitRecord.getAuthorEmail());
         dto.setTimestamp(commitRecord.getTimestamp());
         dto.setValid(commitRecord.isValid());
         dto.setCreatedAt(commitRecord.getCreatedAt());
+        
+        // Set code line statistics
+        dto.setAdditions(commitRecord.getAdditions());
+        dto.setDeletions(commitRecord.getDeletions());
 
         // Set user ID and name if we can find a matching user by email
         userRepository.findByEmail(commitRecord.getAuthorEmail()).ifPresent(user -> {
@@ -412,6 +414,7 @@ public class GitHubServiceImpl implements IGitHubService {
             return;
         }
 
+        String extractedTaskId = extractTaskId(commitRecord.getMessage());
         String message = String.format(
                 "Invalid commit detected in group %s. Commit: %s by %s. " +
                         "Message: %s. Invalid TASK-ID: %s",
@@ -419,7 +422,7 @@ public class GitHubServiceImpl implements IGitHubService {
                 commitRecord.getCommitId().substring(0, 7),
                 commitRecord.getAuthorName(),
                 commitRecord.getMessage(),
-                commitRecord.getTaskId()
+                extractedTaskId != null ? extractedTaskId : "None"
         );
 
         notificationService.notifyUser(group.getLeader(), "Invalid commit detected", message);

@@ -48,7 +48,7 @@ public class ChartServiceImpl implements IChartService {
         // Get all valid commits for all groups in the project within date range
         List<CommitRecord> commits = new ArrayList<>();
         for (Group group : groups) {
-            List<CommitRecord> groupCommits = commitRecordRepository.findByGroupAndIsValidAndTimestampAfter(
+            List<CommitRecord> groupCommits = commitRecordRepository.findByGroupAndValidAndTimestampAfter(
                 group, true, startDate);
             commits.addAll(groupCommits);
         }

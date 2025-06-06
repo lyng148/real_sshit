@@ -18,9 +18,10 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { ContributionScoreResponse } from '@/types/contribution';
 import ScoreAdjustmentDialog from './ScoreAdjustmentDialog';
-import { Info } from 'lucide-react';
+import { Info, Edit } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ContributionDetailsDialogProps {
@@ -71,10 +72,50 @@ const ContributionDetailsDialog: React.FC<ContributionDetailsDialogProps> = ({
               <TableHeader>
                 <TableRow>
                   <TableHead>Student Name</TableHead>
-                  <TableHead>Task Completion</TableHead>
-                  <TableHead>Peer Review</TableHead>
-                  <TableHead>Commits</TableHead>
-                  <TableHead>Late Tasks</TableHead>
+                  <TableHead className="text-center">
+                    Task Score
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="inline h-4 w-4 ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Normalized task completion score (0-10 scale)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableHead>
+                  <TableHead className="text-center">
+                    Peer Review
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="inline h-4 w-4 ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Normalized peer review score (0-10 scale)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableHead>
+                  <TableHead className="text-center">
+                    Code Score
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="inline h-4 w-4 ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Normalized code contribution score (0-10 scale)</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableHead>
+                  <TableHead className="text-center">
+                    Late Tasks
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <Info className="inline h-4 w-4 ml-1" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Count of late completed/overdue tasks</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TableHead>
                   <TableHead>System Score</TableHead>
                   <TableHead>Final Score</TableHead>
                   {canModifyScores && <TableHead>Actions</TableHead>}
@@ -84,41 +125,85 @@ const ContributionDetailsDialog: React.FC<ContributionDetailsDialogProps> = ({
                 {contributions.map((contribution) => (
                   <TableRow key={contribution.id}>
                     <TableCell className="font-medium">{contribution.fullName}</TableCell>
-                    <TableCell>{contribution.taskCompletionScore.toFixed(1)}</TableCell>
-                    <TableCell>{contribution.peerReviewScore.toFixed(1)}</TableCell>
-                    <TableCell>{contribution.commitCount}</TableCell>
-                    <TableCell>{contribution.lateTaskCount}</TableCell>                    <TableCell>{contribution.calculatedScore.toFixed(1)}</TableCell>
+                    <TableCell className="text-center">{contribution.taskCompletionScore.toFixed(1)}</TableCell>
+                    <TableCell className="text-center">{contribution.peerReviewScore.toFixed(1)}</TableCell>
+                    <TableCell className="text-center">
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <span className="cursor-help">
+                            {contribution.codeContributionScore.toFixed(1)}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <div className="w-56 space-y-2">
+                            <div className="font-bold">Code Contribution Breakdown:</div>
+                            <div>
+                              <span className="text-green-600">+{contribution.totalAdditions || 0}</span> lines added
+                            </div>
+                            <div>
+                              <span className="text-red-600">-{contribution.totalDeletions || 0}</span> lines deleted
+                            </div>
+                            <div className="border-t pt-2">
+                              <div className="text-xs text-gray-600">
+                                Raw Score: {((contribution.totalAdditions || 0) * 1.0 + (contribution.totalDeletions || 0) * 1.25).toFixed(1)}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Normalized: {contribution.codeContributionScore.toFixed(1)}/10
+                              </div>
+                            </div>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell className="text-center">{contribution.lateTaskCount}</TableCell>
+                    <TableCell>{contribution.calculatedScore.toFixed(1)}</TableCell>
                     <TableCell className="relative">
-                      {contribution.adjustedScore ? (
-                        <span className={`font-bold ${
-                          contribution.adjustedScore >= 80 ? 'text-green-600' : 
-                          contribution.adjustedScore >= 50 ? 'text-amber-600' : 
-                          'text-red-600'
-                        }`}>
-                          {contribution.adjustedScore.toFixed(1)}
-                        </span>
-                      ) : (
-                        <span className={`font-bold ${
-                          contribution.calculatedScore >= 80 ? 'text-green-600' : 
-                          contribution.calculatedScore >= 50 ? 'text-amber-600' : 
-                          'text-red-600'
-                        }`}>
-                          {contribution.calculatedScore.toFixed(1)}
-                        </span>
-                      )}
-                      {contribution.adjustmentReason && (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Info className="h-4 w-4 ml-1 inline-block text-blue-500" />
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p className="w-60 break-words">
-                              <span className="font-bold">Adjustment reason:</span><br />
-                              {contribution.adjustmentReason}
-                            </p>
-                          </TooltipContent>
-                        </Tooltip>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {contribution.adjustedScore ? (
+                          <>
+                            <span className={`font-bold ${
+                              contribution.adjustedScore >= 7 ? 'text-green-600' : 
+                              contribution.adjustedScore >= 4 ? 'text-amber-600' : 
+                              'text-red-600'
+                            }`}>
+                              {contribution.adjustedScore.toFixed(1)}
+                            </span>
+                            <Badge variant="secondary" className="text-xs">
+                              <Edit className="h-3 w-3 mr-1" />
+                              Adjusted
+                            </Badge>
+                          </>
+                        ) : (
+                          <span className={`font-bold ${
+                            contribution.calculatedScore >= 7 ? 'text-green-600' : 
+                            contribution.calculatedScore >= 4 ? 'text-amber-600' : 
+                            'text-red-600'
+                          }`}>
+                            {contribution.calculatedScore.toFixed(1)}
+                          </span>
+                        )}
+                        {contribution.adjustmentReason && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-4 w-4 text-blue-500 cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <div className="w-60 break-words space-y-2">
+                                <div>
+                                  <span className="font-bold">System calculated:</span> {contribution.calculatedScore.toFixed(1)}
+                                </div>
+                                <div>
+                                  <span className="font-bold">Manually adjusted:</span> {contribution.adjustedScore?.toFixed(1)}
+                                </div>
+                                <div>
+                                  <span className="font-bold">Reason:</span><br />
+                                  {contribution.adjustmentReason}
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
+                        )}
+                      </div>
                     </TableCell>
                     {canModifyScores && (
                       <TableCell>

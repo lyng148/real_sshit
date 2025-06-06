@@ -5,11 +5,9 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "contribution_scores")
 @Data
@@ -35,11 +33,17 @@ public class ContributionScore extends BaseEntity {
     @DecimalMin(value = "0.0", message = "Peer review score must be non-negative")
     private Double peerReviewScore; // Average peer review score
     
-    @Min(value = 0, message = "Commit count must be non-negative")
-    private Long commitCount; // Number of valid commits
-    
     @Min(value = 0, message = "Late task count must be non-negative")
     private Long lateTaskCount; // Number of late completed tasks
+    
+    @Min(value = 0, message = "Total additions must be non-negative")
+    private Long totalAdditions; // Total lines of code added across all commits
+    
+    @Min(value = 0, message = "Total deletions must be non-negative")
+    private Long totalDeletions; // Total lines of code deleted across all commits
+    
+    @DecimalMin(value = "0.0", message = "Code contribution score must be non-negative")
+    private Double codeContributionScore; // Score based on lines: (additions * 1.0) + (deletions * 1.25)
     
     // Final scores
     @DecimalMin(value = "0.0", message = "Calculated score must be non-negative")

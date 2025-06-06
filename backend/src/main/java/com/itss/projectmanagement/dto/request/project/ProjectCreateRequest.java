@@ -27,11 +27,11 @@ public class ProjectCreateRequest {
     @Size(max = 1000, message = "Evaluation criteria cannot exceed 1000 characters")
     private String evaluationCriteria;
     
-    // Optional weights with default values
+    // Normalized weights with constraint: W1 + W2 + W3 = 1.0
     @Builder.Default
     @DecimalMin(value = "0.0", message = "Weight W1 must be non-negative")
     @DecimalMax(value = "1.0", message = "Weight W1 cannot exceed 1.0")
-    private Double weightW1 = 0.4;
+    private Double weightW1 = 0.5;
 
     @Builder.Default
     @DecimalMin(value = "0.0", message = "Weight W2 must be non-negative")
@@ -48,13 +48,24 @@ public class ProjectCreateRequest {
     @DecimalMax(value = "1.0", message = "Weight W4 cannot exceed 1.0")
     private Double weightW4 = 0.1;
     
-    @Builder.Default
-    @DecimalMin(value = "0.0", message = "Free rider threshold must be non-negative")
-    @DecimalMax(value = "1.0", message = "Free rider threshold cannot exceed 1.0")
-    private Double freeriderThreshold = 0.3;
+    @DecimalMin(value = "0.0", message = "Free-rider threshold must be non-negative")
+    @DecimalMax(value = "1.0", message = "Free-rider threshold cannot exceed 1.0")
+    private Double freeriderThreshold;
     
-    @Builder.Default
     @Min(value = 1, message = "Pressure threshold must be at least 1")
-    @Max(value = 50, message = "Pressure threshold cannot exceed 50")
-    private Integer pressureThreshold = 15;
+    @Max(value = 100, message = "Pressure threshold cannot exceed 100")
+    private Integer pressureThreshold;
+    
+    /**
+     * Custom validation to ensure W1 + W2 + W3 = 1.0
+     */
+    @AssertTrue(message = "Weight factors W1, W2, W3 must sum to 1.0 for normalized scoring (current sum: ${weightW1 + weightW2 + weightW3})")
+    public boolean isWeightSumValid() {
+        if (weightW1 == null || weightW2 == null || weightW3 == null) {
+            return false;
+        }
+        double sum = weightW1 + weightW2 + weightW3;
+        // Allow small floating point tolerance
+        return Math.abs(sum - 1.0) < 0.001;
+    }
 }

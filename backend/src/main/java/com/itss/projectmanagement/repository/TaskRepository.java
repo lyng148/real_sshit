@@ -23,9 +23,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     List<Task> findByGroup(Group group);
     
     List<Task> findByAssigneeAndStatus(User assignee, TaskStatus status);
-    
-    List<Task> findByGroupAndStatus(Group group, TaskStatus status);
-    
+
     @Query("SELECT t FROM Task t WHERE t.assignee = :assignee AND t.group.project = :project AND t.status = :status")
     List<Task> findByAssigneeAndGroupProjectAndStatus(
             @Param("assignee") User assignee, 
@@ -55,4 +53,7 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
             @Param("project") Project project,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    List<Task> findByAssigneeAndGroup_Project(User user, Project project);
+
 }

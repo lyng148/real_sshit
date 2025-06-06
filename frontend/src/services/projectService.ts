@@ -127,7 +127,7 @@ class ProjectService {
             contributionFactors: {
               taskCompletion: parseFloat(score.taskCompletionScore.toFixed(1)),
               peerReview: parseFloat(score.peerReviewScore.toFixed(1)),
-              commitCount: parseFloat(score.commitCount.toFixed(1)),
+              codeContributionScore: parseFloat((score.codeContributionScore || 0).toFixed(1)),
               lateTaskCount: parseFloat((score.lateTaskCount || 0).toFixed(1))
             }
           };

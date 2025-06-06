@@ -1,13 +1,12 @@
 package com.itss.projectmanagement.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.AssertTrue;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "commit_records")
 @Data
@@ -37,16 +36,22 @@ public class CommitRecord extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "task_id")
     private Task task;
+
+    @Builder.Default
+    private boolean valid=true;
     
-    private boolean isValid;
-    
-    // New fields for code line statistics
-    @Column(name = "additions", nullable = true)
+    @Column(name = "additions")
     private Integer additions; // Number of lines added
     
-    @Column(name = "deletions", nullable = true)
+    @Column(name = "deletions")
     private Integer deletions; // Number of lines deleted
     
-    @Column(name = "changed_files", nullable = true)
-    private Integer changedFiles; // Number of files changed
+    /**
+     * Validation to ensure data consistency:
+     * If task is not null, task.group must equal this commit.group
+     */
+    @AssertTrue(message = "Task group must match commit group when task is present")
+    public boolean isTaskGroupConsistent() {
+        return task == null || task.getGroup().getId().equals(group.getId());
+    }
 }

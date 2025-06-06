@@ -2,7 +2,7 @@
 export interface ContributionFactors {
   taskCompletion: number;
   peerReview: number;
-  commitCount: number;
+  codeContributionScore: number;
   lateTaskCount: number;
 }
 
@@ -16,7 +16,7 @@ export interface ContributionScoreResponse {
   projectName: string;
   taskCompletionScore: number;
   peerReviewScore: number;
-  commitCount: number;
+  codeContributionScore: number;
   lateTaskCount: number;
   calculatedScore: number;
   adjustedScore: number;

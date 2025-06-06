@@ -68,17 +68,8 @@ class FinalAssessmentService {
         const contributionScores = scoresResponse.data.data;
         const project = projectResponse.data.data;
         
-        // Calculate min and max scores for normalization
-        const rawScores = contributionScores.map((score: any) => score.adjustedScore || score.calculatedScore);
-        const minScore = Math.min(...rawScores);
-        const maxScore = Math.max(...rawScores);
-        const scoreRange = maxScore - minScore;
-        
-        // Function to normalize score to 0-10 scale
-        const normalizeScore = (rawScore: number): number => {
-          if (scoreRange === 0) return 5; // If all scores are the same, return middle value
-          return Math.min(10, Math.max(0, ((rawScore - minScore) / scoreRange) * 10));
-        };
+        // Scores are already normalized to 0-10 by the backend
+        const normalizedScores = contributionScores.map((score: any) => score.adjustedScore || score.calculatedScore);
         
         // Calculate unique groups - since API doesn't provide groupId, we'll use a placeholder
         const uniqueUsers = new Set(contributionScores.map((score: any) => score.userId));
@@ -89,9 +80,9 @@ class FinalAssessmentService {
           totalStudents: contributionScores.length,
           totalGroups: uniqueUsers.size, // Assuming each user is in a different group for now
           averageScore: contributionScores.length > 0 
-            ? contributionScores.reduce((sum: number, score: any) => sum + normalizeScore(score.adjustedScore || score.calculatedScore), 0) / contributionScores.length 
+            ? contributionScores.reduce((sum: number, score: any) => sum + (score.adjustedScore || score.calculatedScore), 0) / contributionScores.length 
             : 0,
-          freeriderCount: contributionScores.filter((score: any) => normalizeScore(score.adjustedScore || score.calculatedScore) < 4).length, // Scores below 4/10 are considered freeriders
+          freeriderCount: contributionScores.filter((score: any) => (score.adjustedScore || score.calculatedScore) < 4).length, // Scores below 4/10 are considered freeriders
           assessmentStatus: contributionScores.some((score: any) => score.isFinal) ? 'FINALIZED' : 'DRAFT',
           students: contributionScores.map((score: any) => ({
             id: score.id,
@@ -103,16 +94,16 @@ class FinalAssessmentService {
             groupName: `Group ${score.userId}`, // Placeholder group name
             taskScore: score.taskCompletionScore || 0,
             peerReviewScore: score.peerReviewScore || 0,
-            commitScore: score.commitCount || 0, // Using commitCount as commitScore
+            commitScore: score.codeContributionScore || 0, // Use normalized code contribution score
             latePenalty: score.lateTaskCount || 0, // Using lateTaskCount as penalty
-            finalScore: normalizeScore(score.adjustedScore || score.calculatedScore), // Normalize to 0-10 scale
-            contributionPercentage: scoreRange === 0 ? 50 : Math.min(100, Math.max(0, ((score.adjustedScore || score.calculatedScore - minScore) / scoreRange) * 100)),
-            isFreerider: normalizeScore(score.adjustedScore || score.calculatedScore) < 4, // Threshold for freerider on normalized scale
+            finalScore: score.adjustedScore || score.calculatedScore, // Already normalized to 0-10
+            contributionPercentage: ((score.adjustedScore || score.calculatedScore) / 10) * 100, // Convert 0-10 to percentage
+            isFreerider: (score.adjustedScore || score.calculatedScore) < 4, // Threshold for freerider on normalized scale
             lastUpdated: score.updatedAt || new Date().toISOString(),
-            // Store original score for adjustment calculations
+            // Store original score for adjustment calculations (already normalized)
             _originalScore: score.adjustedScore || score.calculatedScore,
-            _minScore: minScore,
-            _maxScore: maxScore
+            _minScore: 0, // Always 0 in normalized system
+            _maxScore: 10 // Always 10 in normalized system
           }))
         };
         
@@ -151,31 +142,7 @@ class FinalAssessmentService {
     adjustment: ScoreAdjustment
   ): Promise<{ success: boolean; data?: StudentScore; message?: string }> {
     try {
-      // First get current assessment data to get min/max values
-      const assessmentResponse = await this.getProjectAssessment(projectId);
-      if (!assessmentResponse.success || !assessmentResponse.data) {
-        return { success: false, message: 'Failed to get current assessment data' };
-      }
-      
-      const currentStudent = assessmentResponse.data.students.find(s => s.studentId === studentId);
-      if (!currentStudent) {
-        return { success: false, message: 'Student not found in assessment' };
-      }
-      
-      // Convert the new score from 0-10 scale back to original scale using min-max
-      const minScore = currentStudent._minScore;
-      const maxScore = currentStudent._maxScore;
-      const scoreRange = maxScore - minScore;
-      
-      let adjustedScoreInOriginalScale: number;
-      if (scoreRange === 0) {
-        // If all scores are the same, keep the original score
-        adjustedScoreInOriginalScale = currentStudent._originalScore;
-      } else {
-        // Convert from 0-10 scale back to original scale
-        adjustedScoreInOriginalScale = minScore + (adjustment.newScore / 10) * scoreRange;
-      }
-      
+      // In the normalized system, scores are already 0-10, so we can use the adjustment directly
       const scoresResponse = await axios.get(
         `${API_BASE_URL}/contribution-scores/projects/${projectId}`,
         { headers: this.getAuthHeaders() }
@@ -190,37 +157,48 @@ class FinalAssessmentService {
         return { success: false, message: 'Student score not found' };
       }
       
+      // Use the adjustment score directly since we're working in 0-10 scale
       const response = await axios.put(
         `${API_BASE_URL}/contribution-scores/${studentScore.id}/adjust`,
         {
-          adjustedScore: adjustedScoreInOriginalScale,
+          adjustedScore: adjustment.newScore, // Direct use of 0-10 scale score
           adjustmentReason: adjustment.adjustmentReason
         },
         { headers: this.getAuthHeaders() }
       );
       
       if (response.data.success) {
-        toast({
-          title: "Success",
-          description: "Student score adjusted successfully",
-        });
-        
-        // Return updated assessment data
-        const updatedAssessment = await this.getProjectAssessment(projectId);
-        if (updatedAssessment.success && updatedAssessment.data) {
-          const updatedStudent = updatedAssessment.data.students.find(s => s.studentId === studentId);
-          if (updatedStudent) {
-            return { success: true, data: updatedStudent };
+        // Convert response back to expected format
+        const updatedScore = response.data.data;
+        return {
+          success: true,
+          data: {
+            id: updatedScore.id,
+            studentId: updatedScore.userId,
+            studentName: updatedScore.fullName,
+            studentEmail: updatedScore.email,
+            studentAvatar: undefined,
+            groupId: updatedScore.userId,
+            groupName: `Group ${updatedScore.userId}`,
+            taskScore: updatedScore.taskCompletionScore || 0,
+            peerReviewScore: updatedScore.peerReviewScore || 0,
+            commitScore: updatedScore.codeContributionScore || 0,
+            latePenalty: updatedScore.lateTaskCount || 0,
+            finalScore: updatedScore.adjustedScore || updatedScore.calculatedScore,
+            contributionPercentage: ((updatedScore.adjustedScore || updatedScore.calculatedScore) / 10) * 100,
+            isFreerider: (updatedScore.adjustedScore || updatedScore.calculatedScore) < 4,
+            lastUpdated: updatedScore.updatedAt || new Date().toISOString(),
+            _originalScore: updatedScore.adjustedScore || updatedScore.calculatedScore,
+            _minScore: 0,
+            _maxScore: 10
           }
-        }
-        
-        return { success: true };
+        };
       } else {
-        return { success: false, message: response.data.message };
+        return { success: false, message: response.data.message || 'Failed to adjust score' };
       }
     } catch (error: any) {
-      console.error('Error adjusting student score:', error);
-      const message = error.response?.data?.message || 'Failed to adjust student score';
+      console.error('Error adjusting score:', error);
+      const message = error.response?.data?.message || 'Failed to adjust score';
       toast({
         title: "Error",
         description: message,

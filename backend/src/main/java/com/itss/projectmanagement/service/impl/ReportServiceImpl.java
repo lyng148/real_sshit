@@ -104,7 +104,7 @@ public class ReportServiceImpl implements IReportService {
         long count = 0L;
         // Count commits by task assignee
         for (Group group : groups) {
-            List<CommitRecord> groupCommits = commitRecordRepository.findByGroupAndIsValid(group, true);
+            List<CommitRecord> groupCommits = commitRecordRepository.findByGroupAndValid(group, true);
             for (CommitRecord commit : groupCommits) {
                 if (commit.getTask() != null && commit.getTask().getAssignee() != null &&
                     commit.getTask().getAssignee().getId().equals(member.getId())) {

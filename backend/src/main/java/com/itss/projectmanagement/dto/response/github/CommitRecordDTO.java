@@ -29,4 +29,6 @@ public class CommitRecordDTO {
     private String taskName;
     private boolean isValid;
     private LocalDateTime createdAt;
+    private Integer additions;      // Number of lines added
+    private Integer deletions;      // Number of lines deleted  
 }

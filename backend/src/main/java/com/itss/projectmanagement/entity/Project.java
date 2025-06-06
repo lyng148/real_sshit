@@ -1,6 +1,7 @@
 package com.itss.projectmanagement.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.AssertTrue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -42,22 +43,22 @@ public class Project extends BaseEntity {
     @Column(length = 1000)
     private String evaluationCriteria;
     
-    // Weights for contribution score calculation
+    // Weights for contribution score calculation - MUST sum to 1.0
     @Column(nullable = false)
     @Builder.Default
-    private Double weightW1 = 0.4; // Default weight for task completion
+    private Double weightW1 = 0.5; // Default weight for task completion (50%)
     
     @Column(nullable = false)
     @Builder.Default
-    private Double weightW2 = 0.3; // Default weight for peer review
+    private Double weightW2 = 0.3; // Default weight for peer review (30%)
     
     @Column(nullable = false)
     @Builder.Default
-    private Double weightW3 = 0.2; // Default weight for commits
+    private Double weightW3 = 0.2; // Default weight for code contribution (20%)
     
     @Column(nullable = false)
     @Builder.Default
-    private Double weightW4 = 0.1; // Default weight for late tasks
+    private Double weightW4 = 0.1; // Independent penalty weight for late tasks
     
     // Threshold for detecting free-riders (percentage of average group score)
     @Column(nullable = false)
@@ -100,4 +101,26 @@ public class Project extends BaseEntity {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<ProjectStudent> projectStudents = new HashSet<>();
+    
+    /**
+     * Validation to ensure W1 + W2 + W3 = 1.0 for normalized scoring
+     */
+    @AssertTrue(message = "Weight factors W1, W2, W3 must sum to 1.0 for normalized scoring")
+    public boolean isWeightSumValid() {
+        if (weightW1 == null || weightW2 == null || weightW3 == null) {
+            return false;
+        }
+        double sum = weightW1 + weightW2 + weightW3;
+        // Allow small floating point tolerance
+        return Math.abs(sum - 1.0) < 0.001;
+    }
+    
+    /**
+     * Validation to ensure W4 (penalty factor) is non-negative
+     * W4 should not be negative as it's a penalty that reduces scores
+     */
+    @AssertTrue(message = "Weight factor W4 (penalty) must be non-negative")
+    public boolean isW4Valid() {
+        return weightW4 != null && weightW4 >= 0.0;
+    }
 }
