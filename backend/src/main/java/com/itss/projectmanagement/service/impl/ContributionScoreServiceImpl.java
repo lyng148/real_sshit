@@ -242,39 +242,11 @@ public class ContributionScoreServiceImpl implements IContributionScoreService {
             // For debugging, show details of each commit
             for (CommitRecord commit : commits) {
                 log.info("Task {} - Commit detail: id={}, message={}, isValid={}, taskId={}", 
-                        task.getId(), commit.getId(), commit.getMessage(), commit.isValid(), commit.getTaskId());
+                        task.getId(), commit.getId(), commit.getMessage(), commit.isValid(), commit.getTask().getId());
             }
         }
         
-        // Approach 2: Check commits by string taskId as well
-        long stringTaskIdCommitCount = 0;
-        for (Task task : userTasks) {
-            String taskIdStr = String.valueOf(task.getId());
-            
-            // Use direct repository method instead of loading all commits
-            List<CommitRecord> allCommits = commitRecordRepository.findAll();
-            List<CommitRecord> matchingCommits = allCommits.stream()
-                    .filter(commit -> commit.isValid() && 
-                            taskIdStr.equals(commit.getTaskId()) && 
-                            (commit.getTask() == null || !commit.getTask().getId().equals(task.getId())))
-                    .toList();
-            
-            log.info("Task ID {}: Found {} additional commits by string taskId", 
-                    task.getId(), matchingCommits.size());
-            
-            for (CommitRecord commit : matchingCommits) {
-                log.info("Additional commit for task {}: id={}, message={}, valid={}", 
-                        task.getId(), commit.getId(), commit.getMessage(), commit.isValid());
-            }
-            
-            stringTaskIdCommitCount += matchingCommits.size();
-        }
-        
-        long totalCommitCount = directCommitCount + stringTaskIdCommitCount;
-        log.info("Total commit count for user {}: {} (direct: {}, by string: {})",
-                user.getUsername(), totalCommitCount, directCommitCount, stringTaskIdCommitCount);
-        
-        return totalCommitCount;
+        return directCommitCount;
     }
     
     /**
