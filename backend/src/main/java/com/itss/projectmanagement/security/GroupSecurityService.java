@@ -4,7 +4,9 @@ import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.User;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.UserRepository;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,17 +25,16 @@ public class GroupSecurityService {
     /**
      * Check if a user is the leader of a specific group
      * 
-     * @param user The authenticated user
      * @param groupId The group ID to check
      * @return true if the user is the leader of the group, false otherwise
      */
-    public boolean isGroupLeader(Object user, Long groupId) {
+    public boolean isGroupLeader(Long groupId) {
+        User user = SecurityUtils.getCurrentUser();
         if (user == null || groupId == null) {
             return false;
         }
 
         try {
-            User authenticatedUser = (User) user;
             Optional<Group> groupOpt = groupRepository.findById(groupId);
             
             if (groupOpt.isEmpty()) {
@@ -42,7 +43,7 @@ public class GroupSecurityService {
             
             Group group = groupOpt.get();
             return group.getLeader() != null && 
-                   group.getLeader().getId().equals(authenticatedUser.getId());
+                   group.getLeader().getId().equals(user.getId());
         } catch (ClassCastException e) {
             return false;
         }

@@ -39,7 +39,7 @@ public class TaskController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "Not authorized to create tasks")
     })
     @PostMapping
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @groupSecurityService.isGroupLeader(authentication.principal, #request.groupId)")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or @groupSecurityService.isGroupLeader(#request.groupId)")
     public ResponseEntity<ApiResponse<TaskResponse>> createTask(@Valid @RequestBody TaskCreateRequest request) {
         TaskResponse createdTask = taskService.createTask(request);
         
@@ -59,7 +59,7 @@ public class TaskController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Task not found")
     })
     @PutMapping("/{taskId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(authentication.principal, #taskId)")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(#taskId)")
     public ResponseEntity<ApiResponse<TaskResponse>> updateTask(
             @Parameter(description = "ID of the task to update") @PathVariable Long taskId,
             @Valid @RequestBody TaskCreateRequest request) {
@@ -123,7 +123,7 @@ public class TaskController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Task not found")
     })
     @DeleteMapping("/{taskId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(authentication.principal, #taskId)")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(#taskId)")
     public ResponseEntity<ApiResponse<Void>> deleteTask(
             @Parameter(description = "ID of the task to delete") @PathVariable Long taskId) {
         taskService.deleteTask(taskId);
@@ -144,7 +144,7 @@ public class TaskController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "Task or user not found")
     })
     @PutMapping("/{taskId}/assign/{assigneeId}")
-    @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(authentication.principal, #taskId)")
+    @PreAuthorize("hasAuthority('INSTRUCTOR') or @taskSecurityService.isTaskGroupLeader(#taskId)")
     public ResponseEntity<ApiResponse<TaskResponse>> assignTask(
             @Parameter(description = "ID of the task to assign") @PathVariable Long taskId,
             @Parameter(description = "ID of the user to assign the task to") @PathVariable Long assigneeId) {

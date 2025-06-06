@@ -21,17 +21,16 @@ public class TaskSecurityService {
     /**
      * Check if a user is the leader of the group that a task belongs to
      * 
-     * @param user The authenticated user
      * @param taskId The task ID to check
      * @return true if the user is the leader of the group that owns the task, false otherwise
      */
-    public boolean isTaskGroupLeader(Object user, Long taskId) {
+    public boolean isTaskGroupLeader(Long taskId) {
+        User user = SecurityUtils.getCurrentUser();
         if (user == null || taskId == null) {
             return false;
         }
 
         try {
-            User authenticatedUser = (User) user;
             Optional<Task> taskOpt = taskRepository.findById(taskId);
             
             if (taskOpt.isEmpty()) {
@@ -40,7 +39,7 @@ public class TaskSecurityService {
             
             Task task = taskOpt.get();
             return task.getGroup().getLeader() != null && 
-                   task.getGroup().getLeader().getId().equals(authenticatedUser.getId());
+                   task.getGroup().getLeader().getId().equals(user.getId());
         } catch (ClassCastException e) {
             return false;
         }
@@ -52,7 +51,6 @@ public class TaskSecurityService {
      * - The user is assigned to the task
      * - The user is a member of the group that owns the task
      * 
-     * @param user The authenticated user
      * @param taskId The task ID to check
      * @return true if the user can view the task, false otherwise
      */

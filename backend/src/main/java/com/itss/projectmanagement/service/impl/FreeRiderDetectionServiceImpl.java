@@ -309,7 +309,7 @@ public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService
 
         List<PeerReview> reviews = peerReviewRepository.findByRevieweeAndProject(user, project);
         int lowRatings           = (int) reviews.stream()
-                .filter(r -> r.getScore() < 3 && r.getIsCompleted() && r.getIsValid())
+                .filter(r -> (r.getCalculatedScore()) < 3 && r.getIsCompleted() && r.getIsValid())
                 .count();
 
         List<String> feedback = reviews.stream()

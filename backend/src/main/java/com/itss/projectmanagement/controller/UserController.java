@@ -200,6 +200,14 @@ public class UserController {
             existingUser.setEnabled(request.getEnabled());
         }
 
+        if (request.getRoles() != null && !request.getRoles().isEmpty()) {
+            // Only admins can update roles
+            if (!SecurityUtils.isAdmin()) {
+                throw new ForbiddenException("Only admins can update user roles");
+            }
+            existingUser.setRoles(request.getRoles());
+        }
+
         User updatedUser = userService.updateUser(existingUser);
         UserDTO userDTO = userConverter.toDTO(updatedUser);
         

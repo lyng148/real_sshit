@@ -32,7 +32,7 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
      */
     List<PeerReview> findByIsCompletedFalseAndCheckNotifiedFalseAndAssignedAtBefore(LocalDateTime cutoffTime);
 
-    @Query("SELECT AVG(pr.score) FROM PeerReview pr WHERE pr.reviewee = :reviewee AND pr.project = :project AND pr.isValid = true AND pr.isCompleted = true")
+    @Query("SELECT AVG((pr.completionScore + pr.cooperationScore) / 2.0) FROM PeerReview pr WHERE pr.reviewee = :reviewee AND pr.project = :project AND pr.isValid = true AND pr.isCompleted = true")
     Double findAverageScoreByRevieweeAndProject(@Param("reviewee") User reviewee, @Param("project") Project project);
 
     @Query("SELECT COUNT(pr) FROM PeerReview pr WHERE pr.reviewer = :user AND pr.project = :project AND pr.isCompleted = true")
@@ -88,7 +88,7 @@ public interface PeerReviewRepository extends JpaRepository<PeerReview, Long> {
     /**
      * Find average score across all reviews in a project
      */
-    @Query("SELECT AVG(pr.score) FROM PeerReview pr WHERE pr.project = :project AND pr.isValid = true AND pr.isCompleted = true")
+    @Query("SELECT AVG((pr.completionScore + pr.cooperationScore) / 2.0) FROM PeerReview pr WHERE pr.project = :project AND pr.isValid = true AND pr.isCompleted = true")
     Double findAverageScoreByProject(@Param("project") Project project);
     
     /**

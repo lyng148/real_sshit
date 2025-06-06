@@ -4,6 +4,7 @@ import com.itss.projectmanagement.entity.Group;
 import com.itss.projectmanagement.entity.Project;
 import com.itss.projectmanagement.repository.GroupRepository;
 import com.itss.projectmanagement.repository.ProjectRepository;
+import com.itss.projectmanagement.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -63,11 +64,11 @@ public class SecurityService {
     /**
      * Checks if a user is a member of a specific group
      * 
-     * @param userId The ID of the user to check
      * @param groupId The ID of the group
      * @return True if the user is a member of the group
      */
-    public boolean isGroupMember(Long userId, Long groupId) {
+    public boolean isGroupMember(Long groupId) {
+        Long userId = SecurityUtils.getCurrentUserId();
         Optional<Group> group = groupRepository.findById(groupId);
         return group.filter(value -> value.getMembers().stream()
                 .anyMatch(member -> member.getId().equals(userId)) ||

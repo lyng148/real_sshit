@@ -217,6 +217,13 @@ public class TaskServiceImpl implements ITaskService {
 
         // check if current user is not the assignee or group leader
         User user = SecurityUtils.getCurrentUser();
+
+        // handle when task don't have assignee
+        if (task.getAssignee() == null) {
+            throw new IllegalArgumentException("Task has no assignee");
+        }
+
+        // Ensure user is authenticated
         if (!task.getAssignee().getId().equals(user.getId()) && !task.getGroup().getLeader().getId().equals(user.getId())) {
             throw new IllegalArgumentException("You do not have permission to update this task's status");
         }

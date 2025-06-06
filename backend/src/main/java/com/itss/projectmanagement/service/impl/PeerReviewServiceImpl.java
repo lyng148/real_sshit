@@ -64,10 +64,8 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
         for (PeerReview existingReview : existingReviews) {
             if (existingReview.getReviewee().getId().equals(request.getRevieweeId())) {
                 // Update existing review
-                Double averageScore = (request.getCompletionScore() + request.getCooperationScore()) / 2.0;
                 existingReview.setCompletionScore(request.getCompletionScore());
                 existingReview.setCooperationScore(request.getCooperationScore());
-                existingReview.setScore(averageScore);
                 existingReview.setComment(request.getComment());
                 existingReview.setIsCompleted(true);
                 
@@ -196,7 +194,6 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
                                 .reviewee(reviewee)
                                 .project(project)
                                 .reviewWeek(weekNumber)
-                                .score(1.0)
                                 .completionScore(1.0)
                                 .cooperationScore(1.0)
                                 .build();
@@ -311,7 +308,6 @@ public class PeerReviewServiceImpl implements IPeerReviewService {
                             .reviewee(reviewee)
                             .project(project)
                             .reviewWeek(weekNumber)
-                            .score(1.0)
                             .completionScore(1.0)
                             .cooperationScore(1.0)
                             .build();

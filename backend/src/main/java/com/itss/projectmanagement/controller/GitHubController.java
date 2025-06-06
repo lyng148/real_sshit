@@ -52,7 +52,7 @@ public class GitHubController {
     }
     
     @GetMapping("/commits/group/{groupId}")
-    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @securityService.isGroupMember(authentication.principal.id, #groupId)")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @securityService.isGroupMember(#groupId)")
     @Operation(summary = "Get all commits for a group", 
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<ApiResponse<List<CommitRecordDTO>>> getCommitsByGroup(@PathVariable Long groupId) {

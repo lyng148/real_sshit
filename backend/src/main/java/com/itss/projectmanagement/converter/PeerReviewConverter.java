@@ -21,9 +21,6 @@ public class PeerReviewConverter {
     private UserConverter userConverter;
 
     public PeerReview toEntity(PeerReviewRequest request, User reviewer, User reviewee, Project project) {
-        // Calculate the average score from completion and cooperation scores
-        Double averageScore = (request.getCompletionScore() + request.getCooperationScore()) / 2.0;
-        
         // Calculate current week number for tracking review periods
         int weekNumber = LocalDate.now().get(WeekFields.of(Locale.getDefault()).weekOfWeekBasedYear());
         
@@ -31,7 +28,6 @@ public class PeerReviewConverter {
                 .reviewer(reviewer)
                 .reviewee(reviewee)
                 .project(project)
-                .score(averageScore)
                 .completionScore(request.getCompletionScore())
                 .cooperationScore(request.getCooperationScore())
                 .reviewWeek(weekNumber)
@@ -47,7 +43,7 @@ public class PeerReviewConverter {
                 .reviewee(userConverter.toSummaryDTO(peerReview.getReviewee()))
                 .projectId(peerReview.getProject().getId())
                 .projectName(peerReview.getProject().getName())
-                .score(peerReview.getScore())
+                .score(peerReview.getCalculatedScore())
                 .completionScore(peerReview.getCompletionScore())
                 .cooperationScore(peerReview.getCooperationScore())
                 .reviewWeek(peerReview.getReviewWeek())
