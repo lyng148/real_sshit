@@ -109,7 +109,7 @@ export interface GroupTaskStatistics {
 export interface ContributionFactors {
   taskCompletion: number;
   peerReview: number;
-  commitCount: number;
+  codeContributionScore: number;
   lateTaskCount: number;
 }
 

@@ -91,6 +91,7 @@ public class User extends BaseEntity implements UserDetails {
     }
       
     @OneToMany(mappedBy = "student", fetch = FetchType.LAZY)
+    @JsonIgnore
     @Builder.Default
     private Set<FreeRiderCase> freeRiderCases = new java.util.HashSet<>();
 

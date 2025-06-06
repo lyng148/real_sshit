@@ -247,7 +247,8 @@ public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService
 
     private void appendMemberLine(StringBuilder sb, User user, double score, double avg, double threshold) {
         double percent = avg > 0 ? (score / avg) * 100 : 0;
-        String status  = percent < threshold * 100 ? "CÓ RỦI RO CAO" : percent < 70 ? "CÓ RỦI RO" : "BÌNH THƯỜNG";
+        String status  = percent < threshold * 100 ? "CÓ RỦI RO CAO" : 
+                        percent < 70 ? "CÓ RỦI RO" : "BÌNH THƯỜNG";
         sb.append(String.format("%-30s %-15.2f %-15.2f %-15s\n", user.getUsername(), score, percent, status));
     }
 
@@ -286,7 +287,7 @@ public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService
 
     private Map<String, Object> collectCommitEvidence(User user, Project project) {
         Map<String, Object> map = new HashMap<>();
-        long userCommits = commitRecordRepository.countByProjectIdAndAuthorEmailAndIsValidTrue(project.getId(), user.getEmail());
+        long userCommits = commitRecordRepository.countByProjectIdAndAuthorEmailAndValidTrue(project.getId(), user.getEmail());
 
         List<User> others = groupRepository.findByProject(project).stream()
                 .flatMap(g -> getGroupMembers(g).stream())
@@ -295,7 +296,7 @@ public class FreeRiderDetectionServiceImpl implements IFreeRiderDetectionService
                 .toList();
 
         double avgCommits = others.stream()
-                .mapToLong(u -> commitRecordRepository.countByProjectIdAndAuthorEmailAndIsValidTrue(project.getId(), u.getEmail()))
+                .mapToLong(u -> commitRecordRepository.countByProjectIdAndAuthorEmailAndValidTrue(project.getId(), u.getEmail()))
                 .average().orElse(0d);
 
         map.put("totalCommits", userCommits);

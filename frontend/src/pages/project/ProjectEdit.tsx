@@ -80,10 +80,10 @@ const ProjectEdit = () => {
     description: '',
     maxMembers: 4,
     evaluationCriteria: '',
-    weightW1: 25,
-    weightW2: 25,
-    weightW3: 25,
-    weightW4: 25,
+    weightW1: 50,  // 50% (0.5 normalized)
+    weightW2: 30,  // 30% (0.3 normalized)
+    weightW3: 20,  // 20% (0.2 normalized)
+    weightW4: 10,  // 10% penalty (0.1 normalized)
     freeriderThreshold: 50,
     pressureThreshold: 70,
   });
@@ -140,8 +140,45 @@ const ProjectEdit = () => {
       [name]: type === 'number' ? Number(value) : value
     }));
   };
+  
+  // Validation helper for weight sum
+  const validateWeightSum = () => {
+    const w1 = parseFloat(formData.weightW1) || 0;
+    const w2 = parseFloat(formData.weightW2) || 0;
+    const w3 = parseFloat(formData.weightW3) || 0;
+    const sum = w1 + w2 + w3;
+    return !isNaN(sum) && Math.abs(sum - 100) < 0.1; // Allow small floating point tolerance
+  };
+  
+  const getWeightSumError = () => {
+    const w1 = parseFloat(formData.weightW1) || 0;
+    const w2 = parseFloat(formData.weightW2) || 0;
+    const w3 = parseFloat(formData.weightW3) || 0;
+    const sum = w1 + w2 + w3;
+    
+    if (isNaN(sum)) {
+      return "Invalid weight values detected";
+    }
+    
+    if (Math.abs(sum - 100) >= 0.1) {
+      return `W1 + W2 + W3 must equal 100% (current: ${sum.toFixed(1)}%)`;
+    }
+    return null;
+  };
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate weight sum before submission
+    if (!validateWeightSum()) {
+      toast({
+        title: "Validation Error",
+        description: getWeightSumError(),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -293,37 +330,97 @@ const ProjectEdit = () => {
                   />
                 </div>
                 {/* Additional fields for weight factors and detection thresholds */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="weightW1">Weight Factor W1 (%)</Label>
-                    <Input type="number" id="weightW1" name="weightW1" value={formData.weightW1} onChange={handleChange} step="0.1" min="0" max="100" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weightW2">Weight Factor W2 (%)</Label>
-                    <Input type="number" id="weightW2" name="weightW2" value={formData.weightW2} onChange={handleChange} step="0.1" min="0" max="100" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weightW3">Weight Factor W3 (%)</Label>
-                    <Input type="number" id="weightW3" name="weightW3" value={formData.weightW3} onChange={handleChange} step="0.1" min="0" max="100" required />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="weightW4">Weight Factor W4 (%)</Label>
-                    <Input type="number" id="weightW4" name="weightW4" value={formData.weightW4} onChange={handleChange} step="0.1" min="0" max="100" required />
-                  </div>
-                </div>                <div className="space-y-2">
+                {/* Weight Factors Section */}
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 border border-purple-100">
                   <LabelWithTooltip 
-                    htmlFor="freeriderThreshold" 
-                    label="Free Rider Detection Threshold (%)"
-                    tooltipText="A contribution score below this percentage of the average contribution score of the team will flag a member as a potential free-rider. Value should be between 0-100%."
+                    htmlFor="weightFactors"
+                    label="⚖️ Normalized Weight Configuration"
+                    tooltipText="Each component is normalized to 0-10 scale, then weighted. Final Score = W1*TaskCompletion + W2*PeerReview + W3*CodeContribution - W4*LateTasks (0-10 scale)"
                   />
-                  <Input type="number" id="freeriderThreshold" name="freeriderThreshold" value={formData.freeriderThreshold} onChange={handleChange} step="1" min="0" max="100" required />
-                </div>                <div className="space-y-2">
-                  <LabelWithTooltip
-                    htmlFor="pressureThreshold"
-                    label="Pressure Score Threshold"
-                    tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload. The system monitors task assignments and deadlines to calculate pressure scores."
-                  />
-                  <Input type="number" id="pressureThreshold" name="pressureThreshold" value={formData.pressureThreshold} onChange={handleChange} min="1" required />
+                  <p className="text-sm text-gray-600 mt-2 mb-4">
+                    <strong>Important:</strong> W1 + W2 + W3 must equal 100% for normalized scoring. Each component is scaled to 0-10 within the project.
+                  </p>
+                  
+                  {/* Weight Sum Indicator */}
+                  <div className={`mb-4 p-3 rounded-lg border ${
+                    validateWeightSum() 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        Weight Sum: {(() => {
+                          const w1 = parseFloat(formData.weightW1) || 0;
+                          const w2 = parseFloat(formData.weightW2) || 0;
+                          const w3 = parseFloat(formData.weightW3) || 0;
+                          const sum = w1 + w2 + w3;
+                          return isNaN(sum) ? '0.0' : sum.toFixed(1);
+                        })()}%
+                      </span>
+                      <span className="text-sm">
+                        {validateWeightSum() ? '✅ Valid' : '❌ Must equal 100%'}
+                      </span>
+                    </div>
+                    {!validateWeightSum() && (
+                      <p className="text-sm mt-1">{getWeightSumError()}</p>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="weightW1">W1: Task Completion (%) <span className="text-red-500">*</span></Label>
+                      <Input type="number" id="weightW1" name="weightW1" value={formData.weightW1} onChange={handleChange} step="0.1" min="0" max="100" required />
+                      <p className="text-xs text-gray-500">Weighted by task difficulty (Easy=1, Medium=2, Hard=3)</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weightW2">W2: Peer Review (%) <span className="text-red-500">*</span></Label>
+                      <Input type="number" id="weightW2" name="weightW2" value={formData.weightW2} onChange={handleChange} step="0.1" min="0" max="100" required />
+                      <p className="text-xs text-gray-500">Average peer evaluation score</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weightW3">W3: Code Contribution (%) <span className="text-red-500">*</span></Label>
+                      <Input type="number" id="weightW3" name="weightW3" value={formData.weightW3} onChange={handleChange} step="0.1" min="0" max="100" required />
+                      <p className="text-xs text-gray-500">Line-based: (additions×1.0) + (deletions×1.25)</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="weightW4">W4: Late Task Penalty (%) <span className="text-red-500">*</span></Label>
+                      <Input type="number" id="weightW4" name="weightW4" value={formData.weightW4} onChange={handleChange} step="0.1" min="0" max="100" required />
+                      <p className="text-xs text-gray-500">Independent penalty factor (per late task)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-blue-800">
+                      <strong>🔍 How it works:</strong> Each component (Task, Peer, Code) is normalized to 0-10 scale within your project using Min-Max scaling. 
+                      Then weighted according to your percentages. Final scores range 0-10.
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Advanced Settings Section */}
+                <div className="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-6 border border-yellow-100">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    🔧 Advanced Settings
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <LabelWithTooltip 
+                        htmlFor="freeriderThreshold" 
+                        label="Free-rider Detection Threshold (%) *"
+                        tooltipText="Contribution score below this threshold compared to team average will be marked as potential Free-rider."
+                      />
+                      <Input type="number" id="freeriderThreshold" name="freeriderThreshold" value={formData.freeriderThreshold} onChange={handleChange} step="1" min="0" max="100" required />
+                    </div>
+                    <div className="space-y-2">
+                      <LabelWithTooltip
+                        htmlFor="pressureThreshold"
+                        label="Pressure Score Threshold *"
+                        tooltipText="When a member's pressure score exceeds this threshold, they will receive warnings about potential overload."
+                      />
+                      <Input type="number" id="pressureThreshold" name="pressureThreshold" value={formData.pressureThreshold} onChange={handleChange} min="1" required />
+                    </div>
+                  </div>
                 </div>
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "Updating..." : "Update Project"}

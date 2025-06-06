@@ -312,10 +312,10 @@ const ProjectDetails: React.FC = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <BarChart className="h-5 w-5" />
-                    Weight Factors
+                    Normalized Weight Factors
                   </CardTitle>
                   <CardDescription>
-                    Calculation method for member contribution points
+                    Components are normalized to 0-10 scale using Min-Max scaling within the project
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -335,7 +335,7 @@ const ProjectDetails: React.FC = () => {
                     </div>
                     
                     <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg border border-purple-200">
-                      <span className="font-medium text-purple-800">W3: Commit Count</span>
+                      <span className="font-medium text-purple-800">W3: Code Contribution</span>
                       <Badge variant="secondary" className="bg-purple-200 text-purple-800">
                         {(project.weightW3 * 100).toFixed(1)}%
                       </Badge>
@@ -349,9 +349,32 @@ const ProjectDetails: React.FC = () => {
                     </div>
                   </div>
                   
+                  {/* Weight Sum Validation Display */}
+                  <div className={`mt-4 p-3 rounded-lg border ${
+                    Math.abs((project.weightW1 + project.weightW2 + project.weightW3) - 1.0) < 0.001 
+                      ? 'bg-green-50 border-green-200' 
+                      : 'bg-red-50 border-red-200'
+                  }`}>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium">
+                        Core Weights Sum: {((project.weightW1 + project.weightW2 + project.weightW3) * 100).toFixed(1)}%
+                      </span>
+                      <span className={
+                        Math.abs((project.weightW1 + project.weightW2 + project.weightW3) - 1.0) < 0.001 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }>
+                        {Math.abs((project.weightW1 + project.weightW2 + project.weightW3) - 1.0) < 0.001 ? '✅ Valid' : '❌ Invalid'}
+                      </span>
+                    </div>
+                  </div>
+                  
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
                     <p className="text-sm text-gray-600 text-center">
-                      <strong>Formula:</strong> Score = W1×Task + W2×Peer Review + W3×Commit - W4×Late Task
+                      <strong>Formula:</strong> Score = W1×TaskNorm + W2×PeerNorm + W3×CodeNorm - W4×LateTasks
+                    </p>
+                    <p className="text-xs text-gray-500 text-center mt-1">
+                      Each component normalized to 0-10 scale | Final score: 0-10 range
                     </p>
                   </div>
                 </CardContent>

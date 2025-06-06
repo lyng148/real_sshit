@@ -462,11 +462,11 @@ const GroupAnalyzePage: React.FC = () => {
                             <TableCell>{member.completedTasks}</TableCell>
                             <TableCell>
                               <span className={`font-medium ${
-                                member.contributionScore >= 80 ? 'text-green-600' : 
-                                member.contributionScore >= 50 ? 'text-yellow-600' : 
+                                member.contributionScore >= 7 ? 'text-green-600' : 
+                                member.contributionScore >= 4 ? 'text-yellow-600' : 
                                 'text-red-600'
                               }`}>
-                                {member.contributionScore}
+                                {member.contributionScore.toFixed(1)}
                               </span>
                             </TableCell>
                           </TableRow>
@@ -563,10 +563,10 @@ const GroupAnalyzePage: React.FC = () => {
                         >
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                          <YAxis domain={[0, 100]} />
-                          <Tooltip />
+                          <YAxis domain={[0, 10]} />
+                          <Tooltip formatter={(value) => [`${value.toFixed(1)}`, 'Normalized Score (0-10)']} />
                           <Legend />
-                          <Bar name="Contribution Score" dataKey="contribution" fill="#3B82F6" />
+                          <Bar name="Normalized Contribution Score" dataKey="contribution" fill="#3B82F6" />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -576,7 +576,7 @@ const GroupAnalyzePage: React.FC = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle>Contribution Score Factors</CardTitle>
-                    <CardDescription>Breakdown of factors contributing to scores</CardDescription>
+                    <CardDescription>Breakdown of factors contributing to scores (0-10 scale)</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <Table>
@@ -585,7 +585,7 @@ const GroupAnalyzePage: React.FC = () => {
                           <TableHead>Member</TableHead>
                           <TableHead>Task Completion</TableHead>
                           <TableHead>Peer Review</TableHead>
-                          <TableHead>Commits</TableHead>
+                          <TableHead>Code Score</TableHead>
                           <TableHead>Late Tasks</TableHead>
                           <TableHead>Total</TableHead>
                         </TableRow>
@@ -594,15 +594,16 @@ const GroupAnalyzePage: React.FC = () => {
                         {statistics?.memberContributions?.map((member, index) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.contributionFactors.taskCompletion}</TableCell>
-                            <TableCell>{member.contributionFactors.peerReview}</TableCell>
-                            <TableCell>{member.contributionFactors.commitCount}</TableCell>
+                            <TableCell>{member.contributionFactors.taskCompletion.toFixed(1)}</TableCell>
+                            <TableCell>{member.contributionFactors.peerReview.toFixed(1)}</TableCell>
+                            <TableCell>{member.contributionFactors.codeContributionScore.toFixed(1)}</TableCell>
                             <TableCell>{member.contributionFactors.lateTaskCount}</TableCell>
-                            <TableCell className="font-bold">{member.contributionScore}</TableCell>
+                            <TableCell className="font-bold">{member.contributionScore.toFixed(1)}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
-                    </Table>                  </CardContent>
+                    </Table>
+                  </CardContent>
                 </Card>
               </TabsContent>
               

@@ -242,7 +242,7 @@ public class ProjectController {
     @PostMapping("/{id}/invite")
     @PreAuthorize("hasAuthority('INSTRUCTOR') or hasAuthority('ADMIN')")
     public ResponseEntity<ApiResponse<List<String>>> inviteStudentsToProject(
-            @Parameter(description = "ID of the project") @PathVariable Long id,
+            @Parameter(description = "ID of the project", required = true) @PathVariable Long id,
             @Valid @RequestBody ProjectInviteRequest request) {
         // Override the project ID from the path
         request.setProjectId(id);

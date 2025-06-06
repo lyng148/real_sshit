@@ -9,8 +9,24 @@ export const authService = {
       });
       
       if (response.data.data?.token) {
-        localStorage.setItem('user', JSON.stringify(response.data.data));
+        // Clean user data to avoid circular references
+        const userData = {
+          token: response.data.data.token,
+          user: {
+            id: response.data.data.user.id,
+            username: response.data.data.user.username,
+            fullName: response.data.data.user.fullName,
+            email: response.data.data.user.email,
+            roles: response.data.data.user.roles,
+            lastLoginAt: response.data.data.user.lastLoginAt,
+            avatarUrl: response.data.data.user.avatarUrl,
+            enabled: response.data.data.user.enabled
+          }
+        };
+        
+        localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('token', response.data.data.token);
+        localStorage.setItem('userId', response.data.data.user.id.toString());
       }
       
       return response.data;

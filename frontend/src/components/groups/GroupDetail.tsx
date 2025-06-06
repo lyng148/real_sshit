@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Users, BarChart, Calendar, List, Clock, Link as LinkIcon, GitBranch, UserSquare2, Settings, Eye, Star } from 'lucide-react';
+import { Users, BarChart, Calendar, List, Clock, Link as LinkIcon, GitBranch, UserSquare2, Settings, Eye, Star, RefreshCw } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +11,7 @@ import ReviewTriggerButton from '../peer-review/ReviewTriggerButton';
 import PeerReviewModal from '../peer-review/PeerReviewModal';
 import PeerReviewResults from '../peer-review/PeerReviewResults';
 import  peerReviewService  from '@/services/peerReviewService';
+import githubService from '@/services/githubService';
 
 
 interface GroupDetailProps {
@@ -44,6 +45,7 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
 }) => {
   const navigate = useNavigate();
   const [showPeerReviewModal, setShowPeerReviewModal] = useState(false);
+  const [isFetchingCommits, setIsFetchingCommits] = useState(false);
   const projectIdNumber = projectId ? parseInt(projectId, 10) : 0;
   // We handle peer review checks at the page level instead of component level
   // to avoid duplicate modals
@@ -57,6 +59,24 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
 
   // Check if user is a regular student (not admin or instructor)
   const isRegularStudent = !isAdmin && !isInstructor;
+  
+  // Check if current user is group leader
+  const currentUserId = parseInt(localStorage.getItem('userId') || '0', 10);
+  const isCurrentUserGroupLeader = group.leader.id === currentUserId;
+
+  // Handle fetch commits
+  const handleFetchCommits = async () => {
+    if (!group.repositoryUrl) {
+      return;
+    }
+    
+    setIsFetchingCommits(true);
+    try {
+      await githubService.triggerCommitSync(group.id);
+    } finally {
+      setIsFetchingCommits(false);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -104,6 +124,19 @@ const GroupDetail: React.FC<GroupDetailProps> = ({
                 <Eye className="h-4 w-4" />
                 View Members
               </Button>
+
+              {isCurrentUserGroupLeader && group.repositoryUrl && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleFetchCommits}
+                  disabled={isFetchingCommits}
+                  className="border-green-200 text-green-600 flex items-center gap-2 hover:bg-green-50"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isFetchingCommits ? 'animate-spin' : ''}`} />
+                  {isFetchingCommits ? 'Fetching...' : 'Fetch Commits'}
+                </Button>
+              )}
 
               {isRegularStudent && (
                 <ReviewTriggerButton 

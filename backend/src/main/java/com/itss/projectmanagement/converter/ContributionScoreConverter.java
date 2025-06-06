@@ -11,31 +11,34 @@ public class ContributionScoreConverter {
     
     /**
      * Convert a ContributionScore entity to response DTO
-     * @param score ContributionScore entity
+     * @param entity ContributionScore entity
      * @return ContributionScoreResponse DTO
      */
-    public ContributionScoreResponse toResponse(ContributionScore score) {
-        if (score == null) {
+    public ContributionScoreResponse toResponse(ContributionScore entity) {
+        if (entity == null) {
             return null;
         }
         
         return ContributionScoreResponse.builder()
-                .id(score.getId())
-                .userId(score.getUser().getId())
-                .username(score.getUser().getUsername())
-                .fullName(score.getUser().getFullName())
-                .email(score.getUser().getEmail())
-                .projectId(score.getProject().getId())
-                .projectName(score.getProject().getName())
-                .taskCompletionScore(score.getTaskCompletionScore())
-                .peerReviewScore(score.getPeerReviewScore())
-                .commitCount(score.getCommitCount())
-                .lateTaskCount(score.getLateTaskCount())
-                .calculatedScore(score.getCalculatedScore())
-                .adjustedScore(score.getAdjustedScore())
-                .adjustmentReason(score.getAdjustmentReason())
-                .isFinal(score.getIsFinal())
-                .updatedAt(score.getUpdatedAt())
+                .id(entity.getId())
+                .userId(entity.getUser().getId())
+                .username(entity.getUser().getUsername())
+                .fullName(entity.getUser().getFullName())
+                .email(entity.getUser().getEmail())
+                .projectId(entity.getProject().getId())
+                .projectName(entity.getProject().getName())
+                .taskCompletionScore(entity.getTaskCompletionScore())
+                .peerReviewScore(entity.getPeerReviewScore())
+                .lateTaskCount(entity.getLateTaskCount())
+                .totalAdditions(entity.getTotalAdditions())
+                .totalDeletions(entity.getTotalDeletions())
+                .codeContributionScore(entity.getCodeContributionScore())
+                .calculatedScore(entity.getCalculatedScore())
+                .adjustedScore(entity.getAdjustedScore())
+                .adjustmentReason(entity.getAdjustmentReason())
+                .isFinal(entity.getIsFinal())
+                .updatedAt(entity.getUpdatedAt())
+                .createdAt(entity.getCreatedAt())
                 .build();
     }
 }

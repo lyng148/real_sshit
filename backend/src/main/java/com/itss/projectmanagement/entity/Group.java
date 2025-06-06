@@ -1,5 +1,6 @@
 package com.itss.projectmanagement.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -64,6 +65,7 @@ public class Group extends BaseEntity {
     private Set<CommitRecord> commitRecords = new HashSet<>();
         
     @OneToMany(mappedBy = "group", fetch = FetchType.LAZY)
+    @JsonIgnore
     @Builder.Default
     private Set<FreeRiderCase> freeRiderCases = new HashSet<>();
 }

@@ -155,7 +155,7 @@ const FreeRiderEvidenceDisplay = ({ projectId, groupId }) => {
                         strokeWidth={entry.isFreeRider ? 2 : 1}
                       />
                     ))}
-                  </Pie>                  <Tooltip formatter={(value) => [`${value.toFixed(1)}`, 'Contribution Score']} />
+                  </Pie>                  <Tooltip formatter={(value) => [`${value.toFixed(1)}`, 'Normalized Contribution Score (0-10)']} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>

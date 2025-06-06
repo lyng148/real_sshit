@@ -5,6 +5,7 @@ import com.itss.projectmanagement.dto.request.github.RepositoryCheckRequest;
 import com.itss.projectmanagement.dto.response.github.CommitRecordDTO;
 import com.itss.projectmanagement.exception.GitHubRepositoryException;
 import com.itss.projectmanagement.service.IGitHubService;
+import com.itss.projectmanagement.service.IGroupService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,6 +26,7 @@ import java.util.Map;
 @Validated
 public class GitHubController {
     private final IGitHubService gitHubService;
+    private final IGroupService groupService;
 
     @GetMapping("/token")
     @Operation(summary = "Get GitHub API token for frontend authenticated requests", 
@@ -112,5 +114,43 @@ public class GitHubController {
         );
         
         return ResponseEntity.ok(ApiResponse.success(data, "Repository is accessible"));
+    }
+
+    @PostMapping("/sync-commits/group/{groupId}")
+    @PreAuthorize("hasAnyAuthority('INSTRUCTOR', 'ADMIN') or @groupSecurityService.isGroupLeader(#groupId)")
+    @Operation(summary = "Manually sync commits for a group", 
+               description = "Fetches and processes commits from GitHub repository for a specific group",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<ApiResponse<Map<String, Object>>> syncCommitsForGroup(@PathVariable Long groupId) {
+        try {
+            // Get group DTO first and convert to entity if needed
+            var groupDTO = groupService.getGroupById(groupId);
+            
+            if (groupDTO == null) {
+                return ResponseEntity.badRequest().body(
+                    ApiResponse.error("Group not found")
+                );
+            }
+            
+            // Convert DTO to entity for the service call
+            com.itss.projectmanagement.entity.Group group = new com.itss.projectmanagement.entity.Group();
+            group.setId(groupDTO.getId());
+            group.setName(groupDTO.getName());
+            group.setRepositoryUrl(groupDTO.getRepositoryUrl());
+            
+            int newCommits = gitHubService.fetchAndProcessCommits(group);
+            
+            Map<String, Object> data = Map.of(
+                "success", true,
+                "newCommitsProcessed", newCommits,
+                "message", String.format("Successfully synced %d new commits", newCommits)
+            );
+            
+            return ResponseEntity.ok(ApiResponse.success(data, "Commits synced successfully"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(
+                ApiResponse.error("Failed to sync commits: " + e.getMessage())
+            );
+        }
     }
 }

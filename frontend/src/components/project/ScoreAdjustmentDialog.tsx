@@ -60,7 +60,7 @@ const ScoreAdjustmentDialog: React.FC<ScoreAdjustmentDialogProps> = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      adjustedScore: score.adjustedScore,
+      adjustedScore: score.adjustedScore || score.calculatedScore,
       adjustmentReason: score.adjustmentReason || ""
     },
   });
@@ -120,21 +120,22 @@ const ScoreAdjustmentDialog: React.FC<ScoreAdjustmentDialogProps> = ({
                     <div className="flex items-center space-x-3">                      <Input
                         type="number"
                         min={0}
+                        max={10}
                         step={0.1}
                         className="w-24"
                         {...field}
                       />                      <div className="text-sm">
                         <span className={`font-medium ${
-                          field.value >= 80 ? 'text-green-600' : 
-                          field.value >= 50 ? 'text-amber-600' : 
+                          field.value >= 7 ? 'text-green-600' : 
+                          field.value >= 4 ? 'text-amber-600' : 
                           'text-red-600'
                         }`}>
                           {typeof field.value === 'number' ? field.value.toFixed(1) : '0.0'}
-                        </span> pts
+                        </span> / 10
                       </div>
                     </div>
                   </FormControl>                  <FormDescription className="flex items-center justify-between">
-                    <span>System calculated score: {score.calculatedScore.toFixed(1)}</span>
+                    <span>System calculated score: {score.calculatedScore.toFixed(1)} / 10</span>
                     <span className="text-sm text-muted-foreground">Change: {typeof field.value === 'number' ? (field.value - score.calculatedScore).toFixed(1) : '0.0'}</span>
                   </FormDescription>
                   <FormMessage />

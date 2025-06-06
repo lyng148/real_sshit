@@ -84,17 +84,18 @@ const ContributionTab: React.FC<ContributionTabProps> = ({ projectId }) => {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData}>                  <XAxis dataKey="name" angle={-45} textAnchor="end" height={60} />
-                  <YAxis />
-                  <Tooltip formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : value}`, 'Score']} />
+                  <YAxis domain={[0, 10]} />
+                  <Tooltip formatter={(value) => [`${typeof value === 'number' ? value.toFixed(1) : value}`, 'Score (0-10 scale)']} />
                   <Bar 
                     dataKey="score" 
-                    name="Contribution Score"
-                    fill="#3B82F6"isAnimationActive={true}
+                    name="Normalized Contribution Score"
+                    fill="#3B82F6"
+                    isAnimationActive={true}
                     animationDuration={1000}
                   >
                     {chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} 
-                        fill={entry.score >= 80 ? '#10B981' : entry.score >= 50 ? '#F59E0B' : '#EF4444'} 
+                        fill={entry.score >= 7 ? '#10B981' : entry.score >= 4 ? '#F59E0B' : '#EF4444'} 
                       />
                     ))}
                   </Bar>
@@ -108,15 +109,15 @@ const ContributionTab: React.FC<ContributionTabProps> = ({ projectId }) => {
           <div className="mt-6 flex justify-between">            <div className="flex items-center space-x-4">
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-green-500 mr-1"></div>
-                <span className="text-xs">High (≥80)</span>
+                <span className="text-xs">High (≥7.0)</span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-amber-500 mr-1"></div>
-                <span className="text-xs">Medium (≥50)</span>
+                <span className="text-xs">Medium (≥4.0)</span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
-                <span className="text-xs">Low (&lt;50)</span>
+                <span className="text-xs">Low (&lt;4.0)</span>
               </div>
             </div>
             <Button onClick={() => setIsDialogOpen(true)}>

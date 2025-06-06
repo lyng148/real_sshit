@@ -35,6 +35,17 @@ class ContributionScoreService {
     }
   }
 
+  // Manually calculate contribution scores for all users in a project
+  async calculateScores(projectId: number) {
+    try {
+      const response = await axiosInstance.post(`/api/contribution-scores/calculate?projectId=${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error calculating contribution scores:', error);
+      throw error;
+    }
+  }
+
   // Adjust a user's contribution score (for instructors/admins)
   async adjustScore(scoreId: number, adjustedScore: number, adjustmentReason: string) {
     try {
