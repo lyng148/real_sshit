@@ -3,6 +3,7 @@ package com.itss.projectmanagement.config;
 import com.github.alexdlaird.ngrok.NgrokClient;
 import com.github.alexdlaird.ngrok.conf.JavaNgrokConfig;
 import com.github.alexdlaird.ngrok.protocol.CreateTunnel;
+import com.github.alexdlaird.ngrok.protocol.Proto;
 import com.github.alexdlaird.ngrok.protocol.Region;
 import com.github.alexdlaird.ngrok.protocol.Tunnel;
 import lombok.extern.slf4j.Slf4j;
@@ -74,7 +75,7 @@ public class NgrokConfiguration implements ApplicationListener<ApplicationReadyE
         // Create tunnel configuration
         CreateTunnel.Builder tunnelBuilder = new CreateTunnel.Builder()
                 .withAddr(serverPort)
-                .withProto("http");
+                .withProto(Proto.HTTP); // Use HTTP protocol
 
         if (StringUtils.hasText(subdomain)) {
             tunnelBuilder.withSubdomain(subdomain);
@@ -84,14 +85,14 @@ public class NgrokConfiguration implements ApplicationListener<ApplicationReadyE
         Tunnel tunnel = ngrokClient.connect(tunnelBuilder.build());
         
         String publicUrl = tunnel.getPublicUrl();
-        log.info("╔══════════════════════════════════════════════════════════════╗");
-        log.info("║                    🚀 NGROK TUNNEL STARTED                    ║");
-        log.info("║                                                              ║");
+        log.info("╔══════════════════════════════════════════════════════════╗");
+        log.info("║                    NGROK TUNNEL STARTED                  ║");
+        log.info("║                                                          ║");
         log.info("║  Local URL:  http://localhost:{}                         ║", serverPort);
-        log.info("║  Public URL: {}                              ║", publicUrl);
-        log.info("║                                                              ║");
-        log.info("║  📋 Copy this URL to share your backend with others!         ║");
-        log.info("╚══════════════════════════════════════════════════════════════╝");
+        log.info("║  Public URL: {}                                          ║", publicUrl);
+        log.info("║                                                          ║");
+        log.info("║  Copy this URL to share your backend with others!        ║");
+        log.info("╚══════════════════════════════════════════════════════════╝");
 
         // Update frontend URL configuration
         System.setProperty("app.ngrok.public-url", publicUrl);
@@ -100,7 +101,7 @@ public class NgrokConfiguration implements ApplicationListener<ApplicationReadyE
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             if (ngrokClient != null) {
                 log.info("Closing ngrok tunnel...");
-                ngrokClient.disconnect(tunnel);
+                ngrokClient.disconnect(tunnel.getPublicUrl());
                 ngrokClient.kill();
             }
         }));

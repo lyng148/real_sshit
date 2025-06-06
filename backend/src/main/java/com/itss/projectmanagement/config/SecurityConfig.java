@@ -33,7 +33,6 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/ngrok/**").permitAll()
                 .requestMatchers("/actuator/**").hasAuthority("ADMIN")
-                // Permit access to Swagger UI and OpenAPI endpoints
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
             );
